@@ -193,31 +193,38 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
             </div>
          </div>
 
-         <div className="bg-black/30 rounded-xl p-4 border border-white/5 space-y-3 mt-2 text-sm">
-            <div className="flex justify-between text-white/60">
-               <span>₹{car.price.toLocaleString()} x {estimate.days} days</span>
-               <span>₹{estimate.base.toLocaleString()}</span>
+         {(!pickupDate || !returnDate) ? (
+            <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-500/80 p-3 rounded-xl text-xs mt-2 flex gap-2">
+               <Info className="w-4 h-4 shrink-0 mt-0.5" />
+               <p>Please select your <strong>Pickup</strong> and <strong>Return</strong> dates to view accurate pricing and proceed to checkout.</p>
             </div>
-            {estimate.addonsTotal > 0 && (
-              <div className="flex justify-between text-white/60">
-                 <span>Premium Add-ons</span>
-                 <span>+₹{estimate.addonsTotal.toLocaleString()}</span>
-              </div>
-            )}
-            <div className="pt-3 border-t border-white/10 flex justify-between font-bold text-white text-base">
-               <span>Total Estimate</span>
-               <span>₹{estimate.total.toLocaleString()}</span>
+         ) : (
+            <div className="bg-black/30 rounded-xl p-4 border border-white/5 space-y-3 mt-2 text-sm">
+               <div className="flex justify-between text-white/60">
+                  <span>₹{car.price.toLocaleString()} x {estimate.days} days</span>
+                  <span>₹{estimate.base.toLocaleString()}</span>
+               </div>
+               {estimate.addonsTotal > 0 && (
+                 <div className="flex justify-between text-white/60">
+                    <span>Premium Add-ons</span>
+                    <span>+₹{estimate.addonsTotal.toLocaleString()}</span>
+                 </div>
+               )}
+               <div className="pt-3 border-t border-white/10 flex justify-between font-bold text-white text-base">
+                  <span>Total Estimate</span>
+                  <span>₹{estimate.total.toLocaleString()}</span>
+               </div>
             </div>
-         </div>
+         )}
 
          <button 
            onClick={handleCheckout}
-           disabled={!pickupDate}
+           disabled={!pickupDate || !returnDate}
            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
            style={{
-             background: pickupDate ? 'linear-gradient(135deg, var(--gold-300), var(--gold-400), var(--gold-500))' : 'rgba(255,255,255,0.05)',
-             color: pickupDate ? 'black' : 'rgba(255,255,255,0.3)',
-             boxShadow: pickupDate ? '0 4px 20px rgba(212,175,55,0.3)' : 'none',
+             background: (pickupDate && returnDate) ? 'linear-gradient(135deg, var(--gold-300), var(--gold-400), var(--gold-500))' : 'rgba(255,255,255,0.05)',
+             color: (pickupDate && returnDate) ? 'black' : 'rgba(255,255,255,0.3)',
+             boxShadow: (pickupDate && returnDate) ? '0 4px 20px rgba(212,175,55,0.3)' : 'none',
            }}
          >
             Proceed to Checkout <ArrowRight className="w-5 h-5" />
