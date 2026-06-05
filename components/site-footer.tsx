@@ -1,7 +1,6 @@
 'use client'
 
 import Link from "next/link"
-import { Car, Plane, Anchor, Phone, Mail, MapPin } from "lucide-react"
 import Image from "next/image"
 import { useRef } from "react"
 import { motion, useInView } from "motion/react"
@@ -12,12 +11,13 @@ export function SiteFooter() {
 
   return (
     <footer ref={ref} className="mt-0 border-t border-[var(--luxury-border)] bg-[var(--luxury-bg)] text-zinc-100">
-      <div className="mx-auto max-w-6xl px-4 py-12 grid gap-8 md:grid-cols-4">
+      <div className="mx-auto max-w-6xl px-4 py-16 grid gap-8 sm:grid-cols-2 md:grid-cols-4">
         {/* Company Info */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0 }}
+          className="flex flex-col gap-4"
         >
           <Link href="/" className="flex items-center">
             <Image
@@ -29,114 +29,135 @@ export function SiteFooter() {
               loading="lazy"
             />
           </Link>
-          <p className="mt-3 text-sm text-zinc-500 leading-relaxed">
+          <p className="text-sm text-zinc-500 leading-relaxed">
             Luxury mobility & aviation experiences—anytime, anywhere. Premium transportation services proudly serving Jubilee Hills, Banjara Hills, HITEC City, Gachibowli, Kokapet, Madhapur, and all of Hyderabad.
           </p>
         </motion.div>
 
-        {/* Services */}
+        {/* Fleet Column */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <h4 className="text-sm font-semibold text-white mb-4">Our Services</h4>
-          <ul className="grid gap-2.5 text-sm text-zinc-400">
+          <h4 className="text-xs font-semibold tracking-widest text-white uppercase mb-6 border-b border-white/5 pb-2">
+            FLEET
+          </h4>
+          <ul className="space-y-3.5 text-sm text-zinc-400">
             <li>
-              <Link href="/services/luxury-car-rental" className="hover:text-[var(--gold-400)] flex items-center gap-2 transition-colors duration-300">
-                <Car className="w-3.5 h-3.5" />
-                Luxury Car Rental
+              <Link href="/cars" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Luxury Cars
               </Link>
             </li>
             <li>
-              <Link href="/services/private-jet-services" className="hover:text-[var(--gold-400)] flex items-center gap-2 transition-colors duration-300">
-                <Plane className="w-3.5 h-3.5" />
-                Private Jet Services
+              <Link href="/cars" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> SUVs
               </Link>
             </li>
             <li>
-              <Link href="/services/yacht-services" className="hover:text-[var(--gold-400)] flex items-center gap-2 transition-colors duration-300">
-                <Anchor className="w-3.5 h-3.5" />
-                Yacht Services
+              <Link href="/cars" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Executive Cars
               </Link>
             </li>
             <li>
-              <Link href="/services/wedding-cars" className="hover:text-[var(--gold-400)] transition-colors duration-300">
-                Wedding Cars
+              <Link href="/cars" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Mini Vans
               </Link>
             </li>
             <li>
-              <Link href="/services/luxury-buses" className="hover:text-[var(--gold-400)] transition-colors duration-300">
-                Luxury Buses
+              <Link href="/cars" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Coaches
               </Link>
             </li>
           </ul>
         </motion.div>
 
-        {/* Contact Info */}
+        {/* Services Column */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h4 className="text-sm font-semibold text-white mb-4">Contact Us</h4>
-          <ul className="grid gap-3 text-sm text-zinc-400">
-            <li className="flex items-center gap-2">
-              <Phone className="w-3.5 h-3.5 text-[var(--gold-400)]" />
-              <span>+91 83413 41186</span>
+          <h4 className="text-xs font-semibold tracking-widest text-white uppercase mb-6 border-b border-white/5 pb-2">
+            SERVICES
+          </h4>
+          <ul className="space-y-3.5 text-sm text-zinc-400">
+            <li>
+              <Link href="/services/luxury-car-rental" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Chauffeur Driven Cars
+              </Link>
             </li>
-            <li className="flex items-center gap-2">
-              <Mail className="w-3.5 h-3.5 text-[var(--gold-400)]" />
-              <span>info@driveitluxury.com</span>
+            <li>
+              <Link href="/services/luxury-car-rental" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Self Drive Car
+              </Link>
             </li>
-            <li className="flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 text-[var(--gold-400)]" />
-              <span>Hyderabad, India</span>
+            <li>
+              <Link href="/services/corporate-car-rental" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Corporate Car Rental
+              </Link>
+            </li>
+            <li>
+              <Link href="/services/wedding-cars" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Wedding Cars
+              </Link>
+            </li>
+            <li>
+              <Link href="/services/yacht-services" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Yacht Services
+              </Link>
+            </li>
+            <li>
+              <Link href="/services/private-jet-services" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Private Jet Services
+              </Link>
+            </li>
+            <li>
+              <Link href="/services/pickup-dropoff" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Pickup & Dropoff
+              </Link>
             </li>
           </ul>
         </motion.div>
 
-        {/* Quick Links */}
+        {/* Links Column */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <h4 className="text-sm font-semibold text-white mb-4">Quick Links</h4>
-          <ul className="grid gap-2.5 text-sm text-zinc-400">
+          <h4 className="text-xs font-semibold tracking-widest text-white uppercase mb-6 border-b border-white/5 pb-2">
+            LINKS
+          </h4>
+          <ul className="space-y-3.5 text-sm text-zinc-400">
             <li>
-              <Link href="/about" className="hover:text-[var(--gold-400)] transition-colors duration-300">
-                About Us
+              <Link href="/about" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> About Us
               </Link>
             </li>
             <li>
-              <Link href="/blog" className="hover:text-[var(--gold-400)] transition-colors duration-300">
-                Blog & Journal
+              <Link href="/blog" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Blog & Journal
               </Link>
             </li>
             <li>
-              <Link href="/services" className="hover:text-[var(--gold-400)] transition-colors duration-300">
-                All Services
+              <Link href="/contact" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Contact Us
               </Link>
             </li>
             <li>
-              <Link href="/contact" className="hover:text-[var(--gold-400)] transition-colors duration-300">
-                Contact
+              <Link href="/privacy-policy" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Privacy Policy
               </Link>
             </li>
             <li>
-              <Link href="/privacy-policy" className="hover:text-[var(--gold-400)] transition-colors duration-300">
-                Privacy Policy
+              <Link href="/terms-conditions" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Terms & Conditions
               </Link>
             </li>
             <li>
-              <Link href="/terms-conditions" className="hover:text-[var(--gold-400)] transition-colors duration-300">
-                Terms & Conditions
-              </Link>
-            </li>
-            <li>
-              <Link href="/refund-policy" className="hover:text-[var(--gold-400)] transition-colors duration-300">
-                Refund Policy
+              <Link href="/refund-policy" className="hover:text-[var(--gold-400)] transition-colors duration-300 flex items-center">
+                <span className="text-[var(--gold-400)] mr-2 font-light">›</span> Refund Policy
               </Link>
             </li>
           </ul>
