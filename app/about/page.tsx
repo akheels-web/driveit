@@ -94,7 +94,7 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="relative overflow-hidden rounded-2xl border border-white/10">
               <Image
                 src="/rolls-royce-phantom-night-black.png"
@@ -188,20 +188,20 @@ export default function AboutPage() {
                 <p className="text-lg text-zinc-300 leading-relaxed mb-8">
                   Strategically located to serve Rajiv Gandhi International Airport, Begumpet Airport, and corporate hubs across the city. Our deep understanding of Hyderabad's routes, traffic patterns, and premium destinations ensures seamless, efficient journeys every time.
                 </p>
-                
+
                 <div className="grid gap-6 md:grid-cols-3 text-center">
                   <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                     <Plane className="w-8 h-8 mx-auto mb-3" style={{ color: GOLD }} />
                     <h4 className="text-white font-semibold mb-2">Airport Connectivity</h4>
                     <p className="text-sm text-zinc-400">Direct access to RGIA & Begumpet Airport</p>
                   </div>
-                  
+
                   <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                     <MapPin className="w-8 h-8 mx-auto mb-3" style={{ color: GOLD }} />
                     <h4 className="text-white font-semibold mb-2">Corporate Hubs</h4>
                     <p className="text-sm text-zinc-400">Serving HITEC City, Gachibowli & Financial District</p>
                   </div>
-                  
+
                   <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                     <Clock className="w-8 h-8 mx-auto mb-3" style={{ color: GOLD }} />
                     <h4 className="text-white font-semibold mb-2">24/7 Availability</h4>
@@ -245,13 +245,13 @@ export default function AboutPage() {
               <h3 className="text-lg font-semibold text-white mb-3">Safety Certified</h3>
               <p className="text-sm text-zinc-400">All drivers undergo thorough background checks and safety training</p>
             </div>
-            
+
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 text-center">
               <CheckCircle className="w-12 h-12 mx-auto mb-4" style={{ color: GOLD }} />
               <h3 className="text-lg font-semibold text-white mb-3">Verified Drivers</h3>
               <p className="text-sm text-zinc-400">Licensed, experienced chauffeurs with impeccable service records</p>
             </div>
-            
+
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 text-center">
               <Star className="w-12 h-12 mx-auto mb-4" style={{ color: GOLD }} />
               <h3 className="text-lg font-semibold text-white mb-3">5-Star Rated</h3>
@@ -277,7 +277,7 @@ export default function AboutPage() {
             <p className="text-lg text-zinc-300 mb-8 max-w-2xl mx-auto">
               Experience premium transportation with DRIVEIT. Our team is ready to make your journey exceptional.
             </p>
-            
+
             <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
               <Link
                 href="/services"
@@ -317,7 +317,7 @@ export default function AboutPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" style={{ color: GOLD }} />
-                  <span>contact@driveit.com</span>
+                  <span>contact@driveitluxury.com</span>
                 </div>
               </div>
             </div>

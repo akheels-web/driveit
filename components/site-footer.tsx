@@ -87,7 +87,7 @@ export function SiteFooter() {
             </li>
             <li className="flex items-center gap-2">
               <Mail className="w-3.5 h-3.5 text-[var(--gold-400)]" />
-              <span>info@driveit.com</span>
+              <span>info@driveitluxury.com</span>
             </li>
             <li className="flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5 text-[var(--gold-400)]" />

@@ -35,7 +35,7 @@ const faqs = [
   },
   {
     q: "How do I contact you for bookings?",
-    a: "You can reach us 24/7 at +91 83413 41186, email us at info@driveit.com, or use our contact form. Our team will assist you with all your luxury transportation needs.",
+    a: "You can reach us 24/7 at +91 83413 41186, email us at info@driveitluxury.com, or use our contact form. Our team will assist you with all your luxury transportation needs.",
   },
 ]
 
