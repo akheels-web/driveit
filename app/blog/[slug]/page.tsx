@@ -7,10 +7,11 @@ import { Calendar, User, ChevronLeft, Share2, Facebook, Twitter, Linkedin } from
 // For demo purposes, we define the content dynamically based on the slug. 
 // In a real app, this would come from a CMS or Supabase.
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   
   // Mock data based on the slug to make it look realistic
-  const title = params.slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  const title = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
   
   return (
     <>
