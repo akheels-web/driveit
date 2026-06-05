@@ -115,6 +115,12 @@ export function SiteHeader() {
         {/* Call to Action Button */}
         <div className="hidden md:flex items-center gap-4">
           <Link
+            href="/login"
+            className="text-sm text-zinc-300 hover:text-[var(--gold-400)] font-medium transition-colors duration-300"
+          >
+            Login
+          </Link>
+          <Link
             href="/cars"
             className="flex items-center gap-2 text-black px-5 py-2.5 rounded-full text-sm font-medium bg-[var(--gold-400)] hover:bg-[var(--gold-300)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(212,175,55,0.3)]"
           >
@@ -200,7 +206,14 @@ export function SiteHeader() {
               )}
 
               {/* Mobile Call to Action */}
-              <div className="pt-2 border-t border-white/5">
+              <div className="pt-2 border-t border-white/5 flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  className="text-zinc-300 hover:text-[var(--gold-400)] py-2 text-center text-sm font-medium transition-colors duration-300"
+                  onClick={() => setOpen(false)}
+                >
+                  Login
+                </Link>
                 <Link
                   href="/cars"
                   className="flex items-center gap-2 text-black px-4 py-2.5 rounded-full text-sm font-medium bg-[var(--gold-400)] hover:bg-[var(--gold-300)] transition-all duration-300 justify-center"
