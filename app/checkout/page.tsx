@@ -13,13 +13,29 @@ function CheckoutContent() {
   const searchParams = useSearchParams()
   
   const carId = searchParams.get('carId')
-  const pickupDate = searchParams.get('pickupDate')
-  const returnDate = searchParams.get('returnDate')
-  const service = searchParams.get('service')
+  const pickupDate = searchParams.get('pickupDate') || new Date().toISOString().split('T')[0]
+  const returnDate = searchParams.get('returnDate') || new Date().toISOString().split('T')[0]
+  const service = searchParams.get('service') || 'wedding'
   const daysStr = searchParams.get('days')
   
-  const car = carsData.find(c => c.id === carId)
-  const days = parseInt(daysStr || '1')
+  const packageType = searchParams.get('package')
+  const primaryCar = searchParams.get('primaryCar')
+  const packageTotalStr = searchParams.get('total')
+
+  const isWedding = packageType === 'wedding'
+  
+  const weddingCar = isWedding ? {
+     id: 'wedding-package',
+     name: `Wedding Package (${primaryCar?.toUpperCase() || 'Custom'})`,
+     brand: 'DriveIt Luxury',
+     price: parseInt(packageTotalStr || '0'),
+     src: 'https://i.pinimg.com/736x/a1/86/db/a186db7d8842e5c511163b21076dac56.jpg',
+     securityDeposit: '₹50,000',
+     cancellationPolicy: 'Non-refundable if cancelled within 7 days of event.'
+  } : null;
+
+  const car = isWedding ? weddingCar : carsData.find(c => c.id === carId)
+  const days = isWedding ? 1 : parseInt(daysStr || '1')
   
   const [step, setStep] = useState<'details' | 'payment' | 'success'>('details')
   const [form, setForm] = useState({ name: '', phone: '', email: '', license: '' })
@@ -30,10 +46,10 @@ function CheckoutContent() {
   
   // If loaded directly without params, return to cars
   useEffect(() => {
-     if (!carId || !car) {
+     if (!isWedding && (!carId || !car)) {
         router.push('/cars')
      }
-  }, [carId, car, router])
+  }, [carId, car, isWedding, router])
 
   if (!car) return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Loading...</div>
 
