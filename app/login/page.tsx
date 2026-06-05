@@ -69,9 +69,9 @@ export default function LoginPage() {
                 <Lock className="w-6 h-6 text-[var(--gold-400)]" />
               </div>
               <h1 className="text-2xl font-[family-name:var(--font-playfair)] font-bold">
-                Welcome <span className="text-gradient-gold">Back</span>
+                Sign In to <span className="text-gradient-gold">DRIVEIT</span>
               </h1>
-              <p className="text-xs text-white/40 mt-1">Sign in to manage your bookings</p>
+              <p className="text-xs text-white/40 mt-1">Access your account to manage bookings</p>
             </div>
 
             {/* Google Login */}
