@@ -131,8 +131,8 @@ export function About() {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10" />
 
           {/* Map Overlay Info */}
-          <div className="absolute top-4 left-4 glass-gold px-4 py-2.5 rounded-lg pointer-events-none">
-            <p className="text-xs text-white font-medium">
+          <div className="absolute bottom-4 left-4 bg-black/80 border border-[var(--gold-400)]/30 backdrop-blur-md px-4 py-2.5 rounded-lg pointer-events-none">
+            <p className="text-xs text-[var(--gold-400)] font-medium">
               📍 DRIVEIT — Luxury Transportation, Hyderabad
             </p>
           </div>
