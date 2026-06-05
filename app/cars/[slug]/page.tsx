@@ -6,6 +6,8 @@ import { carsData } from "@/lib/cars"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { CarBookingWidget } from "./booking-widget" // We'll extract the interactive part to a client component
+import { WishlistButton } from "@/components/wishlist-button"
+import { PersonalizedSocialProof } from "@/components/personalized-social-proof"
 
 export function generateStaticParams() {
   return carsData.map((car) => ({
@@ -72,12 +74,12 @@ export default async function CarDetailPage({ params }: { params: Promise<{ slug
               </div>
               <h1 className="text-3xl md:text-5xl font-[family-name:var(--font-playfair)] font-bold mb-4">{car.name}</h1>
               
-              <div className="flex items-center gap-4 text-sm border-b border-white/10 pb-6">
+              <div className="flex flex-wrap items-center gap-4 text-sm border-b border-white/10 pb-6">
                 <div className="flex items-center gap-1 text-[var(--gold-400)] font-medium">
                   <Star className="w-4 h-4 fill-current" /> {car.rating} <span className="text-white/40 font-normal">({car.reviewsCount} reviews)</span>
                 </div>
                 <div className="w-1 h-1 rounded-full bg-white/20" />
-                <div className="text-white/60">Booked {car.bookingsCount}+ times</div>
+                <PersonalizedSocialProof carId={car.id} globalBookings={car.bookingsCount} />
                 <div className="w-1 h-1 rounded-full bg-white/20" />
                 <div className="text-green-400 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Available Today</div>
               </div>
@@ -176,7 +178,10 @@ export default async function CarDetailPage({ params }: { params: Promise<{ slug
 
           {/* Right Column: Sticky Booking Widget */}
           <div className="lg:col-span-1">
-             <div className="sticky top-28">
+             <div className="sticky top-28 space-y-4">
+                <div className="flex justify-end pr-2">
+                   <WishlistButton carId={car.id} />
+                </div>
                 <CarBookingWidget car={car} />
              </div>
           </div>

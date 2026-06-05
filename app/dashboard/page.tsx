@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Car, CalendarDays, User, LogOut, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { Car, CalendarDays, User, LogOut, Clock, CheckCircle, AlertCircle, Award } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { SiteHeader } from '@/components/site-header'
 import type { Profile, Booking } from '@/lib/types'
@@ -101,6 +101,47 @@ export default function DashboardPage() {
               <LogOut className="w-3.5 h-3.5" />
               Sign Out
             </button>
+          </motion.div>
+
+          {/* Membership Card */}
+          <motion.div
+            className="mb-10 relative overflow-hidden rounded-2xl p-6 md:p-8"
+            style={{ 
+               background: profile?.loyalty_tier === 'Platinum' ? 'linear-gradient(135deg, #222, #444)' : 
+                           profile?.loyalty_tier === 'Gold' ? 'linear-gradient(135deg, #b8860b, #6b4e00)' :
+                           'linear-gradient(135deg, #1a1a1a, #0a0a0a)',
+               border: '1px solid rgba(212,175,55,0.2)'
+            }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+          >
+            <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4">
+               <Award className="w-48 h-48" />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+               <div>
+                  <p className="text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-semibold">DriveIt Luxury Membership</p>
+                  <h2 className="text-3xl font-[family-name:var(--font-playfair)] font-bold text-white mb-1" style={{ color: profile?.loyalty_tier === 'Gold' ? 'white' : 'var(--gold-400)'}}>
+                     {profile?.loyalty_tier || 'Silver'} Member
+                  </h2>
+                  <p className="text-sm text-white/80 font-medium">{profile?.loyalty_points || 0} Reward Points</p>
+               </div>
+               <div className="text-left md:text-right w-full md:w-auto">
+                  <div className="text-xs text-white/60 mb-2">
+                     Next Tier: {profile?.loyalty_tier === 'Silver' ? 'Gold (1000 pts)' : profile?.loyalty_tier === 'Gold' ? 'Platinum (5000 pts)' : 'Max Tier'}
+                  </div>
+                  <div className="w-full md:w-48 h-1.5 bg-black/40 rounded-full overflow-hidden">
+                     <div 
+                        className="h-full" 
+                        style={{ 
+                           background: profile?.loyalty_tier === 'Gold' ? 'white' : 'var(--gold-400)',
+                           width: `${Math.min(((profile?.loyalty_points || 0) / (profile?.loyalty_tier === 'Silver' ? 1000 : 5000)) * 100, 100)}%` 
+                        }} 
+                     />
+                  </div>
+               </div>
+            </div>
           </motion.div>
 
           {/* Stats */}

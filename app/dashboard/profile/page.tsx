@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import { SiteHeader } from '@/components/site-header'
 
 export default function ProfilePage() {
-  const [form, setForm] = useState({ full_name: '', email: '', phone: '' })
+  const [form, setForm] = useState({ full_name: '', email: '', phone: '', home_address: '', office_address: '', airport_address: '' })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -28,10 +28,12 @@ export default function ProfilePage() {
         .single()
 
       if (profile) {
-        setForm({
           full_name: profile.full_name || '',
           email: profile.email || user.email || '',
           phone: profile.phone || '',
+          home_address: profile.home_address || '',
+          office_address: profile.office_address || '',
+          airport_address: profile.airport_address || '',
         })
       }
       setLoading(false)
@@ -50,6 +52,9 @@ export default function ProfilePage() {
       .update({
         full_name: form.full_name,
         phone: form.phone,
+        home_address: form.home_address,
+        office_address: form.office_address,
+        airport_address: form.airport_address,
       })
       .eq('id', user.id)
 
@@ -135,6 +140,36 @@ export default function ProfilePage() {
                         onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
                         className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-white/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors"
                       />
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-white/5">
+                    <h3 className="text-sm font-semibold mb-4 text-white/80">Saved Addresses</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Home Address</label>
+                        <input
+                          type="text" value={form.home_address} placeholder="e.g., Flat 201, Jubilee Hills"
+                          onChange={(e) => setForm((p) => ({ ...p, home_address: e.target.value }))}
+                          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Office Address</label>
+                        <input
+                          type="text" value={form.office_address} placeholder="e.g., Tech Park, Madhapur"
+                          onChange={(e) => setForm((p) => ({ ...p, office_address: e.target.value }))}
+                          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Airport Preference</label>
+                        <input
+                          type="text" value={form.airport_address} placeholder="e.g., RGIA Terminal 1"
+                          onChange={(e) => setForm((p) => ({ ...p, airport_address: e.target.value }))}
+                          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors"
+                        />
+                      </div>
                     </div>
                   </div>
 

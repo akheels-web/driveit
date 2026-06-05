@@ -44,8 +44,11 @@ export class NotificationService {
     const wacrmUrl = process.env.WACRM_WEBHOOK_URL;
     const wacrmSecret = process.env.WACRM_WEBHOOK_SECRET;
 
+    const rebookUrl = `http://localhost:3000/checkout?rebook=true&carId=${data.carId}&service=${data.serviceType}`
+
     if (!wacrmUrl) {
       console.log(`[WhatsApp Stub] No WACRM_WEBHOOK_URL found. Would send ticket to ${data.customerPhone}`);
+      console.log(`[WhatsApp Stub] Message: "Hi ${data.customerName.split(' ')[0]} — your usual ${data.carName} is available. Tap here to re-book it instantly for your next trip: ${rebookUrl}"`);
       return;
     }
 
@@ -68,7 +71,8 @@ export class NotificationService {
             booking_date: data.bookingDate,
             booking_time: data.bookingTime,
             total_amount: data.totalAmount,
-            ticket_url: `https://driveit.in/dashboard/invoices/${bookingRef}` // Mock URL to view invoice/ticket
+            ticket_url: `http://localhost:3000/dashboard/invoices/${bookingRef}`, // Mock URL to view invoice/ticket
+            rebook_url: rebookUrl
           },
         }),
       });

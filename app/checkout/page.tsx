@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
-import { ShieldCheck, CheckCircle2, ChevronLeft, CreditCard, Smartphone, QrCode, Lock, ArrowRight, Upload } from 'lucide-react'
+import { ShieldCheck, CheckCircle2, ChevronLeft, CreditCard, Smartphone, QrCode, Lock, ArrowRight, Upload, MapPin } from 'lucide-react'
 import { carsData } from '@/lib/cars'
+import { createClient } from '@/lib/supabase/client'
 
 function CheckoutContent() {
   const router = useRouter()
@@ -38,7 +39,8 @@ function CheckoutContent() {
   const days = isWedding ? 1 : parseInt(daysStr || '1')
   
   const [step, setStep] = useState<'details' | 'payment' | 'success'>('details')
-  const [form, setForm] = useState({ name: '', phone: '', email: '', license: '' })
+  const [form, setForm] = useState({ name: '', phone: '', email: '', license: '', pickupLocation: '' })
+  const [profile, setProfile] = useState<any>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [promoCode, setPromoCode] = useState('')
   const [discount, setDiscount] = useState(0)
@@ -50,6 +52,22 @@ function CheckoutContent() {
         router.push('/cars')
      }
   }, [carId, car, isWedding, router])
+
+  // Fetch user profile for saved addresses
+  useEffect(() => {
+    async function loadProfile() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        if (data) {
+          setProfile(data)
+          setForm(f => ({ ...f, name: data.full_name || f.name, phone: data.phone || f.phone, email: data.email || f.email }))
+        }
+      }
+    }
+    loadProfile()
+  }, [])
 
   if (!car) return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Loading...</div>
 
@@ -180,13 +198,34 @@ function CheckoutContent() {
                            </div>
                         )}
 
+                        <div className="pt-4 border-t border-white/10">
+                           <div className="flex justify-between items-end mb-2">
+                             <label className="block text-xs text-white/40 uppercase tracking-wider">Pickup Location *</label>
+                             {profile && (profile.home_address || profile.office_address || profile.airport_address) && (
+                               <select 
+                                 onChange={(e) => setForm({...form, pickupLocation: e.target.value})}
+                                 className="bg-black border border-white/10 text-white/70 text-xs px-2 py-1 rounded outline-none cursor-pointer"
+                               >
+                                 <option value="">Use Saved Address...</option>
+                                 {profile.home_address && <option value={profile.home_address}>Home: {profile.home_address}</option>}
+                                 {profile.office_address && <option value={profile.office_address}>Office: {profile.office_address}</option>}
+                                 {profile.airport_address && <option value={profile.airport_address}>Airport: {profile.airport_address}</option>}
+                               </select>
+                             )}
+                           </div>
+                           <div className="relative">
+                             <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
+                             <input type="text" placeholder="Enter full address or select from saved" value={form.pickupLocation} onChange={e => setForm({...form, pickupLocation: e.target.value})} className="w-full bg-black border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-[var(--gold-400)]/50 focus:outline-none transition" />
+                           </div>
+                        </div>
+
                         <button 
                           onClick={() => setStep('payment')}
-                          disabled={!form.name || !form.phone || !form.email}
+                          disabled={!form.name || !form.phone || !form.email || !form.pickupLocation}
                           className="w-full mt-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                           style={{
-                            background: (form.name && form.phone && form.email) ? 'linear-gradient(135deg, var(--gold-300), var(--gold-400), var(--gold-500))' : 'rgba(255,255,255,0.05)',
-                            color: (form.name && form.phone && form.email) ? 'black' : 'rgba(255,255,255,0.3)',
+                            background: (form.name && form.phone && form.email && form.pickupLocation) ? 'linear-gradient(135deg, var(--gold-300), var(--gold-400), var(--gold-500))' : 'rgba(255,255,255,0.05)',
+                            color: (form.name && form.phone && form.email && form.pickupLocation) ? 'black' : 'rgba(255,255,255,0.3)',
                           }}
                         >
                            Continue to Payment

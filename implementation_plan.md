@@ -1,82 +1,74 @@
-# Premium Features Implementation Plan
+# Implementation Plan: Phase 2 Growth Opportunities
 
-This implementation plan addresses the four major features requested by the Senior Quality Reviewer to elevate the DRIVEIT luxury experience.
+Based on the Senior QA Reviewer's feedback, here is the architecture and approach to implementing the new retention and revenue-boosting features.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> Please review the proposed architecture and UI changes below. Specifically, the SMS and Email providers will need actual API keys (e.g., Twilio/Resend) for production, but we can implement the service stubs now. Do you have preferred providers for SMS/Email, or should we use standard mock/stubs for now?
-
-## Open Questions
-
-1. **Invoices**: For the PDF invoices, should we generate them on the client-side (e.g., using `jspdf`) or server-side via an API endpoint?
-2. **Add-on Pricing**: What are the standard prices for add-ons (e.g., Child Seat, Extra Driver, Photographer)? I will use placeholder luxury prices (e.g., ₹2000 for child seat) for now.
+> **Database Migrations:** Implementing Wishlists, Saved Addresses, and Loyalty Points requires adding tables/columns to Supabase. Do you want me to provide the raw SQL for you to run in the Supabase SQL editor, or should I mock these features using `localStorage` and `user_metadata` for now?
+> 
+> **Add-on Bundles:** Should we keep the a-la-carte options alongside the bundles, or exclusively offer the bundles on the detail page?
 
 ---
 
 ## Proposed Changes
 
-### 1. Wedding Package Configurator
-The Wedding Cars page currently has a basic layout. We will build a high-AOV (Average Order Value) multi-step configurator modal or dedicated booking section.
+### 1. "Save this car" / Wishlist
+Allow logged-in users to favorite cars for later, directly impacting repeat corporate and wedding planners.
 
-#### [MODIFY] [app/services/wedding-cars/page.tsx](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/services/wedding-cars/page.tsx)
-- Add a new "Configure Wedding Package" button replacing standard "Book Online" CTAs.
-- Embed the `<WeddingConfigurator />` component.
+#### [NEW] Supabase Table & API `app/api/wishlist/route.ts`
+- Create an API route to handle CRUD operations for a `wishlists` table (`user_id`, `car_id`).
+#### [MODIFY] `app/cars/[slug]/page.tsx` & `components/car-card.tsx`
+- Add a floating `Heart` icon toggle. If logged out, redirect to login.
+#### [NEW] `app/dashboard/wishlist/page.tsx`
+- Dedicated dashboard page rendering the user's favorited fleet.
 
-#### [NEW] [components/wedding-configurator.tsx](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/wedding-configurator.tsx)
-- **Step 1:** Select Primary Car (Groom/Bride)
-- **Step 2:** Add Escort Cars (Multi-car selection for family)
-- **Step 3:** Decoration Theme (Floral, Ribbon, Minimalist)
-- **Step 4:** Baraat Route & Wait times
-- **Step 5:** Chauffeur Dress Code (Tuxedo, Traditional Safari)
-- Dynamic pricing calculation based on the premium selections.
+### 2. "Booking history" & Saved Addresses
+We already built the "Re-book" logic, but we need to expand user profiles to handle saved addresses.
 
----
+#### [MODIFY] `app/checkout/page.tsx`
+- Add a dropdown: "Use Saved Address" (Home, Office, Airport) to auto-fill pickup/dropoff fields.
+#### [MODIFY] `app/dashboard/profile/page.tsx`
+- Allow users to edit and save default addresses.
 
-### 2. Customer Dashboard ("My Bookings") Upgrades
-We will enhance the existing customer portal to provide a premium post-booking experience.
+### 3. Personalized Social Proof ("Booked X times")
+Replace generic global metrics with personalized, high-converting social proof.
 
-#### [MODIFY] [app/dashboard/bookings/page.tsx](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/dashboard/bookings/page.tsx)
-- Implement a real-time **Status Timeline** (Pending → Confirmed → Chauffeur Assigned → Completed).
-- Add a **"Download Invoice"** button for confirmed/completed bookings.
-- Add a **"Re-book"** button that redirects to checkout pre-filled with the same car details.
+#### [MODIFY] `app/cars/[slug]/page.tsx`
+- Fetch the user's booking history for the current `carId`.
+- **Logic:** `if (userBookings > 0) { show "You've booked this car {X} times" } else { show "Booked 246+ times globally" }`
 
-#### [NEW] [app/api/invoices/[id]/route.ts](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/invoices/%5Bid%5D/route.ts)
-- Generate PDF/HTML invoices on the fly for customer bookings.
+### 4. Loyalty & Memberships
+Tiered rewards to lock in high-net-worth clients.
 
----
+#### [MODIFY] Supabase Profiles (or User Metadata)
+- Introduce `loyalty_points` and `loyalty_tier` (Silver, Gold, Platinum, Black).
+#### [MODIFY] `app/dashboard/page.tsx`
+- Create a beautiful **Membership Card UI** showing current tier, point balance, and points required for the next tier.
+#### [MODIFY] `lib/actions/bookings.ts`
+- Update the booking action to award points post-payment (e.g., 100 points per ₹10,000 spent).
 
-### 3. Unified Notification Engine (Email, SMS, WA)
-Currently, notifications might just be basic WaCRM pings. We need a robust multi-channel ticket system.
+### 5. Add-on Bundles (AOV Booster)
+Package existing single add-ons into high-value bundles.
 
-#### [NEW] [lib/services/notifications.ts](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/services/notifications.ts)
-- Abstracted service to dispatch:
-  - **Email:** Beautiful HTML booking confirmation (using Resend or NodeMailer).
-  - **SMS:** Immediate text confirmation.
-  - **WhatsApp:** Integration with WaCRM to send a branded digital ticket (QR Code + itinerary).
+#### [MODIFY] `app/cars/[slug]/booking-widget.tsx`
+- Redesign the Add-ons section to feature bundles instead of individual toggles:
+  - **Wedding Package:** Decoration + Photographer + 50km Extra (₹15,000)
+  - **Family Trip:** 2x Child Seats + Extra Driver (₹3,000)
+  - **VIP Arrival:** Premium Decoration + Champagne + Meet & Greet (₹10,000)
 
-#### [MODIFY] [lib/actions/bookings.ts](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/actions/bookings.ts)
-- Update the checkout/booking action to asynchronously trigger `NotificationService.sendBookingConfirmation(bookingId)`.
+### 6. Quick Re-book from WhatsApp
+Leverage the notification engine for direct sales.
 
----
-
-### 4. Detail Page Add-ons Configurator
-The existing booking widget is functional but lacks upsell opportunities.
-
-#### [MODIFY] [app/cars/[slug]/booking-widget.tsx](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/cars/%5Bslug%5D/booking-widget.tsx)
-- Integrate an **"Add-ons"** expandable section before checkout.
-- Options:
-  - 🍼 Premium Child Seat (+₹2,500)
-  - 👔 Extra Driver (+₹1,500/day)
-  - 📸 Professional Photographer (+₹10,000)
-  - 🎀 Basic Vehicle Decoration (+₹5,000)
-- Dynamically update the `estimate.total` and pass these add-ons to the `/checkout` route via URL params or state.
+#### [MODIFY] `lib/services/notifications.ts`
+- Enhance the WhatsApp ticket payload. After a booking is completed, append a dynamic deep link that pre-fills the checkout:
+  - `https://driveit.in/checkout?rebook=true&carId={car_id}&service={service_type}`
+  - Example text: *"Hi [Name] — your usual [Car Name] is available. Tap here to re-book it instantly for your next trip."*
 
 ---
 
 ## Verification Plan
-
-### Automated/Manual Verification
-- **Wedding Configurator:** Verify that selecting multiple cars correctly aggregates the total price and stores the configuration in local state or redirects correctly to checkout.
-- **Dashboard:** Log in as a user, verify the timeline renders correctly for different booking statuses, and test the invoice download.
-- **Add-ons:** Check that toggling an add-on recalculates the daily/total price correctly in real-time on the car detail page.
+- **Wishlist:** Click the heart on a car, verify it persists across refreshes and appears in `/dashboard/wishlist`.
+- **Social Proof:** Book a specific car twice. Navigate to that car's page and verify it says "You've booked this car 2 times".
+- **Bundles:** Select a bundle in the widget, verify the total updates correctly and checkout handles the bundled payload.
+- **Loyalty:** Complete a booking, check the dashboard to see the new points balance.

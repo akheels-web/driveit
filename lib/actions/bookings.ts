@@ -93,6 +93,25 @@ ${data.notes ? `• Notes: ${data.notes}` : ''}
   // Dispatch Unified Notifications (Email, SMS, WhatsApp Ticket)
   NotificationService.sendBookingConfirmation(bookingRef, data)
 
+  // Award Loyalty Points & Tiers
+  if (user?.id) {
+    const pointsToAward = Math.floor(data.totalAmount / 10000) * 100
+    if (pointsToAward > 0) {
+      const { data: profile } = await supabase.from('profiles').select('loyalty_points, loyalty_tier').eq('id', user.id).single()
+      if (profile) {
+        const newPoints = (profile.loyalty_points || 0) + pointsToAward
+        let newTier = profile.loyalty_tier || 'Silver'
+        if (newPoints >= 5000) newTier = 'Platinum'
+        else if (newPoints >= 1000) newTier = 'Gold'
+
+        await supabase.from('profiles').update({
+          loyalty_points: newPoints,
+          loyalty_tier: newTier
+        }).eq('id', user.id)
+      }
+    }
+  }
+
   return { success: true, bookingRef, bookingId: booking.id }
 }
 

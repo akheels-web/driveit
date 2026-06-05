@@ -1,13 +1,21 @@
-# Premium Features Implementation
+# Phase 2 Growth Opportunities Implementation
 
-- `[x]` 1. **Wedding Package Configurator**
-  - `[x]` Create `components/wedding-configurator.tsx`
-  - `[x]` Update `app/services/wedding-cars/page.tsx`
-- `[x]` 2. **Dashboard Invoices & Upgrades**
-  - `[x]` Update `app/dashboard/bookings/page.tsx` to include Re-book and View Invoice buttons
-  - `[x]` Create Invoice page/modal on the website
-- `[x]` 3. **Unified Notification Engine**
-  - `[x]` Create `lib/services/notifications.ts` (Email, SMS, WhatsApp stubs)
-  - `[x]` Update `lib/actions/bookings.ts` to integrate notification service
-- `[x]` 4. **Add-ons Configurator**
-  - `[x]` Update `app/cars/[slug]/booking-widget.tsx` with Add-ons (Child Seat, Extra Driver, etc.)
+- `[x]` 1. **Database Migrations**
+  - `[x]` Provide raw SQL for Supabase (Wishlists, Profiles/Addresses, Loyalty).
+- `[x]` 2. **"Save this car" / Wishlist**
+  - `[x]` Create `app/api/wishlist/route.ts`
+  - `[x]` Update `app/cars/[slug]/page.tsx` with Heart icon
+  - `[x]` Update `components/car-card.tsx` (if it exists) with Heart icon
+  - `[x]` Create `app/dashboard/wishlist/page.tsx`
+- `[x]` 3. **Booking history & Saved Addresses**
+  - `[x]` Update `app/dashboard/profile/page.tsx` for managing addresses
+  - `[x]` Update `app/checkout/page.tsx` with Address Dropdown
+- `[x]` 4. **Personalized Social Proof**
+  - `[x]` Fetch user's booking count in `app/cars/[slug]/page.tsx` and dynamically render
+- `[x]` 5. **Loyalty & Memberships**
+  - `[x]` Add Membership Card to `app/dashboard/page.tsx`
+  - `[x]` Update `lib/actions/bookings.ts` to award loyalty points
+- `[x]` 6. **Add-on Bundles**
+  - `[x]` Update `app/cars/[slug]/booking-widget.tsx` to include both a-la-carte and standard Bundles
+- `[x]` 7. **Quick Re-book from WhatsApp**
+  - `[x]` Update `lib/services/notifications.ts` payload with checkout quick link

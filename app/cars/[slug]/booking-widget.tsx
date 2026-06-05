@@ -11,6 +11,7 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
   const [returnDate, setReturnDate] = useState('')
   const [service, setService] = useState('chauffeur') // chauffeur or selfdrive
   const [addons, setAddons] = useState<string[]>([])
+  const [activeBundle, setActiveBundle] = useState<string | null>(null)
 
   const ADDON_PRICES = {
     child_seat: 1500,
@@ -18,6 +19,12 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
     photographer: 5000,
     decoration: 2500,
   }
+
+  const BUNDLES = [
+    { id: 'wedding_bundle', label: 'Wedding Package', price: 15000, desc: 'Decoration + Photographer + 50km Extra', icon: '💍' },
+    { id: 'family_trip', label: 'Family Trip', price: 3000, desc: 'Child Seat + Extra Driver', icon: '👨‍👩‍👧‍👦' },
+    { id: 'vip_arrival', label: 'VIP Arrival', price: 10000, desc: 'Premium Decor + Champagne + Meet & Greet', icon: '🍾' },
+  ]
 
   const estimate = useMemo(() => {
     let days = 1
@@ -34,9 +41,12 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
       return sum + (ADDON_PRICES[addonId as keyof typeof ADDON_PRICES] || 0)
     }, 0)
 
+    const bundleTotal = activeBundle ? (BUNDLES.find(b => b.id === activeBundle)?.price || 0) : 0
+    const totalAddonsAndBundles = addonsTotal + bundleTotal
+
     const gst = 0
-    return { days, base, addonsTotal, gst, total: base + addonsTotal + gst }
-  }, [car.price, pickupDate, returnDate, addons])
+    return { days, base, addonsTotal: totalAddonsAndBundles, gst, total: base + totalAddonsAndBundles + gst }
+  }, [car.price, pickupDate, returnDate, addons, activeBundle])
 
   const handleCheckout = () => {
     if (!pickupDate) return
@@ -46,7 +56,7 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
       returnDate: returnDate || pickupDate,
       service,
       days: estimate.days.toString(),
-      addons: addons.join(','),
+      addons: [...addons, activeBundle].filter(Boolean).join(','),
       total: estimate.total.toString()
     })
     router.push(`/checkout?${q.toString()}`)
@@ -109,9 +119,46 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
             </div>
          </div>
 
-         {/* Add-ons Configurator */}
+         {/* Curated Bundles */}
          <div className="pt-2">
-            <label className="block text-xs text-white/40 uppercase tracking-wider mb-3">Premium Add-ons</label>
+            <label className="block text-xs text-white/40 uppercase tracking-wider mb-3">Curated Packages</label>
+            <div className="space-y-2 mb-4">
+              {BUNDLES.map((bundle) => (
+                <label 
+                  key={bundle.id} 
+                  className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                    activeBundle === bundle.id ? 'bg-[var(--gold-400)]/10 border-[var(--gold-400)]' : 'bg-white/5 border-white/5 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex gap-3 items-center">
+                    <span className="text-2xl">{bundle.icon}</span>
+                    <div>
+                      <p className="text-sm font-semibold text-white/90">{bundle.label}</p>
+                      <p className="text-[10px] text-white/50">{bundle.desc}</p>
+                    </div>
+                  </div>
+                  <div className="text-right flex flex-col items-end">
+                     <p className="text-xs text-[var(--gold-400)] font-medium mb-1">+₹{bundle.price.toLocaleString()}</p>
+                     <input 
+                        type="radio" 
+                        name="bundle"
+                        className="accent-[var(--gold-400)] w-4 h-4 cursor-pointer"
+                        checked={activeBundle === bundle.id}
+                        onChange={(e) => setActiveBundle(e.target.checked ? bundle.id : null)}
+                        onClick={(e) => {
+                           // Allow unchecking a radio button
+                           if (activeBundle === bundle.id) {
+                              e.preventDefault()
+                              setActiveBundle(null)
+                           }
+                        }}
+                     />
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <label className="block text-xs text-white/40 uppercase tracking-wider mb-3">A-la-carte Add-ons</label>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { id: 'child_seat', label: 'Child Seat', price: ADDON_PRICES.child_seat, icon: '🍼' },
