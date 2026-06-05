@@ -1,30 +1,74 @@
 "use client"
 
 import type React from "react"
+import { useRef } from "react"
+import { motion, useInView } from "motion/react"
 
-import { useEffect, useRef } from "react"
+type Direction = "up" | "down" | "left" | "right" | "scale"
 
-export function RevealOnScroll({ children, className }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement | null>(null)
+interface RevealOnScrollProps {
+  children: React.ReactNode
+  className?: string
+  direction?: Direction
+  delay?: number
+  duration?: number
+  once?: boolean
+}
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) e.target.classList.add("revealed")
-        }
-      },
-      { rootMargin: "0px 0px -10% 0px", threshold: 0.15 },
-    )
-    el.querySelectorAll<HTMLElement>(".reveal").forEach((n) => io.observe(n))
-    return () => io.disconnect()
-  }, [])
+const directionVariants: Record<Direction, { hidden: object; visible: object }> = {
+  up: {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0 },
+  },
+  down: {
+    hidden: { opacity: 0, y: -40 },
+    visible: { opacity: 1, y: 0 },
+  },
+  left: {
+    hidden: { opacity: 0, x: -40 },
+    visible: { opacity: 1, x: 0 },
+  },
+  right: {
+    hidden: { opacity: 0, x: 40 },
+    visible: { opacity: 1, x: 0 },
+  },
+  scale: {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1 },
+  },
+}
+
+export function RevealOnScroll({
+  children,
+  className,
+  direction = "up",
+  delay = 0,
+  duration = 0.7,
+  once = true,
+}: RevealOnScrollProps) {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once, margin: "0px 0px -80px 0px" })
+  const variant = directionVariants[direction]
 
   return (
-    <div ref={ref} className={className}>
+    <motion.div
+      ref={ref}
+      className={className}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      variants={{
+        hidden: variant.hidden,
+        visible: {
+          ...variant.visible,
+          transition: {
+            duration,
+            delay,
+            ease: [0.25, 0.1, 0.25, 1],
+          },
+        },
+      }}
+    >
       {children}
-    </div>
+    </motion.div>
   )
 }

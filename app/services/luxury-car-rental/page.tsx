@@ -4,10 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, MessageCircle, ArrowRight, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, ArrowRight, Sparkles, ChevronLeft, ChevronRight, Users, Settings2 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
+
+import { LuxuryCarClient } from "@/components/luxury-car-client";
 
 const GOLD = '#b48811';
-
 type CarItem = {
   title: string;
   img: string;
@@ -77,9 +79,9 @@ export default function LuxuryCarRentalPage() {
                 <a
                   href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20a%20luxury%20car%20in%20Hyderabad."
                   target="_blank"
-                  className="inline-flex items-center gap-2 px-6 md:px-8 py-3 rounded-full border border-neutral-700 hover:border-gold text-zinc-200 hover:text-gold transition text-sm md:text-base"
+                  className="inline-flex items-center gap-2 px-6 md:px-8 py-3 rounded-full border border-neutral-700 hover:border-[#25D366]/50 hover:bg-[#25D366]/10 hover:text-[#25D366] text-zinc-200 transition text-sm md:text-base font-medium"
                 >
-                  <MessageCircle className="w-4 h-4" style={{ color: GOLD }} />
+                  <FaWhatsapp className="w-5 h-5 text-[#25D366]" />
                   WhatsApp Us
                 </a>
               </div>
@@ -126,415 +128,111 @@ export default function LuxuryCarRentalPage() {
           </div>
         </section>
 
-        {/* TRENDING LUXURY CARS — scroll-snap carousel */}
-        <section className="mx-auto max-w-7xl px-4 py-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-semibold text-white">Trending Luxury Cars in Your City</h2>
-            <p className="mt-2 text-sm text-zinc-400">Explore top selections for style, performance, and presence.</p>
-          </div>
-          <div className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { title: "Mercedes G 350 Wagon", img: "/trending/1.jpg" },
-              { title: "Mercedes GLS 400D", img: "/trending/2.jpg" },
-              { title: "Mercedes V-Class", img: "/trending/3.jpg" },
-              { title: "Range Rover Vogue", img: "/trending/4.jpg" },
-              { title: "Volvo S90", img: "/trending/5.jpg" },
-              { title: "Volvo XC 90", img: "/trending/6.jpg" },
-              { title: "BMW 730 LD", img: "/trending/7.jpg" },
-              { title: "BMW i4", img: "/trending/8.jpg" },
-              { title: "Mercedes C300 Convertible", img: "/trending/9.jpg" },
-              { title: "Mercedes E 220D", img: "/trending/10.jpg" },
-              { 
-                title: "Quick Booking", 
-                img: "", 
-                isAd: true, 
-                type: "whatsapp" as const,
-                description: "Book instantly via WhatsApp"
-              },
-              { 
-                title: "Get Quote", 
-                img: "", 
-                isAd: true, 
-                type: "contact" as const,
-                description: "Personalized service"
-              }
-            ].map((c, index) => {
-              if (c.isAd && c.type === "whatsapp") {
-                return (
-                  <div key="whatsapp-ad" className="bg-gradient-to-br from-green-500/20 to-green-600/10 backdrop-blur-sm border border-green-500/30 rounded-2xl p-4 md:p-6 hover:border-green-400/50 transition-all duration-300 group">
-                    <div className="flex flex-col items-center justify-center h-48 mb-4 rounded-xl bg-green-500/10">
-                      <MessageCircle className="w-16 h-16 text-green-400 mb-4" />
-                      <h3 className="text-xl font-semibold text-white mb-2">{c.title}</h3>
-                      <p className="text-sm text-zinc-300 text-center">{c.description}</p>
-                    </div>
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-white text-center">Chat with Us Now</h4>
-                      <a
-                        href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20a%20luxury%20car%20in%20Hyderabad."
-                        target="_blank"
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white font-medium text-sm transition"
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        WhatsApp Now
-                      </a>
-                    </div>
-                  </div>
-                );
-              }
-              
-              if (c.isAd && c.type === "contact") {
-                return (
-                  <Link key="contact-ad" href="/contact" className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 backdrop-blur-sm border border-blue-500/30 rounded-2xl p-4 md:p-6 hover:border-blue-400/50 transition-all duration-300 group block">
-                    <div className="flex flex-col items-center justify-center h-48 mb-4 rounded-xl bg-blue-500/10">
-                      <Phone className="w-16 h-16 text-blue-400 mb-4" />
-                      <h3 className="text-xl font-semibold text-white mb-2">{c.title}</h3>
-                      <p className="text-sm text-zinc-300 text-center">{c.description}</p>
-                    </div>
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-white text-center">Contact Our Team</h4>
-                      <div className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-medium text-sm transition">
-                        <ArrowRight className="w-4 h-4" />
-                        Get Personalized Quote
-                      </div>
-                    </div>
-                  </Link>
-                );
-              }
-              
-              return (
-                <div key={c.title} className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-4 md:p-6 hover:border-gold/50 transition-all duration-300">
-                  <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
-                    <Image
-                      src={c.img}
-                      alt={`${c.title} luxury rental car Hyderabad`}
-                      fill
-                      loading="lazy"
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
-                      <span className="text-xs font-medium text-white">Trending</span>
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-semibold text-white mb-4">{c.title}</h3>
-                  <div className="flex gap-2">
-                    <a
-                      href={`https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20${c.title}%20in%20Hyderabad.`}
-                      target="_blank"
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-black font-medium text-sm hover:scale-105 transition"
-                      style={{ backgroundColor: GOLD }}
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      WhatsApp
-                    </a>
-                    <Link
-                      href="/contact"
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-zinc-200 hover:border-gold hover:text-gold transition text-sm"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                      Contact
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-            </div>
-          </div>
-        </section>
+        {/* VEHICLE SHOWCASE - REPLACED WITH CLIENT COMPONENT */}
+        <LuxuryCarClient />
 
-        {/* LUXURY SEDANS — scroll-snap carousel */}
-        <section className="mx-auto max-w-7xl px-4 py-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-xl md:text-2xl font-semibold text-white">Hire Luxury Sedans with a Driver</h3>
-            <p className="mt-2 text-sm text-zinc-400">Refined comfort with signature elegance.</p>
-          </div>
-          <div className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { title: "BMW 520D", img: "/sadan/1.jpg" },
-              { title: "Lamborghini Gallardo", img: "/sadan/2.jpg" },
-              { title: "Lexus ES 300H", img: "/sadan/3.jpg" },
-              { title: "Mercedes S 350", img: "/sadan/4.jpg" },
-              { title: "Mercedes S 450", img: "/sadan/5.jpg" },
-              { title: "Toyota Camry", img: "/sadan/6.jpg" },
-              { title: "Volvo S60 D5", img: "/sadan/7.jpg" },
-              { title: "Audi A6", img: "/sadan/8.jpg" },
-              { title: "Audi RS5 QUATRO", img: "/sadan/9.jpg" },
-            ].map((s) => (
-              <div key={s.title} className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-4 md:p-6 hover:border-gold/50 transition-all duration-300">
-                <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
-                  <Image
-                    src={s.img}
-                    alt={`${s.title} premium sedan rental Hyderabad`}
-                    fill
-                    loading="lazy"
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
-                    <span className="text-xs font-medium text-white">Luxury Sedan</span>
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-4">{s.title}</h3>
-                <div className="flex gap-2">
-                  <a
-                    href={`https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20${s.title}%20sedan%20in%20Hyderabad.`}
-                    target="_blank"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-black font-medium text-sm hover:scale-105 transition"
-                    style={{ backgroundColor: GOLD }}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
-                  </a>
-                  <Link
-                    href="/contact"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-zinc-200 hover:border-gold hover:text-gold transition text-sm"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                    Contact
-                  </Link>
-                </div>
-              </div>
-            ))}
-            </div>
-          </div>
-        </section>
-
-        {/* LUXURY SUVS — scroll-snap carousel */}
-        <section className="mx-auto max-w-7xl px-4 py-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-xl md:text-2xl font-semibold text-white">Hire Luxury SUVs with a Driver</h3>
-            <p className="mt-2 text-sm text-zinc-400">Dominant stance with absolute comfort and safety.</p>
-          </div>
-          <div className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { title: "KIA Carnival", img: "/suv/1.jpg" },
-              { title: "Mercedes GLS 350D", img: "/suv/2.jpg" },
-              { title: "Mini Cooper Countryman", img: "/suv/3.jpg" },
-              { title: "Toyota Commuter (Custom)", img: "/suv/4.jpg" },
-              { title: "Toyota Crysta MT", img: "/suv/5.jpg" },
-              { title: "Toyota Fortuner", img: "/suv/6.jpg" },
-              { title: "Toyota Vellfire", img: "/suv/7.jpg" },
-              { title: "Volvo XC60", img: "/suv/8.jpg" },
-              { title: "Audi Q7 Quatro", img: "/suv/9.jpg" },
-            ].map((suv) => (
-              <div key={suv.title} className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-4 md:p-6 hover:border-gold/50 transition-all duration-300">
-                <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
-                  <Image
-                    src={suv.img}
-                    alt={`${suv.title} luxury SUV hire Hyderabad`}
-                    fill
-                    loading="lazy"
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
-                    <span className="text-xs font-medium text-white">Luxury SUV</span>
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-4">{suv.title}</h3>
-                <div className="flex gap-2">
-                  <a
-                    href={`https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20${suv.title}%20SUV%20in%20Hyderabad.`}
-                    target="_blank"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-black font-medium text-sm hover:scale-105 transition"
-                    style={{ backgroundColor: GOLD }}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
-                  </a>
-                  <Link
-                    href="/contact"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-zinc-200 hover:border-gold hover:text-gold transition text-sm"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                    Contact
-                  </Link>
-                </div>
-              </div>
-            ))}
-            </div>
-          </div>
-        </section>
-
-        {/* HIRE LUXURY CARS FOR SELF DRIVE */}
-        <section className="mx-auto max-w-7xl px-4 py-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-xl md:text-2xl font-semibold text-white">Hire Luxury Cars for Self Drive</h3>
-            <p className="mt-2 text-sm text-zinc-400">An extraordinary driving experience with unmatched privacy and comfort—fully in your hands.</p>
-          </div>
-          <div className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              
-              
-              { title: "BMW 520D", img: "/sadan/1.jpg" },
-              { title: "Lamborghini Gallardo", img: "/sadan/2.jpg" },
-              { title: "Lexus ES 300H", img: "/sadan/3.jpg" },
-              { title: "Mercedes S 350", img: "/sadan/4.jpg" },
-              { title: "KIA Carnival", img: "/suv/1.jpg" },
-              { title: "Mercedes GLS 350D", img: "/suv/2.jpg" },
-              { title: "Mini Cooper Countryman", img: "/suv/3.jpg" },
-              { title: "Toyota Commuter (Custom)", img: "/suv/4.jpg" },
-              { title: "Toyota Crysta MT", img: "/suv/5.jpg" },
-              { title: "Toyota Fortuner", img: "/suv/6.jpg" },
-              { title: "Toyota Vellfire", img: "/suv/7.jpg" },
-              { title: "Volvo XC60", img: "/suv/8.jpg" },
-              { title: "Audi Q7 Quatro", img: "/suv/9.jpg" },
-              { title: "Mercedes S 450", img: "/sadan/5.jpg" },
-              { title: "Mercedes G 350 Wagon", img: "/trending/1.jpg" },
-              { title: "Mercedes GLS 400D", img: "/trending/2.jpg" },
-              { title: "Mercedes V-Class", img: "/trending/3.jpg" },
-              { title: "Range Rover Vogue", img: "/trending/4.jpg" },
-              { title: "Volvo S90", img: "/trending/5.jpg" },
-              { title: "Volvo XC 90", img: "/trending/6.jpg" },
-              { title: "BMW 730 LD", img: "/trending/7.jpg" },
-              { title: "BMW i4", img: "/trending/8.jpg" },
-              { title: "Mercedes C300 Convertible", img: "/trending/9.jpg" },
-              { title: "Mercedes E 220D", img: "/trending/10.jpg" },
-              { title: "Toyota Camry", img: "/sadan/6.jpg" },
-              { title: "Volvo S60 D5", img: "/sadan/7.jpg" },
-              { title: "Audi A6", img: "/sadan/8.jpg" },
-              { title: "Audi RS5 QUATRO", img: "/sadan/9.jpg" },
-
-              
-            ].map((car) => (
-              <div key={car.title} className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-4 md:p-6 hover:border-gold/50 transition-all duration-300">
-                <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
-                  <Image
-                    src={car.img}
-                    alt={`${car.title} self drive luxury car Hyderabad`}
-                    fill
-                    loading="lazy"
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
-                    <span className="text-xs font-medium text-white">Self Drive</span>
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-4">{car.title}</h3>
-                <div className="flex gap-2">
-                  <a
-                    href={`https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20${car.title}%20for%20self%20drive%20in%20Hyderabad.`}
-                    target="_blank"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-black font-medium text-sm hover:scale-105 transition"
-                    style={{ backgroundColor: GOLD }}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
-                  </a>
-                  <Link
-                    href="/contact"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-zinc-200 hover:border-gold hover:text-gold transition text-sm"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                    Contact
-                  </Link>
-                </div>
-              </div>
-            ))}
-            </div>
-          </div>
-        </section>
-
-        {/* WHY CHOOSE US */}
-        <section className="mx-auto max-w-7xl px-4 py-12">
+        {/* CHAUFFEUR VS SELF-DRIVE COMPARISON */}
+        <section className="mx-auto max-w-7xl px-4 py-16">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl md:text-3xl font-semibold text-white">Why Choose Us</h2>
-            <p className="mt-2 text-sm text-zinc-400">Experience the difference with our premium luxury car rental service.</p>
+            <h2 className="text-3xl md:text-4xl font-[family-name:var(--font-playfair)] font-bold text-white mb-4">Choose Your Experience</h2>
+            <p className="text-zinc-400">Tailor your journey with our signature chauffeur service or experience the thrill of self-drive.</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-gold/50 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center">
-                  <ShieldCheck className="w-6 h-6" style={{ color: GOLD }} />
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+             <div className="bg-gradient-to-br from-white/[0.05] to-transparent border border-[var(--gold-400)]/30 rounded-3xl p-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+                   <Crown className="w-32 h-32" />
                 </div>
-                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: GOLD }}>
-                  <span className="text-xs font-bold text-black flex items-center justify-center h-full">✓</span>
+                <h3 className="text-2xl font-bold text-[var(--gold-400)] mb-6 flex items-center gap-3">
+                   <Users className="w-6 h-6" /> Chauffeur Driven
+                </h3>
+                <ul className="space-y-5 relative z-10">
+                   <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> White-glove service from professionally trained, bilingual chauffeurs.</li>
+                   <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> Zero liability for vehicle damage or insurance deductibles.</li>
+                   <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> Complimentary bottled water, Wi-Fi, and reading materials.</li>
+                   <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> Door-to-door VIP airport transfers with meet-and-greet.</li>
+                </ul>
+                <div className="mt-8 pt-6 border-t border-white/10">
+                   <Link href="/cars?service=chauffeur" className="inline-flex items-center gap-2 text-[var(--gold-400)] font-semibold hover:gap-4 transition-all">
+                      Browse Chauffeur Fleet <ArrowRight className="w-4 h-4" />
+                   </Link>
                 </div>
-              </div>
-              <h3 className="font-semibold text-white mb-2">Professional Chauffeurs</h3>
-              <p className="text-sm text-zinc-400">
-                Trained, multilingual drivers for a seamless travel experience.
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-gold/50 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center">
-                  <Car className="w-6 h-6" style={{ color: GOLD }} />
+             </div>
+
+             <div className="bg-gradient-to-br from-white/[0.02] to-transparent border border-white/10 rounded-3xl p-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
+                   <Car className="w-32 h-32" />
                 </div>
-                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: GOLD }}>
-                  <span className="text-xs font-bold text-black flex items-center justify-center h-full">✓</span>
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                   <Settings2 className="w-6 h-6" /> Self Drive
+                </h3>
+                <ul className="space-y-5 relative z-10">
+                   <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Complete privacy and freedom to craft your own itinerary.</li>
+                   <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Comprehensive insurance coverage included (deductibles apply).</li>
+                   <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Flexible pickup and drop-off locations across the city.</li>
+                   <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Transparent fuel policies and generous daily kilometer limits.</li>
+                </ul>
+                <div className="mt-8 pt-6 border-t border-white/10">
+                   <Link href="/cars?service=selfdrive" className="inline-flex items-center gap-2 text-white hover:gap-4 transition-all">
+                      Browse Self-Drive Fleet <ArrowRight className="w-4 h-4" />
+                   </Link>
                 </div>
-              </div>
-              <h3 className="font-semibold text-white mb-2">Premium Fleet</h3>
-              <p className="text-sm text-zinc-400">
-                A wide range of sedans, SUVs, and elite cars, always maintained to the highest standards.
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-gold/50 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center">
-                  <Stars className="w-6 h-6" style={{ color: GOLD }} />
-                </div>
-                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: GOLD }}>
-                  <span className="text-xs font-bold text-black flex items-center justify-center h-full">✓</span>
-                </div>
-              </div>
-              <h3 className="font-semibold text-white mb-2">24/7 Availability</h3>
-              <p className="text-sm text-zinc-400">
-                Book anytime through Call or WhatsApp.
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-gold/50 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center">
-                  <Crown className="w-6 h-6" style={{ color: GOLD }} />
-                </div>
-                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: GOLD }}>
-                  <span className="text-xs font-bold text-black flex items-center justify-center h-full">✓</span>
-                </div>
-              </div>
-              <h3 className="font-semibold text-white mb-2">Trusted by the Elite</h3>
-              <p className="text-sm text-zinc-400">
-                Preferred by corporates, business leaders, and premium travelers.
-              </p>
-            </div>
+             </div>
           </div>
         </section>
 
-
-        {/* CALL TO ACTION */}
-        <section className="mx-auto max-w-7xl px-4 py-12">
-          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 text-center">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center">
-                <Car className="w-6 h-6" style={{ color: GOLD }} />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-semibold text-white">Experience Luxury on Every Ride</h2>
-            </div>
-            <p className="text-sm text-zinc-400 mb-6">
-              Book your next ride with us today for an extraordinary driving experience.
-            </p>
-            <div className="flex gap-2 justify-center">
-              <a
-                href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20a%20luxury%20car%20in%20Hyderabad."
-                target="_blank"
-                className="flex-1 max-w-xs inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-black font-medium text-sm hover:scale-105 transition"
-                style={{ backgroundColor: GOLD }}
-              >
-                <MessageCircle className="w-4 h-4" />
-                WhatsApp
-              </a>
-              <Link
-                href="/contact"
-                className="flex-1 max-w-xs inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-zinc-200 hover:border-gold hover:text-gold transition text-sm"
-              >
-                <ArrowRight className="w-4 h-4" />
-                Contact
-              </Link>
-            </div>
+        {/* TRUST & SANITIZATION */}
+        <section className="mx-auto max-w-7xl px-4 py-16 border-t border-white/5">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+             <div>
+                <h2 className="text-3xl font-[family-name:var(--font-playfair)] font-bold text-white mb-6">Our Commitment to Excellence</h2>
+                <p className="text-zinc-400 mb-8 leading-relaxed">
+                   Your safety and comfort are our highest priorities. Every vehicle in our fleet undergoes rigorous maintenance and a comprehensive 30-point detailing and sanitization process before each dispatch.
+                </p>
+                <div className="space-y-6">
+                   <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
+                         <ShieldCheck className="w-6 h-6 text-[var(--gold-400)]" />
+                      </div>
+                      <div>
+                         <h4 className="text-lg font-semibold text-white">Vetted Professionals</h4>
+                         <p className="text-sm text-zinc-500 mt-1">Strict background checks and defensive driving certifications for all staff.</p>
+                      </div>
+                   </div>
+                   <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
+                         <Sparkles className="w-6 h-6 text-[var(--gold-400)]" />
+                      </div>
+                      <div>
+                         <h4 className="text-lg font-semibold text-white">Hospital-Grade Sanitization</h4>
+                         <p className="text-sm text-zinc-500 mt-1">Interior ozone treatment and surface disinfection after every booking.</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+             <div className="relative h-[400px] rounded-3xl overflow-hidden border border-white/10 hidden lg:block">
+                <Image src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?q=80&w=1600&auto=format&fit=crop" alt="Sanitization and Trust" fill className="object-cover opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
+                   <div className="bg-black/60 backdrop-blur-md border border-[var(--gold-400)]/30 rounded-xl p-6">
+                      <div className="text-3xl font-bold text-[var(--gold-400)] mb-1">100%</div>
+                      <div className="text-sm text-white font-medium">Satisfaction Rate</div>
+                   </div>
+                </div>
+             </div>
           </div>
         </section>
+
+        {/* STICKY BOTTOM CTA (Mobile/Tablet focused) */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-xl border-t border-[var(--gold-400)]/30 p-4 md:hidden flex items-center justify-between gap-4">
+           <div>
+              <div className="text-xs text-[var(--gold-400)] font-semibold uppercase tracking-wider">Ready to Drive?</div>
+              <div className="text-sm font-bold text-white">Book Your Luxury Car</div>
+           </div>
+           <Link href="/cars" className="px-6 py-3 bg-[var(--gold-400)] text-black rounded-full text-sm font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)] whitespace-nowrap">
+              View Fleet
+           </Link>
+        </div>
+
       </main>
       <SiteFooter />
     </>

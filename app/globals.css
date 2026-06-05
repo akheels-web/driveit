@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ═══════════════════════════════════════════════════════════════
+   DRIVEIT LUXURY — DESIGN SYSTEM
+   Premium dark-gold aesthetic with cinematic animations
+   ═══════════════════════════════════════════════════════════════ */
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -37,11 +42,28 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* ─── Gold Palette ─── */
+  --gold-50: #fdf8e8;
+  --gold-100: #f9ecc5;
+  --gold-200: #f0d060;
+  --gold-300: #e6c040;
+  --gold-400: #d4af37;
+  --gold-500: #c49b2a;
+  --gold-600: #a07d1e;
+  --gold-700: #8b6914;
+  --gold-800: #6b5010;
+  --gold-900: #4a370b;
   --brand-gold: #d4af37;
-  --luxury-bg: #0a0a0a; /* black background */
-  --luxury-surface: #111111; /* near-black card surface */
-  --luxury-text: #f5f5f5; /* off-white text */
-  --luxury-muted: #9ca3af; /* muted gray */
+
+  /* ─── Luxury Surfaces ─── */
+  --luxury-bg: #050505;
+  --luxury-surface: #0d0d0d;
+  --luxury-surface-2: #151515;
+  --luxury-surface-3: #1a1a1a;
+  --luxury-text: #f5f5f5;
+  --luxury-muted: #9ca3af;
+  --luxury-border: rgba(212, 175, 55, 0.15);
 }
 
 .dark {
@@ -82,6 +104,7 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-playfair);
   --color-background: var(--luxury-bg);
   --color-foreground: var(--luxury-text);
   --color-card: var(--luxury-surface);
@@ -119,7 +142,14 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-brand: var(--brand-gold);
+  --color-gold-400: var(--gold-400);
+  --color-gold-200: var(--gold-200);
+  --color-gold-600: var(--gold-600);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════ */
 
 @layer base {
   * {
@@ -128,19 +158,105 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--luxury-bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--gold-700);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--gold-500);
+  }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Gold utilities */
 .text-gold {
   color: var(--brand-gold);
 }
 .border-gold {
   border-color: var(--brand-gold);
 }
+.bg-gold {
+  background-color: var(--brand-gold);
+}
 .bg-surface {
   background-color: var(--luxury-surface);
 }
+.bg-surface-2 {
+  background-color: var(--luxury-surface-2);
+}
 
-/* reveal on scroll */
+/* Gold gradient text */
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--gold-200), var(--gold-400), var(--gold-200));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gold shimmer text */
+.text-shimmer-gold {
+  background: linear-gradient(
+    90deg,
+    var(--gold-600) 0%,
+    var(--gold-200) 25%,
+    var(--gold-400) 50%,
+    var(--gold-200) 75%,
+    var(--gold-600) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-gold {
+  background: rgba(212, 175, 55, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--luxury-border);
+}
+
+/* Gold border glow */
+.border-glow-gold {
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.05), inset 0 0 15px rgba(212, 175, 55, 0.02);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+.border-glow-gold:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.1), inset 0 0 30px rgba(212, 175, 55, 0.03);
+}
+
+/* Gold divider line */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-400), transparent);
+  opacity: 0.3;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REVEAL ON SCROLL (CSS fallback)
+   ═══════════════════════════════════════════════════════════════ */
+
 .reveal {
   opacity: 0;
   transform: translateY(12px);
@@ -151,18 +267,107 @@
   transform: translateY(0);
 }
 
-/* focus outline for a11y */
+/* ═══════════════════════════════════════════════════════════════
+   FOCUS STYLES (a11y)
+   ═══════════════════════════════════════════════════════════════ */
+
 :focus-visible {
   outline: 2px solid var(--brand-gold);
   outline-offset: 2px;
 }
 
-/* Horizontal slide animation */
+/* ═══════════════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Gold shimmer sweep */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Subtle float */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Film grain */
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -25%); }
+  40% { transform: translate(-5%, 25%); }
+  50% { transform: translate(-15%, 10%); }
+  60% { transform: translate(15%, 0%); }
+  70% { transform: translate(0%, 15%); }
+  80% { transform: translate(3%, 35%); }
+  90% { transform: translate(-10%, 10%); }
+}
+
+/* Horizontal slide/marquee */
 @keyframes slide {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Marquee track — the scrolling wrapper */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 120s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* Each content block inside the track */
+.marquee-content {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(8px); opacity: 0.5; }
+}
+
+/* Pulse glow */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(212, 175, 55, 0.15); }
+}
+
+/* Rotate in */
+@keyframes rotateIn {
+  0% { transform: rotate(-10deg) scale(0.9); opacity: 0; }
+  100% { transform: rotate(0) scale(1); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FILM GRAIN OVERLAY
+   ═══════════════════════════════════════════════════════════════ */
+
+.grain-overlay::after {
+  content: "";
+  position: absolute;
+  inset: -200%;
+  width: 400%;
+  height: 400%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  animation: grain 8s steps(10) infinite;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
 }

@@ -1,196 +1,144 @@
-"use client";
-import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { MessageSquare, Phone, Car, Plane, Anchor } from "lucide-react";
+'use client'
 
-export default function ContactForm() {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+import { useState, FormEvent, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion, useInView } from 'motion/react'
+import { MessageSquare, Phone, Mail, MapPin, Clock, Send, ExternalLink } from 'lucide-react'
+import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
+import { ContactForm } from '@/components/contact-form'
 
-  // Use your actual Telegram credentials
-  const TELEGRAM_BOT_TOKEN = "8068562276:AAFP_ToBxZXbbVmK1gvnnMZYeURT9nTPm6c";
-  const TELEGRAM_CHAT_ID = "6163736948";
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get("name") as string;
-    const phone = formData.get("phone") as string;
-    const service = formData.get("service") as string;
-    const location = formData.get("location") as string;
-    const message = formData.get("message") as string;
-
-    const telegramMessage = `🚗 DRIVEIT Luxury Service Request
-
-Name: ${name}
-Phone: ${phone}
-Service: ${service}
-Location: ${location}
-Message: ${message}`;
-
-    try {
-      const res = await fetch(
-        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            text: telegramMessage,
-          }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (data.ok) {
-        // Force redirect to thank you page
-        window.location.href = "/thankyou";
-      } else {
-        alert("Error sending message. Please call +91 83413 41186");
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Error! Please call +91 83413 41186");
-      setLoading(false);
-    }
-  };
-
-  const handleCall = () => {
-    window.location.href = 'tel:+918341341186'
-  }
+export default function ContactPage() {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true })
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden bg-zinc-900">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 border-b border-zinc-800">
-          <div className="px-6 py-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#b48811' }}>
-              <MessageSquare className="w-8 h-8 text-black" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-              Contact <span style={{ color: '#b48811' }}>DRIVEIT</span>
+    <>
+      <SiteHeader />
+      <section ref={ref} className="bg-[var(--luxury-bg)] text-white min-h-screen pt-28 pb-16">
+        <div className="mx-auto max-w-7xl px-4">
+
+          {/* Header */}
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7 }}
+          >
+            <span className="text-xs tracking-[0.25em] uppercase text-white/40">Get In Touch</span>
+            <h1 className="mt-2 text-3xl md:text-5xl font-[family-name:var(--font-playfair)] font-bold text-white">
+              Contact <span className="text-gradient-gold">Us</span>
             </h1>
-            <p className="text-zinc-400 text-sm">
-              Get in touch for luxury transportation services
+            <p className="mt-3 text-sm md:text-base text-white/50 max-w-xl mx-auto">
+              Have questions or need a custom package? Reach out to our team — we respond within minutes.
             </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            {/* Left: Contact Info */}
+            <motion.div
+              className="space-y-6"
+              initial={{ opacity: 0, x: -30 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              {/* Info Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { icon: Phone, label: 'Call Us', value: '+91 83413 41186', href: 'tel:+918341341186', sub: 'Available 24/7' },
+                  { icon: Mail, label: 'Email', value: 'info@driveit.in', href: 'mailto:info@driveit.in', sub: 'Quick response' },
+                  { icon: MessageSquare, label: 'WhatsApp', value: 'Chat with us', href: 'https://wa.me/918341341186', sub: 'Instant reply' },
+                  { icon: Clock, label: 'Business Hours', value: '24 / 7', href: null, sub: 'Always available' },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.label}
+                    className="rounded-xl p-5 transition-all duration-300 hover:border-[var(--gold-400)]/20"
+                    style={{
+                      background: 'rgba(22,22,22,1)',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-[var(--gold-400)]/10 flex items-center justify-center mb-3">
+                      <item.icon className="w-5 h-5 text-[var(--gold-400)]" />
+                    </div>
+                    <p className="text-xs text-white/40 uppercase tracking-wider mb-1">{item.label}</p>
+                    {item.href ? (
+                      <a href={item.href} target={item.href.startsWith('http') ? '_blank' : undefined}
+                        className="text-sm font-medium text-white hover:text-[var(--gold-400)] transition-colors">
+                        {item.value}
+                      </a>
+                    ) : (
+                      <p className="text-sm font-medium text-white">{item.value}</p>
+                    )}
+                    <p className="text-[10px] text-white/30 mt-0.5">{item.sub}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Address */}
+              <motion.div
+                className="rounded-xl p-5"
+                style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[var(--gold-400)]/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-[var(--gold-400)]" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Office Address</p>
+                    <p className="text-sm text-white font-medium">DRIVEIT — Luxury Transportation Services</p>
+                    <p className="text-xs text-white/50 mt-1 leading-relaxed">
+                      Mother Mansion, 10-2-289/83, Rd Number 3,<br />
+                      Shantinagar Colony, Masab Tank,<br />
+                      Hyderabad, Telangana 500028
+                    </p>
+                    <a
+                      href="https://maps.app.goo.gl/z6g9rBdGoT1gzxku8"
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 mt-2 text-xs text-[var(--gold-400)] hover:text-[var(--gold-200)] transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" /> Open in Google Maps
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Map */}
+              <motion.div
+                className="rounded-xl overflow-hidden border-glow-gold h-[250px]"
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.7, delay: 0.7 }}
+              >
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3807.2137599390176!2d78.4565279!3d17.4015263!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb97844e874967%3A0xec0fefe2fefa1e15!2sDriveit%20-%20Selfdrive%20Cars%20-%20Luxury%20Wedding%20Cars%20-%20Cabs%20for%20outstation%20-%20Luxury%20Buses!5e0!3m2!1sen!2sin!4v1756574982222!5m2!1sen!2sin"
+                  width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade" title="DRIVEIT Location"
+                />
+              </motion.div>
+            </motion.div>
+
+            {/* Right: Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.7, delay: 0.3 }}
+            >
+              <div className="sticky top-28">
+                <ContactForm />
+              </div>
+            </motion.div>
           </div>
         </div>
-
-        {/* Form */}
-        <div className="relative bg-zinc-900">
-          <div className="p-6 sm:p-8">
-            <p className="text-zinc-400 text-sm text-center mb-6">
-              For immediate assistance, call{" "}
-              <button
-                onClick={handleCall}
-                className="font-semibold text-gold hover:text-yellow-400 underline"
-                style={{ color: '#b48811' }}
-              >
-                +91 83413 41186
-              </button>
-            </p>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Full Name*"
-                  required
-                  className="p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition"
-                  style={{ borderColor: '#b48811' }}
-                />
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Phone Number*"
-                  required
-                  className="p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition"
-                  style={{ borderColor: '#b48811' }}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <select
-                  name="service"
-                  required
-                  className="p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition"
-                  style={{ borderColor: '#b48811' }}
-                >
-                  <option value="">Select Service</option>
-                  <option value="Luxury Car Rental">Luxury Car Rental</option>
-                  <option value="Private Jet Services">Private Jet Services</option>
-                  <option value="Yacht Services">Yacht Services</option>
-                  <option value="Wedding Cars">Wedding Cars</option>
-                  <option value="Corporate Events">Corporate Events</option>
-                  <option value="Airport Transfer">Airport Transfer</option>
-                  <option value="Chauffeur Service">Chauffeur Service</option>
-                </select>
-                <select
-                  name="location"
-                  required
-                  className="p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition"
-                  style={{ borderColor: '#b48811' }}
-                >
-                  <option value="">Pickup Location</option>
-                  <option>Gachibowli</option>
-                  <option>Madhapur</option>
-                  <option>Hitech City</option>
-                  <option>Kokapet</option>
-                  <option>Jubilee Hills</option>
-                  <option>Kondapur</option>
-                  <option>Nanakramguda</option>
-                  <option>Hyderabad Airport</option>
-                  <option>Secunderabad</option>
-                  <option>Others</option>
-                </select>
-              </div>
-
-              <textarea
-                name="message"
-                placeholder="Tell us about your requirements*"
-                required
-                className="p-3 rounded-lg w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition min-h-[110px]"
-                style={{ borderColor: '#b48811' }}
-              ></textarea>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full text-black font-bold py-3.5 rounded-lg shadow-lg transition flex items-center justify-center hover:scale-105 duration-300"
-                style={{ backgroundColor: '#b48811' }}
-              >
-                {!loading ? (
-                  <span className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5" />
-                    SEND MESSAGE
-                  </span>
-                ) : (
-                  <div className="animate-spin border-4 border-black/70 border-t-transparent h-6 w-6 rounded-full"></div>
-                )}
-              </button>
-
-              <div className="text-center text-sm text-zinc-500">
-                Prefer talking to a person?{" "}
-                <button
-                  onClick={handleCall}
-                  className="font-semibold hover:text-yellow-400"
-                  style={{ color: '#b48811' }}
-                >
-                  Call +91 83413 41186
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <div className="h-1" style={{ backgroundColor: '#b48811' }}></div>
-      </div>
-    </div>
-  );
+      </section>
+      <SiteFooter />
+    </>
+  )
 }

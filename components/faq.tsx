@@ -1,4 +1,8 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+'use client'
+
+import { useRef, useState } from "react"
+import { motion, AnimatePresence, useInView } from "motion/react"
+import { ChevronDown } from "lucide-react"
 
 const faqs = [
   {
@@ -35,7 +39,56 @@ const faqs = [
   },
 ]
 
+function FAQItem({ faq, index, isInView }: { faq: (typeof faqs)[0]; index: number; isInView: boolean }) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <motion.div
+      className="border-glow-gold rounded-xl overflow-hidden self-start"
+      initial={{ opacity: 0, x: -30 }}
+      animate={isInView ? { opacity: 1, x: 0 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
+    >
+      <button
+        className="w-full flex items-center justify-between px-5 py-4 text-left transition-colors duration-300 hover:bg-white/[0.02] cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+      >
+        <span className="text-base font-medium text-white pr-4">{faq.q}</span>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex-shrink-0"
+        >
+          <ChevronDown className="w-5 h-5 text-[var(--gold-400)]" />
+        </motion.div>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-4 border-t border-white/5">
+              {/* Gold accent line */}
+              <div className="w-8 h-px bg-[var(--gold-400)] mt-4 mb-3 opacity-50" />
+              <p className="text-sm text-white/60 leading-relaxed">{faq.a}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
 export function FAQ() {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -47,41 +100,43 @@ export function FAQ() {
         "text": faq.a
       }
     }))
-  };
+  }
 
   return (
-    <section className="bg-black text-white">
+    <section ref={ref} className="bg-[var(--luxury-bg)] text-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <div className="mx-auto max-w-7xl px-4 py-12 md:py-20">
-        <div className="text-center mb-8">
-          <h3 className="text-2xl md:text-3xl font-semibold text-white">
-            Frequently Asked Questions
+        {/* Header */}
+        <motion.div
+          className="text-center mb-10"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7 }}
+        >
+          <span className="text-xs tracking-[0.25em] uppercase text-white/40">FAQ</span>
+          <h3 className="mt-2 text-3xl md:text-4xl font-[family-name:var(--font-playfair)] font-semibold text-white">
+            Frequently Asked <span className="text-gradient-gold">Questions</span>
           </h3>
-          <p className="text-sm text-white/80 mt-2">
+          <p className="mt-2 text-sm text-white/50">
             Everything you need to know about our luxury transportation services
           </p>
-        </div>
-        
-        <div className="max-w-4xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-4">
-            {faqs.map((f, i) => (
-              <AccordionItem 
-                key={i} 
-                value={`item-${i}`} 
-                className="border border-white/20 rounded-lg"
-              >
-                <AccordionTrigger className="text-left hover:text-white/80 px-4 py-3 text-lg font-semibold text-white">
-                  {f.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-white/80 px-4 pb-3 leading-relaxed">
-                  {f.a}
-                </AccordionContent>
-              </AccordionItem>
+        </motion.div>
+
+        {/* FAQ Items */}
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div className="flex flex-col gap-y-4">
+            {faqs.filter((_, i) => i % 2 === 0).map((f, i) => (
+              <FAQItem key={`left-${i}`} faq={f} index={i * 2} isInView={isInView} />
             ))}
-          </Accordion>
+          </div>
+          <div className="flex flex-col gap-y-4">
+            {faqs.filter((_, i) => i % 2 !== 0).map((f, i) => (
+              <FAQItem key={`right-${i}`} faq={f} index={i * 2 + 1} isInView={isInView} />
+            ))}
+          </div>
         </div>
       </div>
     </section>

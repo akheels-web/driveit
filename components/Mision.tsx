@@ -1,51 +1,101 @@
-import React from "react"
+'use client'
+
+import { useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { RevealOnScroll } from "./reveal-on-scroll"
+import { motion, useScroll, useTransform, useInView } from "motion/react"
 
 export default function Mision() {
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const textRef = useRef<HTMLDivElement>(null)
+  const isInView = useInView(textRef, { once: true, margin: "0px 0px -100px 0px" })
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  })
+
+  // Parallax: image moves slower than scroll
+  const imageY = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"])
+
   return (
-    <section className="relative bg-black text-white overflow-hidden">
-                   {/* Background Banner Image */}
-                   <div className="relative h-96 sm:h-96 md:h-[500px] lg:h-[600px] xl:h-[700px] w-full">
-        <Image
-          src="/luxury-flagship-cars-in-black-studio.png"
-          alt="Luxury Mission Banner"
-          fill
-          className="object-cover w-full h-full"
-          loading="lazy"
-        />
-        
+    <section ref={sectionRef} className="relative bg-black text-white overflow-hidden">
+      <div className="relative h-[500px] md:h-[600px] lg:h-[700px] w-full">
+        {/* Parallax Background Image */}
+        <motion.div
+          className="absolute inset-0 w-full h-[120%] -top-[10%]"
+          style={{ y: imageY }}
+        >
+          <Image
+            src="/luxury-flagship-cars-in-black-studio.png"
+            alt="DRIVEIT Luxury fleet lineup"
+            fill
+            className="object-cover"
+            loading="lazy"
+            sizes="100vw"
+          />
+        </motion.div>
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
         {/* Mission Content at Bottom */}
-        <div className="absolute inset-0 flex items-end justify-center px-3 sm:px-4 md:px-6 pb-6 sm:pb-8 md:pb-12">
-          <div className="text-center w-full max-w-sm sm:max-w-lg md:max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
-            <RevealOnScroll>
-              <h2
-                className="reveal text-2xl md:text-3xl font-semibold text-white drop-shadow"
-                style={{ transitionDelay: "60ms" }}
-              >
-                Our Mission
-              </h2>
+        <div className="absolute inset-0 flex items-end justify-center px-4 md:px-6 pb-12 md:pb-16">
+          <div ref={textRef} className="text-center w-full max-w-4xl mx-auto">
+            {/* Gold divider */}
+            <motion.div
+              className="mx-auto mb-4 h-px bg-gradient-to-r from-transparent via-[var(--gold-400)] to-transparent"
+              initial={{ width: 0, opacity: 0 }}
+              animate={isInView ? { width: 80, opacity: 1 } : {}}
+              transition={{ duration: 0.8 }}
+            />
 
-              <div
-                className="reveal rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 mx-2 sm:mx-auto"
-                style={{ transitionDelay: "140ms" }}
-              >
-                <p className="reveal text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed font-light text-white drop-shadow mb-3 sm:mb-4" style={{ transitionDelay: "200ms" }}>
-                  DRIVEIT Luxury aims to be the world's leading luxury mobility platform, offering unmatched service, exclusivity, and innovation. We redefine ultra-luxury travel with cutting-edge technology, global partnerships, and personalized experiences—setting new standards in premium lifestyle and elite mobility.
-                </p>
+            <motion.span
+              className="text-xs tracking-[0.25em] uppercase text-white/40"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              Who We Are
+            </motion.span>
 
-                {/* Learn More Button */}
-                <Link
-                  href="/about"
-                  className="reveal inline-block text-black font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300"
-                  style={{ backgroundColor: '#b48811', transitionDelay: "260ms" }}
-                >
-                  Learn More
-                </Link>
-              </div>
-            </RevealOnScroll>
+            <motion.h2
+              className="mt-3 text-3xl md:text-4xl font-[family-name:var(--font-playfair)] font-semibold text-white"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              Our <span className="text-gradient-gold">Mission</span>
+            </motion.h2>
+
+            <motion.p
+              className="mt-4 text-sm md:text-base lg:text-lg leading-relaxed font-light text-white/70 max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, delay: 0.4 }}
+            >
+              DRIVEIT Luxury aims to be the world&apos;s leading luxury mobility platform, offering
+              unmatched service, exclusivity, and innovation. We redefine ultra-luxury travel with
+              cutting-edge technology, global partnerships, and personalized experiences—setting new
+              standards in premium lifestyle and elite mobility.
+            </motion.p>
+
+            {/* Learn More Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 mt-6 text-sm font-medium text-[var(--gold-400)] hover:text-[var(--gold-200)] transition-colors duration-300 group"
+              >
+                Learn More
+                <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </motion.div>
           </div>
         </div>
       </div>

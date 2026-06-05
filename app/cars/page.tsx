@@ -1,284 +1,284 @@
-'use client';
+'use client'
 
-import Image from "next/image";
-import Link from "next/link";
-import { MessageCircle, ArrowRight, Car, Plane, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useEffect, useMemo } from "react"
+import { motion, useInView, AnimatePresence } from "motion/react"
+import { useRef } from "react"
+import { Search, Filter, Car, Users, ChevronDown, Check, X, ArrowRight } from "lucide-react"
+import { FaCarSide, FaBus } from "react-icons/fa"
+import { GiJeep } from "react-icons/gi"
+import { IoMdBriefcase } from "react-icons/io"
+import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
+import { CarCard } from "@/components/car-card"
+import { CompareModal } from "@/components/compare-modal"
+import { carsData } from "@/lib/cars"
 
-const GOLD = '#b48811';
+type Category = 'all' | 'sedan' | 'suv' | 'sports' | 'mpv' | 'bus'
+type ServiceFilter = 'all' | 'chauffeur' | 'selfdrive'
 
-const cars = [
-  // Luxury Sedans
-  { src: "/sadan/1.jpg", name: "BMW 520D" },
-  { src: "/sadan/2.jpg", name: "Lamborghini Gallardo" },
-  { src: "/sadan/3.jpg", name: "Lexus ES 300H" },
-  { src: "/sadan/4.jpg", name: "Mercedes S 350" },
-  { src: "/sadan/5.jpg", name: "Mercedes S 450" },
-  { src: "/sadan/6.jpg", name: "Toyota Camry" },
-  { src: "/sadan/7.jpg", name: "Volvo S60 D5" },
-  { src: "/sadan/8.jpg", name: "Audi A6" },
-  { src: "/sadan/9.jpg", name: "Audi RS5 QUATRO" },
+const categories: { id: Category; label: string; icon: React.ReactNode }[] = [
+  { id: 'all', label: 'All Cars', icon: <Car className="w-4 h-4" /> },
+  { id: 'sedan', label: 'Sedans', icon: <FaCarSide className="w-4 h-4" /> },
+  { id: 'suv', label: 'SUVs', icon: <GiJeep className="w-4 h-4" /> },
+  { id: 'sports', label: 'Sports', icon: <IoMdBriefcase className="w-4 h-4" /> },
+  { id: 'mpv', label: 'MPV / Van', icon: <Users className="w-4 h-4" /> },
+  { id: 'bus', label: 'Buses', icon: <FaBus className="w-4 h-4" /> },
+]
 
-  // Premium SUVs & MPVs
-  { src: "/suv/1.jpg", name: "KIA Carnival" },
-  { src: "/suv/2.jpg", name: "Mercedes GLS 350D" },
-  { src: "/suv/3.jpg", name: "Mini Cooper Countryman" },
-  { src: "/suv/4.jpg", name: "Toyota Commuter (Custom)" },
-  { src: "/suv/5.jpg", name: "Toyota Crysta MT" },
-  { src: "/suv/6.jpg", name: "Toyota Fortuner" },
-  { src: "/suv/7.jpg", name: "Toyota Vellfire" },
-  { src: "/suv/8.jpg", name: "Volvo XC60" },
-  { src: "/suv/9.jpg", name: "Audi Q7 Quatro" },
+const serviceFilters: { id: ServiceFilter; label: string; icon: React.ReactNode }[] = [
+  { id: 'all', label: 'All Services', icon: <Filter className="w-4 h-4" /> },
+  { id: 'chauffeur', label: 'With Chauffeur', icon: <Users className="w-4 h-4" /> },
+  { id: 'selfdrive', label: 'Self Drive', icon: <Car className="w-4 h-4" /> },
+]
 
-  // Trending & Special Collection
-  { src: "/trending/1.jpg", name: "Mercedes G 350 Wagon" },
-  { src: "/trending/2.jpg", name: "Mercedes GLS 400D" },
-  { src: "/trending/3.jpg", name: "Mercedes V-Class" },
-  { src: "/trending/4.jpg", name: "Range Rover Vogue" },
-  { src: "/trending/5.jpg", name: "Volvo S90" },
-  { src: "/trending/6.jpg", name: "Volvo XC 90" },
-  { src: "/trending/7.jpg", name: "BMW 730 LD" },
-  { src: "/trending/8.jpg", name: "BMW i4" },
-  { src: "/trending/9.jpg", name: "Mercedes C300 Convertible" },
-  { src: "/trending/10.jpg", name: "Mercedes E 220D" },
-];
-
-// Map each car name to a tab/category without changing the cars array structure
-type Category = 'chauffeur' | 'airport' | 'selfdrive';
-const categoryMap: Record<string, Category> = {
-  // Luxury Sedans -> chauffeur
-  'BMW 520D': 'chauffeur',
-  'Lamborghini Gallardo': 'selfdrive',
-  'Lexus ES 300H': 'chauffeur',
-  'Mercedes S 350': 'chauffeur',
-  'Mercedes S 450': 'chauffeur',
-  'Toyota Camry': 'chauffeur',
-  'Volvo S60 D5': 'chauffeur',
-  'Audi A6': 'chauffeur',
-  'Audi RS5 QUATRO': 'selfdrive',
-
-  // Premium SUVs & MPVs -> airport (mostly)
-  'KIA Carnival': 'airport',
-  'Mercedes GLS 350D': 'airport',
-  'Mini Cooper Countryman': 'airport',
-  'Toyota Commuter (Custom)': 'airport',
-  'Toyota Crysta MT': 'airport',
-  'Toyota Fortuner': 'airport',
-  'Toyota Vellfire': 'airport',
-  'Volvo XC60': 'airport',
-  'Audi Q7 Quatro': 'airport',
-
-  // Trending & Specials -> selfdrive
-  'Mercedes G 350 Wagon': 'selfdrive',
-  'Mercedes GLS 400D': 'selfdrive',
-  'Mercedes V-Class': 'selfdrive',
-  'Range Rover Vogue': 'selfdrive',
-  'Volvo S90': 'selfdrive',
-  'Volvo XC 90': 'selfdrive',
-  'BMW 730 LD': 'selfdrive',
-  'BMW i4': 'selfdrive',
-  'Mercedes C300 Convertible': 'selfdrive',
-  'Mercedes E 220D': 'selfdrive',
-};
+type SortOption = 'name' | 'price-low' | 'price-high' | 'rating' | 'booked' | 'new'
 
 export default function CarsPage() {
-  const [active, setActive] = useState<Category>('chauffeur');
-  const [loading, setLoading] = useState(false);
-  const [displayed, setDisplayed] = useState<typeof cars>(cars);
+  const [category, setCategory] = useState<Category>('all')
+  const [service, setService] = useState<ServiceFilter>('all')
+  const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState<SortOption>('name')
+  
+  // Compare State
+  const [compareIds, setCompareIds] = useState<string[]>([])
+  const [showCompareModal, setShowCompareModal] = useState(false)
 
-  const labels: Record<Category, string> = {
-    chauffeur: 'Chauffeur Driven',
-    airport: 'Airport Pickup / Drop',
-    selfdrive: 'Self Drive',
-  };
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true })
 
-  // Deterministic reorder based on tab so different items appear on top
-  const reorder = (list: typeof cars, cat: Category) => {
-    const offset = cat === 'chauffeur' ? 0 : cat === 'airport' ? Math.floor(list.length / 3) : Math.floor((list.length * 2) / 3);
-    const rotated = list.slice(offset).concat(list.slice(0, offset));
-    // Create a light interleave to "mix"
-    const firstHalf = rotated.filter((_, i) => i % 2 === 0);
-    const secondHalf = rotated.filter((_, i) => i % 2 === 1);
-    const mixed: typeof cars = [];
-    const max = Math.max(firstHalf.length, secondHalf.length);
-    for (let i = 0; i < max; i++) {
-      if (i < firstHalf.length) mixed.push(firstHalf[i]);
-      if (i < secondHalf.length) mixed.push(secondHalf[i]);
-    }
-    return mixed;
-  };
-
-  // Initialize active tab from URL (?service=chauffeur|airport|selfdrive)
   useEffect(() => {
     try {
-      const params = new URLSearchParams(window.location.search);
-      const svc = params.get('service');
-      if (svc === 'chauffeur' || svc === 'airport' || svc === 'selfdrive') {
-        setActive(svc);
+      const params = new URLSearchParams(window.location.search)
+      const svc = params.get('service')
+      if (svc === 'chauffeur' || svc === 'selfdrive') {
+        setService(svc as ServiceFilter)
       }
     } catch {}
-  }, []);
+  }, [])
 
-  useEffect(() => {
-    setLoading(true);
-    const next = reorder(cars, active);
-    const t = setTimeout(() => {
-      setDisplayed(next);
-      setLoading(false);
-    }, 400); // brief loading feel
-    return () => clearTimeout(t);
-  }, [active]);
+  const filtered = useMemo(() => carsData
+    .filter((car) => {
+      if (category !== 'all' && car.category !== category) return false
+      if (service !== 'all' && !car.services.includes(service)) return false
+      if (search && !car.name.toLowerCase().includes(search.toLowerCase()) && !car.brand.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    })
+    .sort((a, b) => {
+      if (sortBy === 'price-low') return a.price - b.price
+      if (sortBy === 'price-high') return b.price - a.price
+      if (sortBy === 'rating') return b.rating - a.rating
+      if (sortBy === 'booked') return b.bookingsCount - a.bookingsCount
+      if (sortBy === 'new') return new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime()
+      return a.name.localeCompare(b.name)
+    }), [category, service, search, sortBy])
 
-  // Reflect active tab in URL without navigation
-  useEffect(() => {
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set('service', active);
-      window.history.replaceState({}, '', url.toString());
-    } catch {}
-  }, [active]);
+  const handleToggleCompare = (id: string) => {
+    setCompareIds(prev => {
+      if (prev.includes(id)) return prev.filter(c => c !== id)
+      if (prev.length >= 3) return prev // Max 3
+      return [...prev, id]
+    })
+  }
 
-  const Tab = ({ id, label, icon, href }: { id: Category; label: string; icon: React.ReactNode; href: string }) => (
-    <a
-      href={href}
-      onClick={(e) => {
-        e.preventDefault();
-        setActive(id);
-        try {
-          const url = new URL(window.location.href);
-          url.searchParams.set('service', id);
-          window.history.replaceState({}, '', url.toString());
-        } catch {}
-      }}
-      className={`flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium transition-all ${
-        active === id ? 'text-black' : 'text-zinc-300'
-      }`}
-      style={active === id ? { backgroundColor: GOLD } : {}}
-      aria-pressed={active === id}
-      role="button"
-    >
-      {icon}
-      <span>{label}</span>
-    </a>
-  );
+  const compareCarsList = useMemo(() => carsData.filter(c => compareIds.includes(c.id)), [compareIds])
 
   return (
-    <section className="bg-black text-white">
-      <div className="mx-auto max-w-7xl px-4 py-12 md:py-20">
-        
-        {/* Main Title */}
-        <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Hire Luxury {labels[active]} Cars
-          </h1>
-        </div>
-        {/* Tabs (pill) */}
-        <div className="flex justify-center mb-10">
-          <div className="flex items-center gap-2 bg-zinc-800/80 rounded-full p-1 w-full max-w-3xl">
-            <Tab id="chauffeur" href="/services/luxury-car-rental" label="Chauffeur Driven" icon={<User className="w-4 h-4" />} />
-            <Tab id="airport" href="/services/airport-taxi" label="Airport Pickup / Drop" icon={<Plane className="w-4 h-4" />} />
-            <Tab id="selfdrive" href="/services/luxury-car-rental" label="Self Drive" icon={<Car className="w-4 h-4" />} />
-          </div>
-        </div>
+    <>
+      <SiteHeader />
+      <section ref={ref} className="bg-[var(--luxury-bg)] text-white min-h-screen pb-32">
+        <div className="mx-auto max-w-7xl px-4 pt-28">
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading
-            ? Array.from({ length: 9 }).map((_, i) => <SkeletonCard key={`s-${i}`} />)
-            : displayed.map((car, i) => (
-                <div key={`${car.name}-${i}`} style={{ transitionDelay: `${(i % 9) * 40}ms` }} className="opacity-0 animate-[fadeIn_400ms_ease_forwards]">
-                  <CarSimpleCard car={car} active={active} />
-                </div>
+          {/* Page Header */}
+          <motion.div
+            className="text-center mb-10"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7 }}
+          >
+            <span className="text-xs tracking-[0.25em] uppercase text-[var(--gold-400)] font-semibold">Premium Collection</span>
+            <h1 className="mt-2 text-3xl md:text-5xl font-[family-name:var(--font-playfair)] font-bold text-white">
+              Luxury <span className="text-gradient-gold">Fleet</span>
+            </h1>
+            <p className="mt-3 text-sm md:text-base text-white/50 max-w-xl mx-auto">
+              Explore {carsData.length} meticulously maintained vehicles. View detailed specs, transparent pricing, and book instantly.
+            </p>
+          </motion.div>
+
+          {/* Filters Bar */}
+          <motion.div
+            className="mb-8 space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            {/* Search + Sort */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search by car name or brand..."
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-white/20 hover:border-[var(--gold-400)]/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors"
+                />
+              </div>
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 pr-9 text-white text-sm appearance-none cursor-pointer hover:border-[var(--gold-400)]/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors"
+                >
+                  <option value="name" className="bg-[#111]">Sort: Name A-Z</option>
+                  <option value="booked" className="bg-[#111]">Most Booked</option>
+                  <option value="rating" className="bg-[#111]">Best Rated</option>
+                  <option value="new" className="bg-[#111]">Newly Added</option>
+                  <option value="price-low" className="bg-[#111]">Price: Low → High</option>
+                  <option value="price-high" className="bg-[#111]">Price: High → Low</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Category Pills */}
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategory(cat.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 cursor-pointer ${
+                    category === cat.id
+                      ? 'bg-[var(--gold-400)] text-black shadow-[0_0_15px_rgba(212,175,55,0.3)]'
+                      : 'bg-white/[0.03] text-white/50 border border-white/5 hover:border-[var(--gold-400)]/20 hover:text-white/70'
+                  }`}
+                >
+                  {cat.icon}
+                  {cat.label}
+                </button>
               ))}
+            </div>
+
+            {/* Service Filter Pills */}
+            <div className="flex flex-wrap gap-2">
+              {serviceFilters.map((svc) => (
+                <button
+                  key={svc.id}
+                  onClick={() => setService(svc.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 cursor-pointer ${
+                    service === svc.id
+                      ? 'bg-white/10 text-[var(--gold-400)] border border-[var(--gold-400)]/30'
+                      : 'bg-white/[0.02] text-white/40 border border-white/5 hover:border-white/10 hover:text-white/60'
+                  }`}
+                >
+                  {svc.icon}
+                  {svc.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Results count */}
+          <div className="flex justify-between items-end mb-6">
+             <p className="text-xs text-white/30">{filtered.length} vehicles found</p>
+             {compareIds.length > 0 && (
+                <p className="text-xs text-[var(--gold-400)] font-medium bg-[var(--gold-400)]/10 px-3 py-1 rounded-full border border-[var(--gold-400)]/20">
+                   {compareIds.length}/3 selected for comparison
+                </p>
+             )}
+          </div>
+
+          {/* Car Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence mode="popLayout">
+              {filtered.map((car, i) => (
+                <motion.div
+                  key={car.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3) }}
+                >
+                  <CarCard 
+                    car={car} 
+                    isCompared={compareIds.includes(car.id)}
+                    onToggleCompare={handleToggleCompare}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16">
+              <Car className="w-12 h-12 text-white/10 mx-auto mb-4" />
+              <p className="text-white/30 text-sm">No cars match your filters. Try adjusting your search.</p>
+              <button 
+                onClick={() => {setCategory('all'); setService('all'); setSearch('')}}
+                className="mt-4 text-[var(--gold-400)] text-sm hover:underline"
+              >
+                 Clear all filters
+              </button>
+            </div>
+          )}
         </div>
+      </section>
 
-        {/* Local animation keyframes */}
-        <style jsx global>{`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-\[fadeIn_400ms_ease_forwards\] {
-            animation: fadeIn 400ms ease forwards;
-          }
-        `}</style>
+      {/* Compare Floating Bar */}
+      <AnimatePresence>
+         {compareIds.length > 0 && (
+            <motion.div
+               initial={{ y: 100, opacity: 0 }}
+               animate={{ y: 0, opacity: 1 }}
+               exit={{ y: 100, opacity: 0 }}
+               className="fixed bottom-0 left-0 right-0 z-40 p-4 pointer-events-none"
+            >
+               <div className="mx-auto max-w-4xl bg-black/80 backdrop-blur-xl border border-[var(--gold-400)]/30 shadow-[0_0_40px_rgba(212,175,55,0.15)] rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 pointer-events-auto">
+                  <div className="flex items-center gap-4 w-full md:w-auto">
+                     <div className="flex -space-x-4">
+                        {compareCarsList.map((car) => (
+                           <div key={car.id} className="relative w-12 h-12 rounded-full border-2 border-black overflow-hidden bg-white/5">
+                              <img src={car.src} alt={car.name} className="w-full h-full object-cover" />
+                           </div>
+                        ))}
+                        {Array.from({ length: Math.max(0, 3 - compareIds.length) }).map((_, i) => (
+                           <div key={`empty-${i}`} className="w-12 h-12 rounded-full border-2 border-black border-dashed bg-white/5 flex items-center justify-center text-white/20">
+                              <Car className="w-4 h-4" />
+                           </div>
+                        ))}
+                     </div>
+                     <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-white">{compareIds.length} of 3</span>
+                        <span className="text-xs text-white/40">Vehicles selected</span>
+                     </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                     <button
+                        onClick={() => setCompareIds([])}
+                        className="px-4 py-2 text-sm text-white/50 hover:text-white transition"
+                     >
+                        Clear
+                     </button>
+                     <button
+                        onClick={() => setShowCompareModal(true)}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--gold-400)] hover:bg-[var(--gold-500)] text-black rounded-xl font-semibold transition shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+                     >
+                        Compare Now <ArrowRight className="w-4 h-4" />
+                     </button>
+                  </div>
+               </div>
+            </motion.div>
+         )}
+      </AnimatePresence>
 
-        {/* Note */}
-        <div className="mt-10">
-          <p className="text-xs md:text-sm text-zinc-400 border-t border-white/10 pt-4">
-            <strong>Note:</strong> Detour, stops and extensions not permitted. All Journeys To/From City centres only. For any distant locations, book under “Standard” Package with additional Kms/Hrs
-          </p>
-        </div>
-
-      </div>
-    </section>
+      <CompareModal 
+         isOpen={showCompareModal} 
+         onClose={() => setShowCompareModal(false)} 
+         cars={compareCarsList}
+         onRemove={handleToggleCompare}
+      />
+      <SiteFooter />
+    </>
   )
-}
-
-// Simple Car Card for (src, name) data
-function CarSimpleCard({ car, active }: { car: { src: string; name: string }; active: Category }) {
-  const brand = car.name.split(' ')[0];
-  const serviceHref = active === 'airport' ? '/services/airport-taxi' : '/services/luxury-car-rental';
-  const serviceLabel = active === 'airport' ? 'Airport Pickup / Drop' : active === 'selfdrive' ? 'Self Drive' : 'Chauffeur Driven';
-  const serviceUrlWithParams = `${serviceHref}?ref=cars&service=${encodeURIComponent(active)}`;
-  const waText = `Hi, I would like to book ${car.name} in Hyderabad.\nService: ${serviceLabel}\nURL: ${serviceHref}`;
-  return (
-    <div className="bg-zinc-900 rounded-2xl p-5 border border-zinc-800">
-      {/* Header: brand badge, name and price */}
-      <div className="mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 rounded-full border border-zinc-600 flex items-center justify-center text-[10px] text-zinc-300">
-            {brand.slice(0,1)}
-          </div>
-          <div className="flex-1">
-            <p className="text-sm text-zinc-200 leading-tight">{car.name}</p>
-          </div>
-        </div>
-      </div>
-      {/* Image */}
-      <div className="relative w-full h-40 md:h-44 lg:h-48">
-        <Image src={car.src} alt={`${car.name} luxury car rental Hyderabad`} fill loading="lazy" className="object-contain" />
-      </div>
-      {/* Actions */}
-      <div className="mt-4 flex gap-2">
-        <a
-          href={`https://wa.me/918341341186?text=${encodeURIComponent(waText)}`}
-          target="_blank"
-          className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-black font-medium text-sm hover:scale-105 transition"
-          style={{ backgroundColor: GOLD }}
-        >
-          <MessageCircle className="w-4 h-4" />
-          WhatsApp
-        </a>
-        <a
-          href={serviceUrlWithParams}
-          onClick={(e) => e.preventDefault()}
-          className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-zinc-200 hover:border-gold hover:text-gold transition text-sm"
-        >
-          <ArrowRight className="w-4 h-4" />
-          Contact
-        </a>
-      </div>
-    </div>
-  );
-}
-
-// Skeleton placeholder while switching tabs
-function SkeletonCard() {
-  return (
-    <div className="bg-zinc-900 rounded-2xl p-5 border border-zinc-800 animate-pulse">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="w-6 h-6 rounded-full bg-zinc-800" />
-        <div className="flex-1">
-          <div className="h-3 w-32 bg-zinc-800 rounded mb-2" />
-          <div className="h-2 w-20 bg-zinc-800 rounded" />
-        </div>
-      </div>
-      <div className="w-full h-40 md:h-44 lg:h-48 bg-zinc-800 rounded" />
-      <div className="mt-4 flex gap-2">
-        <div className="h-9 bg-zinc-800 rounded-lg flex-1" />
-        <div className="h-9 bg-zinc-800 rounded-lg flex-1" />
-      </div>
-    </div>
-  );
 }

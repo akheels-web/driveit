@@ -9,7 +9,7 @@ const GOLD = '#b48811';
 const allCars = [
   // Luxury Sedans
   { title: "BMW 520D", img: "/sadan/1.jpg", category: "Luxury Sedan", type: "Executive" },
-  { title: "Lamborghini Gallardo", img: "/sadan/2.jpg", category: "Super Sports", type: "Exotic" },
+  { title: "Lamborghini Gallardo", img: "/sadan/2.jpg", category: "Super Sports", type: "Exotic"
   { title: "Lexus ES 300H", img: "/sadan/3.jpg", category: "Hybrid Luxury", type: "Eco-Luxury" },
   { title: "Mercedes S 350", img: "/sadan/4.jpg", category: "Luxury Sedan", type: "Premium" },
   { title: "Mercedes S 450", img: "/sadan/5.jpg", category: "Executive Sedan", type: "Ultra Luxury" },

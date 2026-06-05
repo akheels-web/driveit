@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import Link from "next/link"
-import { ArrowRight, Car, Plane, MapPin, Bus, Heart, Route, Building, Clock, Van } from "lucide-react"
+import { ArrowRight, Car, Plane, MapPin, Bus, Heart, Building } from "lucide-react"
+import { motion, useInView } from "motion/react"
 
 const services = [
   {
@@ -61,84 +62,123 @@ const services = [
     desc: "Business travel solutions",
     icon: Building,
   },
- 
-
 ]
 
-export function TrendingGrid() {
-  const [isVisible, setIsVisible] = useState(false)
+function ServiceCard({
+  service,
+  index,
+  isInView,
+}: {
+  service: (typeof services)[0]
+  index: number
+  isInView: boolean
+}) {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const cardRef = useRef<HTMLAnchorElement>(null)
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.1 }
-    )
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 10
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -10
+    setMousePos({ x, y })
+  }
 
-    const section = document.getElementById('trending-section')
-    if (section) {
-      observer.observe(section)
-    }
-
-    return () => {
-      if (section) {
-        observer.unobserve(section)
-      }
-    }
-  }, [])
+  const handleMouseLeave = () => {
+    setMousePos({ x: 0, y: 0 })
+  }
 
   return (
-    <section id="trending-section" className="bg-black text-white">
-      <div className="mx-auto max-w-7xl px-4 py-12 md:py-20">
-        <div className={`text-center mb-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
-            <div className="text-left sm:text-left mb-4 sm:mb-0">
-              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-2">
-                Our Services
-              </h2>
-              <p className="text-sm text-white/80">
-                Explore our wide selection of high-quality cars.
-              </p>
-            </div>
-            <Link
-              href="/services"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full text-white font-medium transition-all duration-500 hover:scale-110 hover:shadow-lg hover:shadow-gold/20 hover:border-gold/30"
-            >
-              Discover More
-              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
+    >
+      <Link
+        ref={cardRef}
+        href={service.href}
+        className="group relative block h-80 md:h-[420px] rounded-2xl overflow-hidden border-glow-gold cursor-pointer"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          transform: `perspective(800px) rotateX(${mousePos.y}deg) rotateY(${mousePos.x}deg)`,
+          transition: "transform 0.15s ease-out",
+        }}
+      >
+        <img
+          src={service.img}
+          alt={service.title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          loading="lazy"
+        />
+
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-all duration-500 group-hover:from-black/90" />
+
+        {/* Icon badge */}
+        <div className="absolute top-4 left-4 w-10 h-10 glass-gold rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+          <service.icon className="w-5 h-5 text-[var(--gold-400)]" />
+        </div>
+
+        {/* Content */}
+        <div className="absolute bottom-0 left-0 right-0 p-5">
+          <h3 className="text-base font-semibold text-white tracking-wide mb-1">
+            {service.title}
+          </h3>
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-white/60">{service.desc}</p>
+            <ArrowRight className="w-4 h-4 text-[var(--gold-400)] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
           </div>
         </div>
-        
+
+        {/* Gold corner accent */}
+        <div className="absolute top-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+          <div className="absolute top-4 right-4 w-6 h-px bg-[var(--gold-400)]" />
+          <div className="absolute top-4 right-4 w-px h-6 bg-[var(--gold-400)]" />
+        </div>
+      </Link>
+    </motion.div>
+  )
+}
+
+export function TrendingGrid() {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
+
+  return (
+    <section className="bg-[var(--luxury-bg)] text-white">
+      <div ref={ref} className="mx-auto max-w-7xl px-4 py-12 md:py-20">
+        {/* Header */}
+        <motion.div
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7 }}
+        >
+          <div>
+            <span className="text-xs tracking-[0.25em] uppercase text-white/40">What We Offer</span>
+            <h2 className="mt-2 text-3xl md:text-4xl font-[family-name:var(--font-playfair)] font-semibold text-white">
+              Our <span className="text-gradient-gold">Services</span>
+            </h2>
+          </div>
+          <Link
+            href="/services"
+            className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-6 py-3 glass-gold rounded-full text-sm font-medium text-white transition-all duration-300 hover:bg-[var(--gold-400)]/10 hover:scale-105 group"
+          >
+            Discover More
+            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+        </motion.div>
+
+        {/* Grid */}
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {services.map((service, i) => (
-            <Link
-              key={service.href}
-              href={service.href}
-              className={`group relative h-80 md:h-[450px] rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
-              style={{ transition: 'opacity 700ms ease, transform 700ms ease', transitionDelay: `${i * 90}ms` }}
-            >
-              <img
-                src={service.img}
-                alt={service.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              
-              {/* Overlay - same as showcase */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-              
-              {/* Content overlay - clean, left-aligned (no transparent background) */}
-              <div className="absolute bottom-0 left-0 m-4">
-                <h3 className="text-lg font-semibold text-white drop-shadow">{service.title}</h3>
-                <div className="mt-1 flex items-center gap-2">
-                  <p className="text-sm text-white/90 drop-shadow">{service.desc}</p>
-                  <ArrowRight className="w-5 h-5 flex-shrink-0" style={{ color: '#b48811' }} />
-                </div>
-              </div>
-            </Link>
+            <ServiceCard
+              key={service.title + i}
+              service={service}
+              index={i}
+              isInView={isInView}
+            />
           ))}
         </div>
       </div>

@@ -1,8 +1,9 @@
 "use client"
 
-import React from 'react'
+import React, { useRef } from 'react'
 import Image from 'next/image'
 import { Star, Quote } from 'lucide-react'
+import { motion, useInView } from "motion/react"
 
 const testimonials = [
   {
@@ -49,87 +50,97 @@ const testimonials = [
   }
 ]
 
-export default function Testimonials() {
-  const [isVisible, setIsVisible] = React.useState(false)
+function TestimonialCard({ testimonial }: { testimonial: (typeof testimonials)[0] }) {
+  return (
+    <div className="flex-shrink-0 w-[340px] md:w-[400px] p-6 rounded-2xl border-glow-gold bg-[var(--luxury-surface)] hover:bg-[var(--luxury-surface-2)] transition-all duration-500">
+      {/* Quote Icon */}
+      <div className="flex justify-start mb-4">
+        <div className="w-10 h-10 glass-gold rounded-lg flex items-center justify-center">
+          <Quote className="w-5 h-5 text-[var(--gold-400)]" />
+        </div>
+      </div>
 
-  React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true)
-      },
-      { threshold: 0.12 }
-    )
-    const section = document.getElementById('testimonials-section')
-    if (section) observer.observe(section)
-    return () => {
-      if (section) observer.unobserve(section)
-    }
-  }, [])
+      {/* Quote Text */}
+      <p className="text-sm text-white/60 leading-relaxed mb-5 line-clamp-4">
+        &ldquo;{testimonial.quote}&rdquo;
+      </p>
+
+      {/* Rating Stars */}
+      <div className="flex gap-1 mb-4">
+        {[...Array(testimonial.rating)].map((_, idx) => (
+          <Star
+            key={idx}
+            className="w-3.5 h-3.5 fill-[var(--gold-400)] text-[var(--gold-400)]"
+          />
+        ))}
+      </div>
+
+      {/* Client Info */}
+      <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[var(--luxury-border)]">
+          <Image
+            src={testimonial.image}
+            alt={`${testimonial.name} client testimonial Hyderabad`}
+            fill
+            loading="lazy"
+            className="object-cover"
+          />
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold text-white">{testimonial.name}</h4>
+          <p className="text-xs text-white/40">{testimonial.role}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function Testimonials() {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
 
   return (
-    <section id="testimonials-section" className="bg-black text-white overflow-hidden">
-      <div className="py-8 md:py-12">
-        <div className={`text-center mb-6 px-4 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-          <h3 className="text-2xl md:text-3xl font-semibold text-white mb-3">
-            Client Testimonials
-          </h3>
-          <p className="text-sm text-white/80">
-            What our clients in Hyderabad say about their luxury experience
-          </p>
-        </div>
+    <section ref={ref} className="bg-[var(--luxury-bg)] text-white overflow-hidden py-12 md:py-20">
+      {/* Header */}
+      <motion.div
+        className="text-center mb-10 px-4"
+        initial={{ opacity: 0, y: 30 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.7 }}
+      >
+        <span className="text-xs tracking-[0.25em] uppercase text-white/40">Testimonials</span>
+        <h3 className="mt-2 text-3xl md:text-4xl font-[family-name:var(--font-playfair)] font-semibold text-white">
+          Client <span className="text-gradient-gold">Reviews</span>
+        </h3>
+        <p className="mt-2 text-sm text-white/50">
+          What our clients in Hyderabad say about their luxury experience
+        </p>
+      </motion.div>
 
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-            {testimonials.map((testimonial, i) => (
-              <div
-                key={testimonial.name + i}
-                className={`relative p-6 rounded-xl border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-[1.02] ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
-                style={{ transition: 'opacity 700ms ease, transform 700ms ease', transitionDelay: `${i * 90}ms` }}
-              >
-                {/* Quote Icon */}
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
-                    <Quote className="w-6 h-6" style={{ color: '#b48811' }} />
-                  </div>
-                </div>
+      {/* Infinite Marquee */}
+      <motion.div
+        className="relative"
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.8, delay: 0.3 }}
+      >
+        {/* Fade edges */}
+        <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-16 md:w-32 bg-gradient-to-r from-[var(--luxury-bg)] to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-16 md:w-32 bg-gradient-to-l from-[var(--luxury-bg)] to-transparent" />
 
-                {/* Quote Text */}
-                <p className="text-sm text-white/80 text-center mb-4 leading-relaxed">
-                  "{testimonial.quote}"
-                </p>
-
-                {/* Rating Stars */}
-                <div className="flex justify-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, idx) => (
-                    <Star
-                      key={idx}
-                      className="w-4 h-4 fill-current"
-                      style={{ color: '#b48811' }}
-                    />
-                  ))}
-                </div>
-
-                {/* Client Info */}
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/20">
-                    <Image
-                      src={testimonial.image}
-                      alt={`${testimonial.name} client testimonial Hyderabad`}
-                      fill
-                      loading="lazy"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="text-center">
-                    <h4 className="text-sm font-semibold text-white">{testimonial.name}</h4>
-                    <p className="text-xs text-white/60">{testimonial.role}</p>
-                  </div>
-                </div>
-              </div>
+        <div className="marquee-track" style={{ animationDuration: "50s" }}>
+          <div className="marquee-content gap-6 px-3">
+            {[...testimonials, ...testimonials].map((t, i) => (
+              <TestimonialCard key={`a-${t.name}-${i}`} testimonial={t} />
+            ))}
+          </div>
+          <div className="marquee-content gap-6 px-3" aria-hidden="true">
+            {[...testimonials, ...testimonials].map((t, i) => (
+              <TestimonialCard key={`b-${t.name}-${i}`} testimonial={t} />
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

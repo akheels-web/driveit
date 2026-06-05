@@ -1,99 +1,183 @@
-'use client';
+'use client'
 
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Image from "next/image"
+import { useRef } from "react"
+import { motion, useScroll, useTransform, useInView } from "motion/react"
 
 export default function Hero() {
-  const [isVisible, setIsVisible] = useState(false);
-  const heroRef = useRef(null);
+  const heroRef = useRef<HTMLDivElement>(null)
+  const textRef = useRef<HTMLDivElement>(null)
+  const isInView = useInView(textRef, { once: true })
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
-      },
-      { threshold: 0.1 }
-    );
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  })
 
-    if (heroRef.current) observer.observe(heroRef.current);
+  // Parallax zoom: image scales from 1.0 to 1.2 as user scrolls
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.2])
+  // Overlay fades darker as user scrolls
+  const overlayOpacity = useTransform(scrollYProgress, [0, 0.5], [0.4, 0.8])
+  // Text moves up as user scrolls for parallax depth
+  const textY = useTransform(scrollYProgress, [0, 1], [0, -100])
 
-    return () => {
-      if (heroRef.current) observer.unobserve(heroRef.current);
-    };
-  }, []);
-
-  const scrollToServices = () => {
-    const element = document.getElementById('services')
+  const scrollToBooking = () => {
+    const element = document.getElementById('book-now')
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
+  // Letter-by-letter animation for the heading
+  const headingLine1 = "The Art of"
+  const headingLine2 = "Luxury"
+
   return (
     <section
       ref={heroRef}
-      className="relative bg-black text-white overflow-hidden"
+      className="relative h-[100svh] min-h-[600px] w-full overflow-hidden bg-black"
     >
-      {/* Heading */}
-      <div className="container mx-auto px-4 md:px-6 text-center max-w-4xl mt-8 md:mt-10">
-        <h1
-          className={`text-2xl md:text-4xl lg:text-5xl font-bold leading-tight md:leading-snug transition-all duration-700 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-          }`}
-        >
-          The{" "}
-          <span style={{ color: '#b48811' }}>Art of Luxury</span>
-        </h1>
-        <p className="mt-4 text-gray-300 max-w-xl mx-auto text-base md:text-lg">
-          Experience elegance and innovation.
-        </p>
-        <button 
-          onClick={scrollToServices}
-          className="mt-6 px-6 md:px-8 py-3 text-black font-medium rounded-full shadow transition text-sm md:text-base hover:scale-105 transition-all duration-300 cursor-pointer"
-          style={{ backgroundColor: '#b48811' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c69c1a'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#b48811'}
-        >
-          Explore
-        </button>
-      </div>
+      {/* Parallax Background Image */}
+      <motion.div
+        className="absolute inset-0 w-full h-full"
+        style={{ scale: imageScale }}
+      >
+        <Image
+          src="/rolls-royce-phantom-night.png"
+          alt="Luxury Rolls Royce Phantom at night - DRIVEIT premium fleet"
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="100vw"
+        />
+      </motion.div>
 
-      {/* Full-width Car Showcase Strip */}
-      <div className="relative mt-8 md:mt-12 px-4 md:px-0">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0">
-          <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 w-full overflow-hidden rounded-2xl md:rounded-none">
-            <Image
-              src="https://i.pinimg.com/736x/9d/fb/64/9dfb642b6cf8511365d2d3000fe01f10.jpg"
-              alt="Rolls Royce"
-              fill
-              priority
-              className="object-cover hover:scale-105 transition-transform duration-500"
-            />
-          </div>
-          <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 w-full overflow-hidden rounded-2xl md:rounded-none">
-            <Image
-              src="https://i.pinimg.com/736x/d1/3f/89/d13f89cc042bb2f63ebe63d2cd841e70.jpg"
-              alt="Ferrari SF90"
-              fill
-              priority
-              className="object-cover hover:scale-105 transition-transform duration-500"
-            />
-          </div>
-          <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 w-full overflow-hidden rounded-2xl md:rounded-none">
-            <Image
-              src="https://i.pinimg.com/1200x/f8/c5/f9/f8c5f92b0d721cda2270948c5a1b4074.jpg"
-              alt="Lamborghini Aventador"
-              fill
-              priority
-              className="object-cover hover:scale-105 transition-transform duration-500"
-            />
-          </div>
+      {/* Gradient Overlay */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20"
+        style={{ opacity: overlayOpacity }}
+      />
+
+      {/* Additional bottom gradient for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+
+      {/* Film Grain Overlay */}
+      <div className="grain-overlay absolute inset-0 pointer-events-none" />
+
+      {/* Hero Content */}
+      <motion.div
+        ref={textRef}
+        className="relative z-10 flex h-full flex-col items-center justify-end pb-24 md:pb-32 px-4"
+        style={{ y: textY }}
+      >
+        {/* Gold accent line */}
+        <motion.div
+          className="mb-6 h-px w-16 bg-gradient-to-r from-transparent via-[var(--gold-400)] to-transparent"
+          initial={{ width: 0, opacity: 0 }}
+          animate={isInView ? { width: 64, opacity: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        />
+
+        {/* Subtitle */}
+        <motion.p
+          className="mb-4 text-xs md:text-sm tracking-[0.3em] uppercase text-white/60 font-light"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          Premium Luxury Transportation
+        </motion.p>
+
+        {/* Main Heading - Staggered letter animation */}
+        <div className="text-center">
+          <h1 className="font-[family-name:var(--font-playfair)] font-bold leading-[1.1]">
+            {/* Line 1 */}
+            <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-1">
+              {headingLine1.split("").map((char, i) => (
+                <motion.span
+                  key={`l1-${i}`}
+                  className="inline-block"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.4 + i * 0.03,
+                    ease: [0.25, 0.1, 0.25, 1],
+                  }}
+                >
+                  {char === " " ? "\u00A0" : char}
+                </motion.span>
+              ))}
+            </span>
+
+            {/* Line 2 - Gold gradient */}
+            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-shimmer-gold">
+              {headingLine2.split("").map((char, i) => (
+                <motion.span
+                  key={`l2-${i}`}
+                  className="inline-block"
+                  initial={{ opacity: 0, y: 40, scale: 0.8 }}
+                  animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                  transition={{
+                    duration: 0.6,
+                    delay: 0.7 + i * 0.05,
+                    ease: [0.25, 0.1, 0.25, 1],
+                  }}
+                >
+                  {char}
+                </motion.span>
+              ))}
+            </span>
+          </h1>
         </div>
 
-        {/* Curved bottom effect */}
-        <div className="absolute bottom-0 left-0 w-full h-16 md:h-24 bg-black rounded-t-[60%] md:rounded-t-[50%]"></div>
-      </div>
+        {/* Description */}
+        <motion.p
+          className="mt-6 max-w-md text-center text-sm md:text-base text-white/70 font-light leading-relaxed"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 1.2 }}
+        >
+          Experience elegance and innovation with Hyderabad&apos;s finest fleet.
+        </motion.p>
+
+        {/* CTA Button */}
+        <motion.button
+          onClick={scrollToBooking}
+          className="mt-8 group relative overflow-hidden rounded-full px-8 md:px-10 py-3.5 md:py-4 text-sm md:text-base font-semibold text-black bg-[var(--gold-400)] cursor-pointer"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={isInView ? { opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.5, delay: 1.4, type: "spring", stiffness: 200 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          {/* Shimmer overlay on hover */}
+          <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-700" />
+          <span className="relative z-10">Book Your Ride</span>
+
+        </motion.button>
+      </motion.div>
+
+      {/* Scroll Indicator */}
+      <motion.div
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
+        transition={{ delay: 2 }}
+      >
+        <span className="text-[10px] tracking-[0.2em] uppercase text-white/40">Scroll</span>
+        <motion.div
+          className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center p-1"
+          animate={{ opacity: [1, 0.3, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <motion.div
+            className="w-1 h-2 rounded-full bg-[var(--gold-400)]"
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </motion.div>
+      </motion.div>
     </section>
-  );
+  )
 }

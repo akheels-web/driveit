@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { ShieldCheck, Lock, Clock, Anchor, Wifi, Utensils, User, Stars, Phone, MessageCircle, MapPin, PawPrint, Crown, Ship, Waves, Compass } from "lucide-react"
 import Link from "next/link"
+import { ContactForm } from "@/components/contact-form"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -356,48 +357,20 @@ export default function YachtServicesPage() {
 
       </main>
 
-        {/* CALL TO ACTION */}
-        <section className="mx-auto max-w-7xl px-4 py-12">
-          <div className="relative overflow-hidden rounded-2xl border border-neutral-800">
-            <Image
-              src="/luxury-yacht-marina-night.jpg"
-              alt="Premium yacht charter and boating service in Hyderabad"
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1200px"
-              className="object-cover opacity-30"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/70" />
-            <div className="relative z-10 p-6 md:p-10 flex justify-center">
-              <div className="w-full max-w-2xl rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 px-6 py-6 md:px-10 md:py-8 text-center shadow-2xl">
-                <h2 className="text-2xl md:text-3xl font-semibold text-white">
-                  Ready to Charter Your Yacht?
-                </h2>
-                <p className="mt-2 text-sm text-zinc-200/90">
-                  Get a personalised quote from our concierge team.
-                </p>
-                <div className="mt-6 flex justify-center gap-3">
-                  <a
-                    href="https://wa.me/918341341186?text=Hi, I'm interested in yacht charter services. Could you please provide more details?"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 md:px-8 py-3 text-black font-medium rounded-full text-sm md:text-base hover:scale-105 transition"
-                    style={{ backgroundColor: '#b48811' }}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
-                  </a>
-                  <Link
-                    href="/contact"
-                    className="px-6 md:px-8 py-3 rounded-full border border-white/20 hover:border-gold text-zinc-200 hover:text-gold transition text-sm md:text-base"
-                  >
-                    Contact Us
-                  </Link>
-                </div>
-              </div>
-            </div>
+      {/* Contact Section */}
+      <section className="bg-[var(--luxury-bg)] pb-16">
+        <div className="mx-auto max-w-3xl px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-semibold text-white">
+              Inquire About Yachts
+            </h2>
+            <p className="mt-2 text-sm text-zinc-400">
+              Get a personalised quote from our concierge team.
+            </p>
           </div>
-        </section>
+          <ContactForm />
+        </div>
+      </section>
       <SiteFooter />
     </>
   )

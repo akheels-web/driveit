@@ -4,7 +4,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, MessageCircle, ArrowRight, Sparkles, Clock, Users, CheckCircle, Building2, Calendar, UserCheck, Briefcase, ChevronLeft, ChevronRight } from "lucide-react"
+import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, ArrowRight, Sparkles, Clock, Users, CheckCircle, Building2, Calendar, UserCheck, Briefcase, ChevronLeft, ChevronRight } from "lucide-react"
+import { FaWhatsapp } from "react-icons/fa"
+import { ServiceFleetShowcase } from "@/components/service-fleet-showcase"
 
 const GOLD = '#b48811'
 
@@ -67,9 +69,9 @@ export default function CorporateCarRentalPage() {
                 <a
                   href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20corporate%20car%20rental%20services%20in%20Hyderabad."
                   target="_blank"
-                  className="inline-flex items-center gap-2 px-6 md:px-8 py-3 rounded-full border border-neutral-700 hover:border-gold text-zinc-200 hover:text-gold transition text-sm md:text-base"
+                  className="inline-flex items-center gap-2 px-6 md:px-8 py-3 rounded-full border border-neutral-700 hover:border-[#25D366]/50 hover:bg-[#25D366]/10 hover:text-[#25D366] text-zinc-200 transition text-sm md:text-base font-medium"
                 >
-                  <MessageCircle className="w-4 h-4" style={{ color: GOLD }} />
+                  <FaWhatsapp className="w-5 h-5 text-[#25D366]" />
                   WhatsApp Us
                 </a>
               </div>
@@ -123,91 +125,18 @@ export default function CorporateCarRentalPage() {
             <p className="mt-2 text-sm text-zinc-400">An extraordinary driving experience with unmatched privacy and comfort—fully in your hands.</p>
           </div>
           <div className="mt-8 relative">
-            <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory -webkit-overflow-scrolling-touch" id="selfdrive-carousel">
-            {[
-              
-              { title: "BMW 520D", img: "/sadan/1.jpg" },
-              { title: "Lamborghini Gallardo", img: "/sadan/2.jpg" },
-              { title: "Lexus ES 300H", img: "/sadan/3.jpg" },
-              { title: "Mercedes S 350", img: "/sadan/4.jpg" },
-              { title: "KIA Carnival", img: "/suv/1.jpg" },
-              { title: "Mercedes GLS 350D", img: "/suv/2.jpg" },
-              { title: "Mini Cooper Countryman", img: "/suv/3.jpg" },
-              { title: "Toyota Commuter (Custom)", img: "/suv/4.jpg" },
-              { title: "Toyota Crysta MT", img: "/suv/5.jpg" },
-              { title: "Toyota Fortuner", img: "/suv/6.jpg" },
-              { title: "Toyota Vellfire", img: "/suv/7.jpg" },
-              { title: "Volvo XC60", img: "/suv/8.jpg" },
-              { title: "Audi Q7 Quatro", img: "/suv/9.jpg" },
-              { title: "Mercedes S 450", img: "/sadan/5.jpg" },
-              { title: "Mercedes G 350 Wagon", img: "/trending/1.jpg" },
-              { title: "Mercedes GLS 400D", img: "/trending/2.jpg" },
-              { title: "Mercedes V-Class", img: "/trending/3.jpg" },
-              { title: "Range Rover Vogue", img: "/trending/4.jpg" },
-              { title: "Volvo S90", img: "/trending/5.jpg" },
-              { title: "Volvo XC 90", img: "/trending/6.jpg" },
-              { title: "BMW 730 LD", img: "/trending/7.jpg" },
-              { title: "BMW i4", img: "/trending/8.jpg" },
-              { title: "Mercedes C300 Convertible", img: "/trending/9.jpg" },
-              { title: "Mercedes E 220D", img: "/trending/10.jpg" },
-              { title: "Toyota Camry", img: "/sadan/6.jpg" },
-              { title: "Volvo S60 D5", img: "/sadan/7.jpg" },
-              { title: "Audi A6", img: "/sadan/8.jpg" },
-              { title: "Audi RS5 QUATRO", img: "/sadan/9.jpg" },
-            ].map((car) => (
-              <div key={car.title} className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-4 md:p-6 hover:border-gold/50 transition-all duration-300 group snap-start flex-shrink-0 w-[85vw] sm:w-[280px] md:w-[320px] lg:w-[calc((100%-48px)/3)]">
-                <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
-                  <Image
-                    src={car.img}
-                    alt={`${car.title} corporate self drive car Hyderabad`}
-                    fill
-                    loading="lazy"
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
-                    <span className="text-xs font-medium text-white">Self Drive</span>
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-4">{car.title}</h3>
-                <div className="flex gap-2">
-                  <a
-                    href={`https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20${car.title}%20for%20self%20drive%20in%20Hyderabad.`}
-                    target="_blank"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-black font-medium text-sm hover:scale-105 transition"
-                    style={{ backgroundColor: GOLD }}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
-                  </a>
-                  <Link
-                    href="/contact"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-zinc-200 hover:border-gold hover:text-gold transition text-sm"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                    Contact
-                  </Link>
-                </div>
-              </div>
-            ))}
-            </div>
-            <button 
-              onClick={() => {
-                const carousel = document.getElementById('selfdrive-carousel');
-                if (carousel) carousel.scrollBy({left: -320, behavior: 'smooth'});
-              }}
-              className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 border border-white/20 rounded-full p-2 transition-all duration-300 hover:scale-110 hidden md:flex items-center justify-center"
-            >
-              <ChevronLeft className="w-5 h-5 text-white" />
-            </button>
-            <button 
-              onClick={() => {
-                const carousel = document.getElementById('selfdrive-carousel');
-                if (carousel) carousel.scrollBy({left: 320, behavior: 'smooth'});
-              }}
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 border border-white/20 rounded-full p-2 transition-all duration-300 hover:scale-110 hidden md:flex items-center justify-center"
-            >
-              <ChevronRight className="w-5 h-5 text-white" />
-            </button>
+            <ServiceFleetShowcase 
+              carNames={[
+                "BMW 520D", "Lamborghini Gallardo", "Lexus ES 300H", "Mercedes S 350",
+                "KIA Carnival", "Mercedes GLS 350D", "Mini Cooper Countryman", 
+                "Toyota Commuter (Custom)", "Toyota Crysta MT", "Toyota Fortuner",
+                "Toyota Vellfire", "Volvo XC60", "Audi Q7 Quatro", "Mercedes S 450",
+                "Mercedes G 350 Wagon", "Mercedes GLS 400D", "Mercedes V-Class",
+                "Range Rover Vogue", "Volvo S90", "Volvo XC 90", "BMW 730 LD",
+                "BMW i4", "Mercedes C300 Convertible", "Mercedes E 220D", "Toyota Camry",
+                "Volvo S60 D5", "Audi A6", "Audi RS5 QUATRO"
+              ]}
+            />
           </div>
         </section>
 
@@ -410,9 +339,9 @@ export default function CorporateCarRentalPage() {
               <a
                 href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20corporate%20car%20rental%20services%20in%20Hyderabad."
                 target="_blank"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/30 text-zinc-200 hover:border-gold hover:text-gold transition text-lg"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/30 hover:border-[#25D366]/50 hover:bg-[#25D366]/10 hover:text-[#25D366] text-zinc-200 transition text-lg font-medium"
               >
-                <MessageCircle className="w-5 h-5" />
+                <FaWhatsapp className="w-6 h-6" />
                 WhatsApp Us
               </a>
             </div>

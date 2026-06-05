@@ -2,10 +2,19 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
+import { Playfair_Display } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import Sidectabtn from "@/components/Sidectabtn"
+import Script from "next/script"
 import "./globals.css"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+})
 
 export const metadata: Metadata = {
   title: "DRIVEIT - Premium Luxury Transportation Services in Hyderabad",
@@ -148,11 +157,12 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`bg-background text-foreground antialiased font-sans ${GeistSans.variable} ${GeistMono.variable}`}
+        className={`bg-background text-foreground antialiased font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable}`}
       >
         <Suspense fallback={null}>{children}</Suspense>
         <Sidectabtn />
         <Analytics />
+        <Script src="//code.tidio.co/YOUR_TIDIO_CODE.js" strategy="lazyOnload" />
       </body>
     </html>
   )
