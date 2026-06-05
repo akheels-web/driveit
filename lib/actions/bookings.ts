@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { BookingFormData } from '@/lib/types'
+import { NotificationService } from '@/lib/services/notifications'
 
 function generateBookingRef(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -89,38 +90,8 @@ ${data.notes ? `• Notes: ${data.notes}` : ''}
     console.error('Telegram notification failed:', e)
   }
 
-  // Send WaCRM webhook
-  try {
-    const wacrmUrl = process.env.WACRM_WEBHOOK_URL
-    const wacrmSecret = process.env.WACRM_WEBHOOK_SECRET
-
-    if (wacrmUrl) {
-      await fetch(wacrmUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(wacrmSecret ? { 'X-Webhook-Secret': wacrmSecret } : {}),
-        },
-        body: JSON.stringify({
-          event: 'booking.created',
-          data: {
-            booking_ref: bookingRef,
-            car_name: data.carName,
-            service_type: data.serviceType,
-            customer_name: data.customerName,
-            customer_phone: data.customerPhone,
-            customer_email: data.customerEmail,
-            pickup_location: data.pickupLocation,
-            booking_date: data.bookingDate,
-            booking_time: data.bookingTime,
-            total_amount: data.totalAmount,
-          },
-        }),
-      })
-    }
-  } catch (e) {
-    console.error('WaCRM webhook failed:', e)
-  }
+  // Dispatch Unified Notifications (Email, SMS, WhatsApp Ticket)
+  NotificationService.sendBookingConfirmation(bookingRef, data)
 
   return { success: true, bookingRef, bookingId: booking.id }
 }

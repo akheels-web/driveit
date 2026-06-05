@@ -133,7 +133,7 @@ export default function BookingsPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-4">
                       <div>
                         <p className="text-white/30">Date</p>
                         <p className="text-white/70">{b.booking_date}</p>
@@ -149,6 +149,25 @@ export default function BookingsPage() {
                       <div>
                         <p className="text-white/30">Service</p>
                         <p className="text-white/70">{b.service_type}</p>
+                      </div>
+                    </div>
+
+                    {/* Timeline & Actions */}
+                    <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-1.5 text-[10px] text-white/40 uppercase tracking-widest font-semibold">
+                        <span className={b.status !== 'pending' ? 'text-[var(--gold-400)]' : 'text-white'}>Pending</span>
+                        <span>→</span>
+                        <span className={b.status === 'confirmed' || b.status === 'completed' ? 'text-[var(--gold-400)]' : ''}>Confirmed</span>
+                        <span>→</span>
+                        <span className={b.status === 'completed' ? 'text-[var(--gold-400)]' : ''}>Completed</span>
+                      </div>
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <Link href={`/dashboard/invoices/${b.id}`} target="_blank" className="flex-1 sm:flex-none text-center text-xs text-zinc-400 hover:text-[var(--gold-400)] transition flex items-center justify-center gap-1 border border-white/10 rounded-lg px-4 py-2 hover:border-[var(--gold-400)]/30 bg-white/5">
+                          View Invoice
+                        </Link>
+                        <Link href={`/cars?rebook=${b.car_id}`} className="flex-1 sm:flex-none text-center text-xs bg-[var(--gold-400)] text-black px-4 py-2 rounded-lg font-semibold hover:scale-105 transition shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+                          Re-Book
+                        </Link>
                       </div>
                     </div>
                   </motion.div>

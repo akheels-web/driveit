@@ -8,6 +8,8 @@ import { Heart, Crown, MapPin, Phone, ArrowRight, Sparkles, Flower2, Car, Shield
 import { FaWhatsapp } from "react-icons/fa"
 import { ServiceFleetShowcase } from "@/components/service-fleet-showcase"
 
+import { WeddingConfigurator } from "@/components/wedding-configurator"
+
 const GOLD = '#b48811'
 
 export default function WeddingCarsPage() {
@@ -130,60 +132,14 @@ export default function WeddingCarsPage() {
           </div>
         </section>
 
-        {/* BOOKING CTA */}
-        <section className="mx-auto max-w-7xl px-4 py-12">
-          <div className="relative overflow-hidden rounded-2xl border border-neutral-800 min-h-[500px] md:min-h-[600px]">
-            <Image
-              src="/rolls-royce-wedding-ribbon.png"
-              alt="Luxury rolls royce wedding car decorated in Hyderabad"
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1200px"
-              className="object-cover"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/65 to-black/80" />
-
-            <div className="relative z-10 p-6 md:p-10 flex items-center justify-center min-h-full">
-              <div className="w-full max-w-4xl text-center">
-                <div className="inline-flex items-center gap-2 text-sm text-zinc-300 mb-4">
-                  <Heart className="w-4 h-4" style={{ color: GOLD }} />
-                  Your Special Day Awaits
-                </div>
-                <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
-                  Book Your Wedding Car Today
-                </h2>
-                <p className="text-lg text-zinc-300 mb-8 max-w-2xl mx-auto">
-                  Luxury, elegance, and memories that last a lifetime.
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-4">
-                  <a
-                    href="tel:+918341341186"
-                    className="px-8 py-4 rounded-full border border-white/20 hover:border-gold text-zinc-200 hover:text-gold transition text-base inline-flex items-center gap-2"
-                  >
-                    <Phone className="w-5 h-5" style={{ color: GOLD }} />
-                    Call Now
-                  </a>
-                  <a
-                    href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20a%20wedding%20car%20in%20Hyderabad."
-                    target="_blank"
-                    className="px-8 py-4 text-black font-medium rounded-full text-base hover:scale-105 transition inline-flex items-center gap-2"
-                    style={{ backgroundColor: GOLD }}
-                  >
-                    <FaWhatsapp className="w-5 h-5" />
-                    WhatsApp Us
-                  </a>
-                  <Link
-                    href="/contact"
-                    className="px-8 py-4 text-black font-medium rounded-full text-base hover:scale-105 transition inline-flex items-center gap-2"
-                    style={{ backgroundColor: GOLD }}
-                  >
-                    Book Online
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* BOOKING CTA / CONFIGURATOR */}
+        <section className="mx-auto max-w-7xl px-4 py-16">
+           <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">Configure Your Wedding Package</h2>
+            <p className="text-zinc-400">Design the perfect luxury transport experience for your special day.</p>
+           </div>
+           
+           <WeddingConfigurator />
         </section>
       </main>
       <SiteFooter />

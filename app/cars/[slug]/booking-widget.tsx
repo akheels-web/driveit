@@ -10,6 +10,14 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
   const [pickupDate, setPickupDate] = useState('')
   const [returnDate, setReturnDate] = useState('')
   const [service, setService] = useState('chauffeur') // chauffeur or selfdrive
+  const [addons, setAddons] = useState<string[]>([])
+
+  const ADDON_PRICES = {
+    child_seat: 1500,
+    extra_driver: 1000,
+    photographer: 5000,
+    decoration: 2500,
+  }
 
   const estimate = useMemo(() => {
     let days = 1
@@ -20,10 +28,15 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
       if (diff > 0) days = diff
     }
     const base = car.price * days
-    // const gst = base * 0.18
+    
+    // Addons calculation
+    const addonsTotal = addons.reduce((sum, addonId) => {
+      return sum + (ADDON_PRICES[addonId as keyof typeof ADDON_PRICES] || 0)
+    }, 0)
+
     const gst = 0
-    return { days, base, gst, total: base + gst }
-  }, [car.price, pickupDate, returnDate])
+    return { days, base, addonsTotal, gst, total: base + addonsTotal + gst }
+  }, [car.price, pickupDate, returnDate, addons])
 
   const handleCheckout = () => {
     if (!pickupDate) return
@@ -33,6 +46,7 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
       returnDate: returnDate || pickupDate,
       service,
       days: estimate.days.toString(),
+      addons: addons.join(','),
       total: estimate.total.toString()
     })
     router.push(`/checkout?${q.toString()}`)
@@ -95,15 +109,54 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
             </div>
          </div>
 
+         {/* Add-ons Configurator */}
+         <div className="pt-2">
+            <label className="block text-xs text-white/40 uppercase tracking-wider mb-3">Premium Add-ons</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'child_seat', label: 'Child Seat', price: ADDON_PRICES.child_seat, icon: '🍼' },
+                { id: 'extra_driver', label: 'Extra Driver', price: ADDON_PRICES.extra_driver, icon: '👔' },
+                { id: 'photographer', label: 'Photographer', price: ADDON_PRICES.photographer, icon: '📸' },
+                { id: 'decoration', label: 'Decoration', price: ADDON_PRICES.decoration, icon: '🎀' },
+              ].map((addon) => (
+                <label 
+                  key={addon.id} 
+                  className={`flex flex-col p-3 rounded-xl border cursor-pointer transition-all ${
+                    addons.includes(addon.id) ? 'bg-[var(--gold-400)]/10 border-[var(--gold-400)]' : 'bg-white/5 border-white/5 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <span className="text-lg">{addon.icon}</span>
+                    <input 
+                      type="checkbox" 
+                      className="accent-[var(--gold-400)] w-4 h-4"
+                      checked={addons.includes(addon.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) setAddons(prev => [...prev, addon.id])
+                        else setAddons(prev => prev.filter(id => id !== addon.id))
+                      }}
+                    />
+                  </div>
+                  <div className="mt-2">
+                    <p className="text-xs font-semibold text-white/90">{addon.label}</p>
+                    <p className="text-[10px] text-[var(--gold-400)] mt-0.5">+₹{addon.price.toLocaleString()}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+         </div>
+
          <div className="bg-black/30 rounded-xl p-4 border border-white/5 space-y-3 mt-2 text-sm">
             <div className="flex justify-between text-white/60">
                <span>₹{car.price.toLocaleString()} x {estimate.days} days</span>
                <span>₹{estimate.base.toLocaleString()}</span>
             </div>
-            {/* <div className="flex justify-between text-white/60">
-               <span>Taxes & GST (18%)</span>
-               <span>₹{estimate.gst.toLocaleString()}</span>
-            </div> */}
+            {estimate.addonsTotal > 0 && (
+              <div className="flex justify-between text-white/60">
+                 <span>Premium Add-ons</span>
+                 <span>+₹{estimate.addonsTotal.toLocaleString()}</span>
+              </div>
+            )}
             <div className="pt-3 border-t border-white/10 flex justify-between font-bold text-white text-base">
                <span>Total Estimate</span>
                <span>₹{estimate.total.toLocaleString()}</span>
