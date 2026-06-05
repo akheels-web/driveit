@@ -127,7 +127,7 @@ export function SiteFooter() {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           <h4 className="text-xs font-semibold tracking-widest text-white uppercase mb-6 border-b border-white/5 pb-2">
-            LINKS
+            QUICK LINKS
           </h4>
           <ul className="space-y-3.5 text-sm text-zinc-400">
             <li>
