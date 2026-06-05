@@ -8,10 +8,19 @@ DRIVEIT is a premium, state-of-the-art web application for luxury vehicle rental
 
 - **🏆 Exquisite & Premium UI/UX:** A stunning interface featuring glassmorphic designs, harmonious gold-and-dark color palettes, custom animations, custom Google typography, and flawless responsiveness.
 - **🚗 Smart Dynamic Vehicle Search & Filter:** A state-of-the-art booking engine with passenger-to-vehicle seating capacity logic and real-time availability filters.
+- **💍 Premium Wedding Configurator:** Multi-step wizard to configure high-AOV wedding fleets (Primary Car, Escort Cars, Chauffeur Attire, Floral Themes).
+- **💼 Growth & Retention Engine:**
+  - **Loyalty & Membership:** Tiered reward system (Silver, Gold, Platinum) with dynamic dashboard cards.
+  - **Personalized Social Proof:** Intelligent "Booked X Times" metrics tailored to the logged-in user.
+  - **Add-on Bundles:** High-value curated packages (e.g., VIP Arrival, Family Trip) replacing individual toggles to boost AOV.
+  - **Saved Fleet (Wishlists):** Bookmark vehicles directly to the user's dashboard.
+  - **Saved Addresses:** Auto-filling home/office/airport locations in checkout.
+- **📱 Real-time & Asynchronous Notifications:** 
+  - **Unified Notification Engine:** Concurrently fires Email, SMS, and WhatsApp alerts using Promise handling.
+  - **WhatsApp Deep Linking:** Sends customized WhatsApp tickets to customers with 1-click "Quick Re-book" deep links.
+  - **Telegram Bot Integration:** Instant booking details dispatched directly to administrator Telegram channels.
+- **🧾 Instant Invoice Generation:** Direct browser-to-print, beautifully formatted HTML invoices for finalized bookings.
 - **💳 Direct UPI Payment Integration:** Seamless payment flow with integrated QR code generation and direct UPI deep linking for instant verification.
-- **📱 Real-time Notifications:** 
-  - **WhatsApp Integration:** Hooks into **WaCRM** for instant CRM updates and transactional messages.
-  - **Telegram Bot Notifications:** Instant booking details dispatched directly to administrator Telegram channels.
 - **🗄️ Backend powered by Supabase:** Multi-factor authentication, secure user profiles, booking management, and database migrations.
 - **📰 Elegant Blog Engine:** Dynamic SEO-optimized blog section for luxury travel tips, news, and features.
 
