@@ -170,7 +170,7 @@ export function SiteFooter() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Copyright */}
             <div className="text-xs text-zinc-600">
-              © {new Date().getFullYear()} <a href="https://www.edonesolutions.in/" className="hover:text-[var(--gold-400)] transition-colors duration-300">Edone solutions</a>. All rights reserved.
+              © {new Date().getFullYear()} <a href="https://www.digitalvint.com" className="hover:text-[var(--gold-400)] transition-colors duration-300">Digitalvint</a>. All rights reserved.
             </div>
 
             {/* Social Links */}
