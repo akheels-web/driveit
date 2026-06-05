@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, Crown } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, Crown, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { SiteHeader } from '@/components/site-header'
 
@@ -106,13 +106,21 @@ export default function SignupPage() {
           transition={{ duration: 0.6 }}
         >
           <div
-            className="rounded-2xl p-8"
+            className="rounded-2xl p-8 relative"
             style={{
               background: 'linear-gradient(145deg, rgba(20,20,20,1), rgba(12,12,12,1))',
               border: '1px solid rgba(212, 175, 55, 0.12)',
               boxShadow: '0 0 80px rgba(0,0,0,0.6), 0 0 30px rgba(212,175,55,0.03)',
             }}
           >
+            {/* Close Button */}
+            <Link
+              href="/"
+              className="absolute top-4 right-4 text-white/40 hover:text-[var(--gold-400)] transition-colors p-1.5 rounded-full hover:bg-white/5"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </Link>
             <div className="text-center mb-8">
               <div className="w-14 h-14 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center mx-auto mb-4 border border-[var(--gold-400)]/20">
                 <Crown className="w-6 h-6 text-[var(--gold-400)]" />
