@@ -1,5 +1,5 @@
 import { Car } from "lucide-react"
-import { SiBmw, SiAudi, SiToyota, SiVolvo, SiMini, SiKia, SiLamborghini, SiLandrover } from 'react-icons/si'
+import { SiBmw, SiAudi, SiToyota, SiVolvo, SiMini, SiKia, SiLamborghini } from 'react-icons/si'
 
 const MercedesIcon = ({ className, color }: { className?: string, color?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke={color || "currentColor"} strokeWidth="1.5" className={className}>
@@ -25,7 +25,7 @@ export const BrandIcon = ({ brand, className }: { brand: string, className?: str
     case 'mini': return <SiMini className={c} color="#ffffff" />
     case 'kia': return <SiKia className={c} color="#ffffff" />
     case 'lamborghini': return <SiLamborghini className={c} color="#D4AF37" />
-    case 'land rover': return <SiLandrover className={c} color="#005A2B" />
+    case 'land rover': return <Car className={c} color="#005A2B" />
     case 'mercedes': return <MercedesIcon className={c} color="#ffffff" />
     case 'lexus': return <LexusIcon className={c} color="#ffffff" />
     default: return <Car className={c} />

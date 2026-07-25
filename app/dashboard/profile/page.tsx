@@ -28,6 +28,7 @@ export default function ProfilePage() {
         .single()
 
       if (profile) {
+        setForm({
           full_name: profile.full_name || '',
           email: profile.email || user.email || '',
           phone: profile.phone || '',
