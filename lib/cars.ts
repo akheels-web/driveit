@@ -102,3 +102,5 @@ export const carsData: CarDetails[] = baseCars.map((car, index) => {
     securityDeposit: "₹" + (car.price > 20000 ? "50,000" : car.price > 10000 ? "25,000" : "10,000")
   }
 })
+
+
