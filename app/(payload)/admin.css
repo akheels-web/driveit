@@ -1,0 +1,317 @@
+/* ═══════════════════════════════════════════════════════════════
+   DRIVEIT LUXURY — EXECUTIVE ADMIN UI FIXES (PAYLOAD 3.0)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Override Payload 3.0 Core CSS Variables ── */
+:root, [data-theme="dark"], [data-theme="light"], html, body {
+  --theme-bg: #09090b !important;
+  --theme-elevation-0: #09090b !important;
+  --theme-elevation-50: #121215 !important;
+  --theme-elevation-100: #18181b !important;
+  --theme-elevation-150: #202024 !important;
+  --theme-elevation-200: #27272a !important;
+  --theme-elevation-250: #2d2d32 !important;
+  --theme-elevation-300: #3f3f46 !important;
+  --theme-elevation-400: #52525b !important;
+  --theme-elevation-500: #71717a !important;
+  --theme-elevation-600: #a1a1aa !important;
+  --theme-elevation-700: #d4d4d8 !important;
+  --theme-elevation-800: #e4e4e7 !important;
+  --theme-elevation-900: #f4f4f5 !important;
+  --theme-elevation-1000: #ffffff !important;
+
+  --theme-text: #f4f4f5 !important;
+  --theme-input-bg: #18181b !important;
+  --color-base-0: #09090b !important;
+  --color-base-50: #121215 !important;
+  --color-base-100: #18181b !important;
+  --color-base-200: #27272a !important;
+  --color-base-500: #71717a !important;
+  --color-base-800: #e4e4e7 !important;
+  --color-base-1000: #ffffff !important;
+
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* ── 2. Full Background Override ── */
+#app, .template-default, [class*="template-default"], main {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+/* ── 3. Sidebar Groups ("Collections" & "Globals") Clean Styling ── */
+aside, .nav, nav, [class*="nav-"], [class*="sidebar"] {
+  background-color: #0c0c0e !important;
+  border-right: 1px solid #1f1f23 !important;
+}
+
+.nav-group__toggle,
+.nav-group__title,
+[class*="nav-group"] button,
+[class*="nav-group__title"],
+[class*="group-title"] {
+  background: transparent !important;
+  color: #d4af37 !important;
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  padding: 14px 14px 6px 14px !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.nav-group__toggle::after,
+.nav-group__toggle::before,
+[class*="nav-group"]::after {
+  border: none !important;
+  content: none !important;
+}
+
+/* Sidebar Links */
+.nav a, nav a, [class*="nav__link"], .nav a:hover, nav a:hover, [class*="nav__link"]:hover {
+  text-decoration: none !important;
+}
+
+.nav a, nav a, [class*="nav__link"] {
+  color: #cbd5e1 !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  transition: all 0.15s ease !important;
+}
+
+.nav a:hover, nav a:hover, [class*="nav__link"]:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+.nav a.active, [class*="nav__link--active"] {
+  background-color: rgba(212, 175, 55, 0.15) !important;
+  color: #d4af37 !important;
+  font-weight: 700 !important;
+  border-left: 3px solid #d4af37 !important;
+}
+
+/* Fix Duplicate Toggler Icon */
+.nav-toggler::before, .nav-toggler::after {
+  display: none !important;
+}
+
+/* ── 4. Beautiful Red Logout Button with Text ── */
+.nav__log-out,
+button.nav__log-out,
+a.nav__log-out,
+[class*="log-out"],
+a[href*="logout"] {
+  background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 1.5rem 1rem !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.nav__log-out:hover,
+button.nav__log-out:hover,
+a.nav__log-out:hover,
+a[href*="logout"]:hover {
+  background: linear-gradient(135deg, #ef4444, #f87171) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.5) !important;
+  color: #ffffff !important;
+}
+
+.nav__log-out svg, [class*="log-out"] svg {
+  color: #ffffff !important;
+}
+
+/* ── 5. Search Bar & Filter Alignment ── */
+[class*="search-filter"],
+.search-filter {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  background-color: #121215 !important;
+  border: 1px solid #1f1f23 !important;
+  border-radius: 10px !important;
+  padding: 4px 8px !important;
+}
+
+[class*="search-filter"] svg,
+.search-filter svg {
+  position: absolute !important;
+  left: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #a1a1aa !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+[class*="search-filter"] input,
+.search-filter input {
+  padding-left: 38px !important;
+  background-color: #18181b !important;
+  color: #f4f4f5 !important;
+  border: 1px solid #27272a !important;
+  border-radius: 8px !important;
+  height: 40px !important;
+  width: 100% !important;
+}
+
+/* ── 6. Single Unified Primary "Create New" Button ── */
+.btn--style-primary,
+button[class*="btn--style-primary"],
+a[class*="btn--style-primary"],
+button[type="submit"],
+[class*="create-new"],
+.no-results button,
+[class*="empty-state"] button {
+  background: linear-gradient(135deg, #f0d060, #d4af37, #c49b2a) !important;
+  color: #09090b !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 10px 22px !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.btn--style-primary:hover,
+button[class*="btn--style-primary"]:hover,
+a[class*="btn--style-primary"]:hover,
+.no-results button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5) !important;
+  background: linear-gradient(135deg, #f5d770, #e2bb42, #d4af37) !important;
+}
+
+/* Hide duplicate top Create button when empty state button is present */
+.no-results ~ header .btn--style-primary,
+[class*="empty-state"] ~ header .btn--style-primary {
+  display: none !important;
+}
+
+/* Secondary Action Buttons (Columns, Filters) */
+.btn--style-secondary,
+button[class*="btn--style-secondary"],
+a[class*="btn--style-secondary"],
+.pill,
+[class*="pill"] {
+  background-color: #18181b !important;
+  color: #f4f4f5 !important;
+  border: 1px solid #27272a !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+}
+
+.btn--style-secondary:hover,
+button[class*="btn--style-secondary"]:hover,
+.pill:hover {
+  background-color: #27272a !important;
+  border-color: #3f3f46 !important;
+  color: #ffffff !important;
+}
+
+/* ── 7. Columns Tag Box Clean Styling ── */
+[class*="column-selector"],
+.column-selector {
+  background-color: #121215 !important;
+  border: 1px solid #27272a !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  margin: 10px 0 !important;
+}
+
+[class*="column-selector"] [class*="pill"],
+.column-selector .pill,
+[class*="column-selector"] button {
+  background-color: #18181b !important;
+  color: #a1a1aa !important;
+  border: 1px solid #27272a !important;
+  border-radius: 20px !important;
+  padding: 6px 14px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease !important;
+}
+
+/* Selected active column pill in selector */
+[class*="column-selector"] [class*="pill"][class*="active"],
+.column-selector .pill.active,
+[class*="column-selector"] button[class*="active"] {
+  background-color: rgba(212, 175, 55, 0.2) !important;
+  color: #d4af37 !important;
+  border-color: #d4af37 !important;
+}
+
+/* ── 8. Table & List View Styling ── */
+table, .table, [class*="table"] {
+  background-color: #121215 !important;
+  color: #f4f4f5 !important;
+  border: 1px solid #1f1f23 !important;
+  border-radius: 12px !important;
+}
+
+thead, th, [class*="table__header"] {
+  background-color: #18181b !important;
+  color: #d4af37 !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid #27272a !important;
+}
+
+tbody tr, tr, [class*="table__row"] {
+  background-color: #121215 !important;
+  color: #f4f4f5 !important;
+  border-bottom: 1px solid #1f1f23 !important;
+}
+
+tbody tr:hover, [class*="table__row"]:hover {
+  background-color: #18181b !important;
+}
+
+td, [class*="table__cell"] {
+  color: #e4e4e7 !important;
+}
+
+/* ── 9. Card & Container Wrappers ── */
+[class*="card"],
+[class*="no-results"],
+[class*="empty-state"] {
+  background-color: #121215 !important;
+  border: 1px solid #1f1f23 !important;
+  border-radius: 16px !important;
+  padding: 2.5rem !important;
+  color: #a1a1aa !important;
+}
+
+[class*="no-results"] h2, [class*="empty-state"] h2 {
+  color: #d4af37 !important;
+}

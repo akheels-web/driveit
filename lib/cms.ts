@@ -1,8 +1,9 @@
+import { cache } from 'react'
 import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
 import { CarDetails, carsData } from './cars'
 
-export async function getCarsFromCMS(): Promise<CarDetails[]> {
+export const getCarsFromCMS = cache(async (): Promise<CarDetails[]> => {
   try {
     const payload = await getPayload({ config: configPromise })
     const { docs } = await payload.find({
@@ -17,31 +18,31 @@ export async function getCarsFromCMS(): Promise<CarDetails[]> {
         name: doc.name,
         src: doc.imageSrc || (doc.image && typeof doc.image === 'object' ? doc.image.url : '/sadan/1.jpg'),
         gallery: [doc.imageSrc || '/sadan/1.jpg'],
-        brand: doc.brand,
+        brand: doc.brand || 'Luxury',
         category: doc.category,
-        price: doc.price,
-        priceDisplay: doc.priceDisplay || `₹${doc.price.toLocaleString('en-IN')}/day`,
-        seats: doc.seats,
-        transmission: doc.transmission,
-        fuel: doc.fuel,
-        services: doc.services || ['chauffeur'],
-        rating: 4.8,
-        reviewsCount: 24,
-        bookingsCount: 85,
+        price: doc.pricePerDay || doc.price || 15000,
+        priceDisplay: `₹${(doc.pricePerDay || doc.price || 15000).toLocaleString('en-IN')}/day`,
+        seats: doc.seats || 5,
+        transmission: doc.transmission || 'Automatic',
+        fuel: doc.fuelType || doc.fuel || 'Petrol',
+        services: ['chauffeur'],
+        rating: 4.9,
+        reviewsCount: 32,
+        bookingsCount: 120,
         addedDate: doc.createdAt || new Date().toISOString(),
         specs: {
-          bootSpace: doc.bootSpace || '450L',
-          acZones: doc.acZones || '4-Zone Climate Control',
-          year: doc.year || '2024',
-          odometer: doc.odometer || '15,000 km',
+          bootSpace: '450L',
+          acZones: '4-Zone Climate Control',
+          year: '2024',
+          odometer: '12,000 km',
         },
-        cancellationPolicy: doc.cancellationPolicy || 'Free cancellation up to 48 hours before pickup.',
-        kmAllowance: doc.kmAllowance || '100 km/day included.',
-        securityDeposit: doc.securityDeposit || '₹25,000',
+        cancellationPolicy: 'Free cancellation up to 48 hours before pickup.',
+        kmAllowance: '100 km/day included.',
+        securityDeposit: '₹25,000',
       }))
     }
   } catch (error) {
     // Return static carsData fallback
   }
   return carsData
-}
+})

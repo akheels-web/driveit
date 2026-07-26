@@ -1,125 +1,127 @@
-# 🚗 DRIVEIT Luxury Car Rental & Charter Services
+# 🚗 DriveIt: Luxury Concierge & Fleet Management System
 
-DRIVEIT is a premium, state-of-the-art web application for luxury vehicle rentals, yacht charters, wedding car rentals, corporate travel services, and private jet chartering. Built using modern web practices and optimized for the ultimate premium customer experience.
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
+![Payload CMS](https://img.shields.io/badge/Payload_CMS-3.0-white?style=for-the-badge)
+![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
+![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
 
----
-
-## ✨ Features
-
-- **🏆 Exquisite & Premium UI/UX:** A stunning interface featuring glassmorphic designs, harmonious gold-and-dark color palettes, custom animations, custom Google typography, and flawless responsiveness.
-- **🚗 Smart Dynamic Vehicle Search & Filter:** A state-of-the-art booking engine with passenger-to-vehicle seating capacity logic and real-time availability filters.
-- **💍 Premium Wedding Configurator:** Multi-step wizard to configure high-end wedding fleets (Primary Car, Escort Cars, Chauffeur Attire, Floral Themes).
-- **💼 Growth & Retention Engine:**
-  - **Loyalty & Membership:** Tiered reward system (Silver, Gold, Platinum) with dynamic dashboard cards and automatic point calculations (100 points per ₹10,000 spent).
-  - **Personalized Social Proof:** Intelligent user-specific tracking ("You've booked this car X times") to drive engagement.
-  - **Add-on Bundles:** Curated high-value packages (e.g., VIP Arrival, Family Trip, Wedding Package) that streamline checkout and boost AOV.
-  - **Saved Fleet (Wishlists):** Direct one-click bookmarking of vehicles to the user's dashboard.
-  - **Saved Addresses:** Autocompletes Saved Home, Office, and Airport locations in checkout for logged-in users.
-- **📱 Real-time & Asynchronous Notifications:** 
-  - **Unified Notification Engine:** Concurrently dispatches Email, SMS, and WhatsApp alerts with error boundary handling.
-  - **WhatsApp Deep Linking:** Generates tailored WhatsApp booking tickets featuring a 1-click "Quick Re-book" deep link.
-  - **Telegram Bot Integration:** Dispatches instant reservation summaries to admin channels for real-time order tracking.
-- **🧾 Instant Invoice Generation:** Direct browser-to-print, elegantly formatted HTML invoices for finalized bookings.
-- **💳 Direct UPI Payment Integration:** Seamless payment flow featuring dynamic QR code generation and direct UPI deep linking for instant verification.
-- **🗄️ Backend powered by Supabase:** Secure user profiles, real-time database queries, and secure row-level policies.
-- **📰 Elegant Blog Engine:** Dynamic SEO-optimized blog section for luxury travel tips, news, and features.
+DriveIt is a fully-featured, ultra-premium web application for luxury car rentals and concierge services. It features a stunning, highly animated frontend built with Next.js App Router and a powerful, deeply integrated headless backend powered by Payload CMS 3.0.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Premium Features
 
-- **Framework:** Next.js (App Router, Server Components)
-- **Styling:** Tailwind CSS v4, PostCSS, Glassmorphism design system
-- **Animations:** Motion (Framer Motion), CSS transitions
-- **Database & Auth:** Supabase (PostgreSQL, Client & Server SDK helpers)
-- **Components:** Radix UI primitives, Lucide Icons
-- **Forms & Validation:** React Hook Form, Zod
+### 🏢 Customer Experience (Frontend)
+- **Ultra-Luxury UI/UX**: Dark-mode primary design with glassmorphism, Framer Motion animations, and beautiful typography.
+- **Dynamic Secure Checkout**: Real-time QR Code payment integration with a completely frictionless UI.
+- **Concurrency Locks**: "Movie-ticket style" checkout locks. When a customer initiates a checkout, the vehicle is temporarily reserved for 10 minutes to prevent double-booking.
+- **Automated PDF Invoices**: Upon booking confirmation, a professionally branded PDF invoice is instantly generated and emailed to the customer.
+- **Smart Loyalty Coupons**: Built-in promotional engine. The system automatically tracks a user's booking history and emails them a VIP discount code after hitting booking milestones.
+- **WhatsApp Concierge**: Integrated Meta Graph API sends automated WhatsApp confirmations to clients for that ultra-premium touch.
+
+### 🛡️ Fleet Management (Backend - Payload CMS)
+- **Deep Content Management**: Manage Cars, Services, Testimonials, Blogs, and Bookings entirely from an intuitive admin panel (`/admin`).
+- **Global Settings**: Update Site Branding (Logos), Contact Numbers, and Social Links dynamically without touching code.
+- **Local SQLite Database**: Blazing fast, portable, and easy to back up.
+- **Access Control**: Fully configured role-based access for Admins and regular users.
 
 ---
 
-## 🚀 Getting Started
+## 🛠️ Technology Stack
 
-### 📋 Prerequisites
+- **Framework**: Next.js (App Router, Turbopack)
+- **CMS / Backend**: Payload CMS (v3)
+- **Database**: SQLite (via Drizzle ORM)
+- **Styling**: Tailwind CSS, Radix UI, Framer Motion
+- **Emails**: Resend / Nodemailer
+- **PDF Generation**: `@react-pdf/renderer`
+- **Icons**: Lucide React & React Icons
 
-Ensure you have the following installed:
-- Node.js (v18.x or later)
-- npm or yarn
+---
 
-### 📥 Installation & Setup
+## 🚀 Getting Started Locally
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/akheels-web/driveit.git
-   cd driveit
-   ```
+### 1. Clone & Install
+```bash
+git clone https://github.com/your-username/driveit.git
+cd driveit
+npm install --legacy-peer-deps
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### 2. Environment Variables
+Create a `.env.local` file in the root directory:
+```env
+# Payload Secret (Generate a secure random string for production)
+PAYLOAD_SECRET=your_secure_random_string
 
-3. **Configure Environment Variables:**
-   Copy the example environment file:
-   ```bash
-   cp .env.local.example .env.local
-   ```
-   Open `.env.local` and configure the following parameters:
+# SQLite Database Location
+DATABASE_URI=file:./driveit.db
 
-   | Variable | Description |
-   | :--- | :--- |
-   | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase Project URL |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase Anon Key |
-   | `SUPABASE_SERVICE_ROLE_KEY` | Your Supabase Service Role Key (for secure server operations) |
-   | `NEXT_PUBLIC_UPI_ID` | The business UPI ID for booking payments |
-   | `NEXT_PUBLIC_UPI_NAME` | Display name for UPI transaction (e.g. DRIVEIT Luxury) |
-   | `WACRM_WEBHOOK_URL` | WhatsApp CRM endpoint URL |
-   | `WACRM_WEBHOOK_SECRET` | Secret key to verify webhook authorization |
-   | `TELEGRAM_BOT_TOKEN` | Token for the admin notification Telegram bot |
-   | `TELEGRAM_CHAT_ID` | Telegram chat/channel ID for bot alerts |
-   | `NEXT_PUBLIC_SITE_URL` | Base site URL (e.g. `http://localhost:3000` locally) |
+# Resend API for automated emails and PDF Invoices (Optional)
+RESEND_API_KEY=re_your_api_key
 
-4. **Initialize Supabase Database Schemas:**
-   Run the SQL scripts in your Supabase SQL Editor in the following order:
-   - **Step 1: Core Database Schema**
-     Execute the raw SQL code in `supabase/migrations/001_schema.sql` to set up initial tables (bookings, cars, services, reviews).
-   - **Step 2: Phase 2 Growth Engine Setup**
-     Execute the raw SQL code in [supabase_migrations.md](supabase_migrations.md) to set up profiles, user creation triggers, and user wishlists.
+# WhatsApp Meta API for concierge notifications (Optional)
+WHATSAPP_TOKEN=EAALyour_meta_token
+WHATSAPP_PHONE_ID=your_phone_id
+```
 
-### 💻 Running Locally
-
-Start the Next.js development server:
+### 3. Run the Development Server
 ```bash
 npm run dev
 ```
+- Open [http://localhost:3000](http://localhost:3000) for the main website.
+- Open [http://localhost:3000/admin](http://localhost:3000/admin) to manage your fleet and bookings.
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
+*(Note: On the first run, Payload will automatically initialize your SQLite database (`driveit.db`) based on the defined collections).*
 
 ---
 
-## 📦 Project Structure
+## 🐳 VPS Deployment (Docker)
 
-```text
-├── app/                  # Next.js App Router (pages & API endpoints)
-│   ├── api/              # API Webhooks & Routes (e.g. wishlist/notification endpoints)
-│   ├── auth/             # Authentication callbacks
-│   ├── blog/             # Blog page & dynamic slug page
-│   ├── cars/             # Car listing & detail booking pages
-│   ├── checkout/         # Payment checkout page
-│   ├── dashboard/        # Customer dashboards (bookings, profile, wishlist)
-│   └── services/         # Specialized services (luxury, corporate, wedding configurator)
-├── components/           # Reusable UI component library
-│   ├── booking-section.tsx # Dynamic booking search component
-│   ├── upi-payment.tsx     # Direct UPI payment component
-│   └── ...               # Premium design system components
-├── hooks/                # Custom React Hooks
-├── lib/                  # Shared utilities (Supabase, notification service, actions)
-├── public/               # Static assets & public images
-├── supabase/             # DB Migrations & Schemas
-└── package.json          # Node dependencies & run scripts
+DriveIt includes a production-ready `Dockerfile` optimized for VPS deployments (like DigitalOcean, Hetzner, or AWS EC2).
+
+### Building and Running with Docker
+
+1. **Build the image**:
+```bash
+docker build -t driveit-app .
 ```
 
+2. **Run the container (with a persistent volume for the database)**:
+```bash
+docker run -d \
+  -p 3000:3000 \
+  -v $(pwd)/data:/app/data \
+  -e DATABASE_URI=file:/app/data/driveit.db \
+  -e PAYLOAD_SECRET=your_secure_secret \
+  -e RESEND_API_KEY=re_your_api_key \
+  --name driveit-container \
+  driveit-app
+```
+
+> **Important for SQLite**: By mounting the volume `-v $(pwd)/data:/app/data` and setting the `DATABASE_URI`, your database will persist even if the container is stopped, updated, or restarted.
+
+### Using Docker Compose (Recommended)
+For easier management, you can create a `docker-compose.yml`:
+```yaml
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URI=file:/app/data/driveit.db
+      - PAYLOAD_SECRET=your_production_secret
+      - RESEND_API_KEY=your_resend_key
+    restart: unless-stopped
+```
+Then simply run: `docker-compose up -d`
+
 ---
 
-## 📄 License
-
-This project is proprietary and confidential. All rights reserved.
+## 📝 License
+This project is licensed under the MIT License.

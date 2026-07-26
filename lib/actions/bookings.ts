@@ -1,6 +1,8 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { auth } from '@/auth'
+import { getPayload } from 'payload'
+import configPromise from '@/payload.config'
 import type { BookingFormData } from '@/lib/types'
 import { NotificationService } from '@/lib/services/notifications'
 
@@ -14,50 +16,34 @@ function generateBookingRef(): string {
 }
 
 export async function createBooking(data: BookingFormData) {
-  const supabase = await createClient()
-
-  // Get current user if logged in
-  const { data: { user } } = await supabase.auth.getUser()
-
+  const session = await auth()
   const bookingRef = generateBookingRef()
 
-  const { data: booking, error } = await supabase
-    .from('bookings')
-    .insert({
-      booking_ref: bookingRef,
-      user_id: user?.id || null,
-      car_id: data.carId || null,
-      car_name: data.carName,
-      service_type: data.serviceType,
-      pickup_location: data.pickupLocation,
-      dropoff_location: data.dropoffLocation || null,
-      booking_date: data.bookingDate,
-      booking_time: data.bookingTime,
-      duration_days: data.durationDays,
-      customer_name: data.customerName,
-      customer_phone: data.customerPhone,
-      customer_email: data.customerEmail || null,
-      notes: data.notes || null,
-      total_amount: data.totalAmount,
-      payment_method: data.paymentMethod || null,
-      payment_status: data.paymentMethod === 'upi' ? 'pending' : 'unpaid',
-      status: 'pending',
-    })
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Booking error:', error)
-    return { success: false, error: error.message }
-  }
-
-  // Send Telegram notification
   try {
-    const telegramToken = process.env.TELEGRAM_BOT_TOKEN
-    const telegramChatId = process.env.TELEGRAM_CHAT_ID
+    const payload = await getPayload({ config: configPromise })
+    const booking = await payload.create({
+      collection: 'bookings',
+      data: {
+        customerName: data.customerName,
+        customerEmail: data.customerEmail || session?.user?.email || 'guest@driveitluxury.com',
+        customerPhone: data.customerPhone,
+        carName: data.carName,
+        carSlug: data.carId,
+        pickupLocation: data.pickupLocation,
+        dropoffLocation: data.dropoffLocation,
+        totalPrice: data.totalAmount,
+        serviceType: (data.serviceType as any) || 'chauffeur',
+        status: 'confirmed',
+      },
+    })
 
-    if (telegramToken && telegramChatId) {
-      const message = `🚗 *New DRIVEIT Booking!*
+    // Send Telegram notification if configured
+    try {
+      const telegramToken = process.env.TELEGRAM_BOT_TOKEN
+      const telegramChatId = process.env.TELEGRAM_CHAT_ID
+
+      if (telegramToken && telegramChatId) {
+        const message = `🚗 *New DRIVEIT Booking!*
 
 📋 *Ref:* ${bookingRef}
 🚘 *Car:* ${data.carName}
@@ -74,74 +60,63 @@ ${data.customerEmail ? `• Email: ${data.customerEmail}` : ''}
 ${data.notes ? `• Notes: ${data.notes}` : ''}
 
 💳 *Payment:* ${data.paymentMethod === 'upi' ? 'UPI (Pending)' : 'Pay at Pickup'}
-📊 *Status:* Pending`
+📊 *Status:* Confirmed`
 
-      await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: telegramChatId,
-          text: message,
-          parse_mode: 'Markdown',
-        }),
-      })
-    }
-  } catch (e) {
-    console.error('Telegram notification failed:', e)
-  }
-
-  // Dispatch Unified Notifications (Email, SMS, WhatsApp Ticket)
-  NotificationService.sendBookingConfirmation(bookingRef, data)
-
-  // Award Loyalty Points & Tiers
-  if (user?.id) {
-    const pointsToAward = Math.floor(data.totalAmount / 10000) * 100
-    if (pointsToAward > 0) {
-      const { data: profile } = await supabase.from('profiles').select('loyalty_points, loyalty_tier').eq('id', user.id).single()
-      if (profile) {
-        const newPoints = (profile.loyalty_points || 0) + pointsToAward
-        let newTier = profile.loyalty_tier || 'Silver'
-        if (newPoints >= 5000) newTier = 'Platinum'
-        else if (newPoints >= 1000) newTier = 'Gold'
-
-        await supabase.from('profiles').update({
-          loyalty_points: newPoints,
-          loyalty_tier: newTier
-        }).eq('id', user.id)
+        await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: telegramChatId,
+            text: message,
+            parse_mode: 'Markdown',
+          }),
+        })
       }
+    } catch (e) {
+      console.error('Telegram notification failed:', e)
     }
-  }
 
-  return { success: true, bookingRef, bookingId: booking.id }
+    // Dispatch Unified Notifications (Email, SMS, WhatsApp Ticket)
+    NotificationService.sendBookingConfirmation(bookingRef, data)
+
+    return { success: true, bookingRef, bookingId: booking.id.toString() }
+  } catch (error: any) {
+    console.error('Booking save error:', error)
+    return { success: false, error: error.message }
+  }
 }
 
 export async function getUserBookings() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const session = await auth()
+  if (!session?.user?.email) return { bookings: [], error: 'Not authenticated' }
 
-  if (!user) return { bookings: [], error: 'Not authenticated' }
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const { docs } = await payload.find({
+      collection: 'bookings',
+      where: {
+        customerEmail: { equals: session.user.email },
+      },
+    })
 
-  const { data: bookings, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-
-  if (error) return { bookings: [], error: error.message }
-  return { bookings: bookings || [], error: null }
+    return { bookings: docs || [], error: null }
+  } catch (error: any) {
+    return { bookings: [], error: error.message }
+  }
 }
 
 export async function updatePaymentStatus(bookingId: string, upiTransactionId: string) {
-  const supabase = await createClient()
-
-  const { error } = await supabase
-    .from('bookings')
-    .update({
-      payment_status: 'pending',
-      upi_transaction_id: upiTransactionId,
+  try {
+    const payload = await getPayload({ config: configPromise })
+    await payload.update({
+      collection: 'bookings',
+      id: bookingId,
+      data: {
+        status: 'confirmed',
+      },
     })
-    .eq('id', bookingId)
-
-  if (error) return { success: false, error: error.message }
-  return { success: true }
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
 }

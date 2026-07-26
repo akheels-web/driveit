@@ -1,10 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { FaWhatsapp, FaPhoneAlt } from 'react-icons/fa'
 
 function Sidectabtn() {
   const [isVisible, setIsVisible] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +18,9 @@ function Sidectabtn() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  if (pathname?.startsWith('/admin')) return null
+
 
   const handleWhatsApp = () => {
     const phoneNumber = '918341341186'

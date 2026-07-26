@@ -5,20 +5,20 @@ export const Users: CollectionConfig = {
   auth: true,
   admin: {
     useAsTitle: 'email',
+    defaultColumns: ['name', 'email', 'createdAt'],
+    description: '👑 Executive Administrators: Manage admin users who have full administrative access to the Payload CMS portal.',
+  },
+  access: {
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {
       name: 'name',
       type: 'text',
-    },
-    {
-      name: 'role',
-      type: 'select',
-      defaultValue: 'admin',
-      options: [
-        { label: 'Admin', value: 'admin' },
-        { label: 'Customer', value: 'customer' },
-      ],
+      label: 'Full Name',
     },
   ],
 }

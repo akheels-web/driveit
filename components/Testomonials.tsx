@@ -82,6 +82,7 @@ function TestimonialCard({ testimonial }: { testimonial: (typeof testimonials)[0
             src={testimonial.image}
             alt={`${testimonial.name} client testimonial Hyderabad`}
             fill
+            sizes="40px"
             loading="lazy"
             className="object-cover"
           />
