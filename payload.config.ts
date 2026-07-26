@@ -23,7 +23,16 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     css: path.resolve(dirname, 'app/(payload)/admin.css'),
+    meta: {
+      titleSuffix: '- DriveIt',
+      favicon: '/favicon.ico',
+      ogImage: '/rolls-royce-phantom-night.png',
+    },
     components: {
+      graphics: {
+        Logo: '@/components/cms/Logo#Logo',
+        Icon: '@/components/cms/Icon#Icon',
+      },
       Nav: '@/components/cms/CustomNav#CustomNav',
       views: {
         dashboard: {

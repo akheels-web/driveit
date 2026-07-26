@@ -4,7 +4,7 @@ import Image from "next/image"
 import { useRef } from "react"
 import { motion, useScroll, useTransform, useInView } from "motion/react"
 
-export default function Hero() {
+export default function Hero({ videoUrl }: { videoUrl?: string }) {
   const heroRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(textRef, { once: true })
@@ -42,14 +42,25 @@ export default function Hero() {
         className="absolute inset-0 w-full h-full"
         style={{ scale: imageScale }}
       >
-        <Image
-          src="/rolls-royce-phantom-night.png"
-          alt="Luxury Rolls Royce Phantom at night - DRIVEIT premium fleet"
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
+        {videoUrl ? (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            src={videoUrl}
+            className="w-full h-full object-cover object-center"
+          />
+        ) : (
+          <Image
+            src="/rolls-royce-phantom-night.png"
+            alt="Luxury Rolls Royce Phantom at night - DRIVEIT premium fleet"
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+          />
+        )}
       </motion.div>
 
       {/* Gradient Overlay */}

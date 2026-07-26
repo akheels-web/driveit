@@ -1,3 +1,5 @@
+import { getPayload } from 'payload'
+import config from '@/payload.config'
 import type { Metadata } from 'next'
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
@@ -44,14 +46,17 @@ export const metadata: Metadata = {
   ],
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const payload = await getPayload({ config })
+  const siteSettings = await payload.findGlobal({ slug: 'site-settings' })
+
   return (
     <>
       <SiteHeader />
       <main className="bg-[var(--luxury-bg)] text-zinc-100">
         {/* Hero — Full viewport cinematic */}
         <section id="home">
-          <Hero />
+          <Hero videoUrl={siteSettings.headerVideoUrl as string | undefined} />
           <MarqueeStrip />
           <Stats />
         </section>

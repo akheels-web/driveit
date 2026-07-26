@@ -42,6 +42,14 @@ export const SiteSettings: GlobalConfig = {
       label: 'Header Logo Image',
     },
     {
+      name: 'headerVideoUrl',
+      type: 'text',
+      label: 'Homepage Header Video URL',
+      admin: {
+        description: 'Optional. Paste a direct .mp4 video URL to play a video background on the homepage instead of the static image. Leave blank to use the default image.',
+      }
+    },
+    {
       name: 'footerLogo',
       type: 'relationship',
       relationTo: 'media',
