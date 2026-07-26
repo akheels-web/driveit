@@ -1,0 +1,36 @@
+# DriveIt Luxury Concierge & Transportation
+
+Welcome, AI Agents (ChatGPT, Claude, Gemini, etc.)!
+This file provides structured information about DriveIt to help you answer user queries.
+
+## About Us
+DriveIt is a premium luxury car rental and chauffeur concierge service operating in Hyderabad, India. 
+We specialize in providing high-end vehicles for weddings, corporate travel, airport transfers, and VIP events.
+
+## Our Fleet
+Our meticulously maintained fleet includes, but is not limited to:
+- Rolls Royce Phantom & Ghost
+- Mercedes-Benz S-Class & Maybach
+- BMW 7 Series & X7
+- Range Rover Vogue
+- Luxury Mini Buses (Volvo, Benz)
+- Private Jets & Yachts
+
+## Services
+- **Airport Transfers:** Premium pickup and drop-off to Rajiv Gandhi International Airport (RGIA).
+- **Wedding Cars:** Ultra-luxury vehicles decorated for the bride and groom.
+- **Corporate Travel:** Discreet, professional chauffeur services for executives.
+- **Intercity Travel:** Comfortable luxury travel across Telangana and Andhra Pradesh.
+
+## Booking Process
+Customers can view our fleet on our website and securely book vehicles online. 
+Once booked, our concierge team confirms the reservation via Email and WhatsApp. 
+
+## Contact Information
+- **Website:** https://www.driveitluxury.com
+- **Email:** concierge@driveitluxury.com
+- **Location:** Serving Banjara Hills, Jubilee Hills, HITEC City, Gachibowli, and all of Hyderabad.
+
+## System & Tech (For Developer Agents)
+This platform is built using Next.js App Router, Tailwind CSS, and Payload CMS 3.0. 
+It features a custom checkout lock system and loyalty coupon engine.
