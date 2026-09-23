@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from "react"
+import Link from "next/link"
 import { CarCard } from "@/components/car-card"
-import { carsData } from "@/lib/cars"
+import { useFleet } from "@/hooks/use-fleet"
 import { motion, AnimatePresence } from "motion/react"
 import { Crown, Star, Car, Settings2 } from "lucide-react"
 
@@ -15,6 +16,7 @@ const tabs = [
 
 export function LuxuryCarClient() {
   const [activeTab, setActiveTab] = useState('trending')
+  const { cars: carsData } = useFleet()
 
   // Derive cars based on active tab
   const displayCars = carsData.filter(c => {
@@ -69,9 +71,9 @@ export function LuxuryCarClient() {
       </div>
 
       <div className="text-center mt-10">
-         <a href="/cars" className="inline-block px-8 py-3 rounded-full border border-[var(--gold-400)] text-[var(--gold-400)] hover:bg-[var(--gold-400)] hover:text-black transition-colors duration-300 font-medium">
+         <Link href="/cars" className="inline-block px-8 py-3 rounded-full border border-[var(--gold-400)] text-[var(--gold-400)] hover:bg-[var(--gold-400)] hover:text-black transition-colors duration-300 font-medium">
             View Full Fleet
-         </a>
+         </Link>
       </div>
     </section>
   )

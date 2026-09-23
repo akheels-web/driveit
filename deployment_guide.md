@@ -187,10 +187,18 @@ Paste and fill in the following:
 NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
 
 # ── Payload CMS Secret (generate with: openssl rand -hex 32) ──
-PAYLOAD_SECRET=REPLACE_WITH_64_CHAR_RANDOM_STRING
+PAYLOAD_SECRET=REPLACE_WITH_64_CHAR_RANDOM_STRING# ── Database ──
+# Production runs Postgres. The compose file builds this URL from POSTGRES_* below,
+# so you normally only set the password:
+POSTGRES_USER=driveit
+POSTGRES_PASSWORD=REPLACE_WITH_A_STRONG_PASSWORD
+POSTGRES_DB=driveit
+# SQLite remains available as a fallback for a rollback window:
+# DATABASE_URI=file:/app/data/driveit.db
 
-# ── Database (do not change this path) ──
-DATABASE_URI=file:/app/data/driveit.db
+# ── Rate limiting (required once you run more than one app instance) ──
+REDIS_URL=redis://redis:6379
+TRUSTED_PROXY_HOPS=1
 
 # ── NextAuth Secret (generate with: openssl rand -hex 32) ──
 AUTH_SECRET=REPLACE_WITH_ANOTHER_64_CHAR_RANDOM_STRING
@@ -205,7 +213,32 @@ RESEND_API_KEY=re_your_resend_api_key
 # ── WhatsApp Meta API (optional) ──
 WHATSAPP_TOKEN=EAALyour_whatsapp_token
 WHATSAPP_PHONE_ID=your_phone_number_id
+
+# ── Email sender identity ──
+EMAIL_FROM_ADDRESS=concierge@yourdomain.com
+EMAIL_FROM_NAME=DriveIt Luxury Concierge
+
+# ── Concierge alerts (server-side only, never NEXT_PUBLIC_*) ──
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+
+# ── WaCRM webhook bridge (inbound calls must match this secret) ──
+WACRM_WEBHOOK_URL=
+WACRM_WEBHOOK_SECRET=
+
+# ── UPI payment details shown at checkout ──
+NEXT_PUBLIC_UPI_ID=yourupi@upi
+NEXT_PUBLIC_UPI_NAME=DRIVEIT Luxury
 ```
+
+> **The app now refuses to boot without `PAYLOAD_SECRET` and `AUTH_SECRET`.** Older copies of this
+> guide relied on the code having hardcoded fallbacks — those are gone on purpose. If a container
+> starts and immediately exits, read the first lines of its logs: the missing variable is named there.
+
+> **Schema management.** `PAYLOAD_SCHEMA_PUSH=true` lets Payload create/alter tables on boot, which
+> is convenient for the very first deploy. For every deploy after that, run `npm run migrate`
+> (`payload migrate`) so a release can never silently reshape the live database. Leave
+> `PAYLOAD_SCHEMA_PUSH` unset in production once migrations exist.
 
 ### Generate secure secrets quickly:
 
@@ -494,28 +527,44 @@ curl -I https://yourdomain.com
 curl -I https://yourdomain.com/admin
 # Expect: HTTP/2 200 or redirect
 
-# 3. Check API health
-curl https://yourdomain.com/api/bookings
-# Expect: JSON response (empty docs array)
+# 3. Check the public fleet feed (read-only, cached 5 min)
+curl https://yourdomain.com/api/fleet | head -c 200
 
-# 4. Check container health
+# 4. Confirm private data is NOT public (bookings/coupons/profile all require auth)
+curl -o /dev/null -s -w '%{http_code}\n' https://yourdomain.com/api/bookings
+# Expect: 403
+
+# 5. Check container health
 docker compose ps
 # Expect: driveit-app Status = Up (healthy)
 
-# 5. Check database volume exists and has data
-docker exec driveit-app ls -lh /app/data/
-# Expect: -rw-r--r-- driveit.db
+# 6. Check the database is reachable and has content
+docker compose exec -T postgres psql -U driveit -d driveit -c "select count(*) from cars;"
+# Expect: a count, and the app logs "[db] postgres · postgres://postgres:5432/driveit"
+docker compose logs app | grep "\[db\]"
 
-# 6. Check media volume
+# 7. Check media volume
 docker exec driveit-app ls /app/public/media/
 ```
 
 ### Payload First Admin Setup
 
-1. Visit `https://yourdomain.com/admin`
-2. On first visit, you'll be prompted to **create your first admin user**
-3. Enter email + strong password → **Create**
-4. You're now in the Payload CMS dashboard
+Option A — from the CLI (also loads the starter fleet, services, reviews and journal
+entries so the site is not blank):
+
+```bash
+cd ~/driveit
+SEED_ADMIN_EMAIL=you@yourdomain.com \
+SEED_ADMIN_PASSWORD='a-strong-password' \
+SEED_BASE_URL=https://yourdomain.com \
+npm run seed
+```
+The script is idempotent — re-running it skips anything that already exists.
+
+Option B — visit `https://yourdomain.com/admin` and use the first-user form.
+
+Either way you land in the Payload CMS dashboard, where every car, service, review,
+article, coupon, booking and the global site settings are editable.
 
 ---
 
@@ -535,23 +584,35 @@ docker compose up -d app
 
 # Verify
 docker compose logs -f app
+```### 📦 Manual Database Backup
+```bash
+# Create an immediate compressed dump inside the backup volume
+docker compose exec -T postgres pg_dump -U driveit -d driveit -Fc \
+  -f /backups/manual_$(date +%Y%m%d).dump
+docker compose exec -T backup ls -lh /backups
+
+# Restore one (into an empty database) if you ever need to:
+docker compose exec -T postgres pg_restore -U driveit -d driveit --clean --if-exists \
+  /backups/driveit_YYYYMMDD_HHMMSS.dump
 ```
 
-### 📦 Manual SQLite Backup
+<details>
+<summary>Legacy SQLite backup (only while the fallback volume is still in use)</summary>
 
 ```bash
-# Create an immediate backup
 docker exec driveit-app cp /app/data/driveit.db /app/data/manual_backup_$(date +%Y%m%d).db
 
 # Copy backup to host machine
 docker cp driveit-app:/app/data/manual_backup_$(date +%Y%m%d).db ~/backups/
 ```
 
+</details>
+
 ### 📤 Download Backup to Your Local Machine
 
 ```bash
 # From your local machine
-scp driveit@YOUR_VPS_IP:~/driveit/backups/driveit_*.db ./local-backups/
+scp driveit@YOUR_VPS_IP:~/driveit/backups/driveit_*.dump ./local-backups/
 ```
 
 ### 🔍 View Live Logs
@@ -594,7 +655,9 @@ du -sh ~/driveit/data/
 |----------|----------|-------------|
 | `NEXT_PUBLIC_SERVER_URL` | ✅ Yes | Your full domain `https://yourdomain.com` |
 | `PAYLOAD_SECRET` | ✅ Yes | 32+ char random string for Payload encryption |
-| `DATABASE_URI` | ✅ Yes | `file:/app/data/driveit.db` (don't change) |
+| `DATABASE_URI` | ✅ Yes | `postgres://…@postgres:5432/driveit` (compose builds it from `POSTGRES_*`) |
+| `POSTGRES_PASSWORD` | ✅ Yes | strong password shared by the `postgres` and `backup` services |
+| `REDIS_URL` | ✅ Yes (staging/production) | `redis://redis:6379` — shared rate-limit store |
 | `AUTH_SECRET` | ✅ Yes | 32+ char random string for NextAuth sessions |
 | `AUTH_GOOGLE_ID` | ✅ Yes | Google OAuth Client ID |
 | `AUTH_GOOGLE_SECRET` | ✅ Yes | Google OAuth Client Secret |

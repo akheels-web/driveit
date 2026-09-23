@@ -2,7 +2,7 @@
 
 import { PropsWithChildren, useRef } from "react"
 
-export default function HScroll({ children }: PropsWithChildren<{}>) {
+export default function HScroll({ children }: PropsWithChildren) {
   const ref = useRef<HTMLDivElement>(null)
   const GOLD = '#b48811'
 

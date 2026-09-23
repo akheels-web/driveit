@@ -11,7 +11,7 @@ import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { CarCard } from "@/components/car-card"
 import { CompareModal } from "@/components/compare-modal"
-import { carsData } from "@/lib/cars"
+import { useFleet } from "@/hooks/use-fleet"
 
 type Category = 'all' | 'sedan' | 'suv' | 'sports' | 'mpv' | 'bus'
 type ServiceFilter = 'all' | 'chauffeur' | 'selfdrive'
@@ -34,6 +34,7 @@ const serviceFilters: { id: ServiceFilter; label: string; icon: React.ReactNode 
 type SortOption = 'name' | 'price-low' | 'price-high' | 'rating' | 'booked' | 'new'
 
 export default function CarsPage() {
+  const { cars, loading } = useFleet()
   const [category, setCategory] = useState<Category>('all')
   const [service, setService] = useState<ServiceFilter>('all')
   const [search, setSearch] = useState('')
@@ -51,12 +52,16 @@ export default function CarsPage() {
       const params = new URLSearchParams(window.location.search)
       const svc = params.get('service')
       if (svc === 'chauffeur' || svc === 'selfdrive') {
+        // One-shot read of an external store (the URL) after mount. This page is
+        // statically rendered, so the value must not be read during render —
+        // that would hydrate differently from the prerendered HTML.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setService(svc as ServiceFilter)
       }
     } catch {}
   }, [])
 
-  const filtered = useMemo(() => carsData
+  const filtered = useMemo(() => cars
     .filter((car) => {
       if (category !== 'all' && car.category !== category) return false
       if (service !== 'all' && !car.services.includes(service)) return false
@@ -70,7 +75,7 @@ export default function CarsPage() {
       if (sortBy === 'booked') return b.bookingsCount - a.bookingsCount
       if (sortBy === 'new') return new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime()
       return a.name.localeCompare(b.name)
-    }), [category, service, search, sortBy])
+    }), [cars, category, service, search, sortBy])
 
   const handleToggleCompare = (id: string) => {
     setCompareIds(prev => {
@@ -80,7 +85,7 @@ export default function CarsPage() {
     })
   }
 
-  const compareCarsList = useMemo(() => carsData.filter(c => compareIds.includes(c.id)), [compareIds])
+  const compareCarsList = useMemo(() => cars.filter(c => compareIds.includes(c.id)), [cars, compareIds])
 
   return (
     <>
@@ -100,7 +105,7 @@ export default function CarsPage() {
               Luxury <span className="text-gradient-gold">Fleet</span>
             </h1>
             <p className="mt-3 text-sm md:text-base text-white/50 max-w-xl mx-auto">
-              Explore {carsData.length} meticulously maintained vehicles. View detailed specs, transparent pricing, and book instantly.
+              Explore {cars.length} meticulously maintained vehicles. View detailed specs, transparent pricing, and book instantly.
             </p>
           </motion.div>
 
@@ -209,7 +214,7 @@ export default function CarsPage() {
             </AnimatePresence>
           </div>
 
-          {filtered.length === 0 && (
+          {!loading && filtered.length === 0 && (
             <div className="text-center py-16">
               <Car className="w-12 h-12 text-white/10 mx-auto mb-4" />
               <p className="text-white/30 text-sm">No cars match your filters. Try adjusting your search.</p>

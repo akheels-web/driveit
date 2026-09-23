@@ -22,7 +22,10 @@ services:
     container_name: driveit-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Bound to loopback on purpose: only nginx (or an SSH tunnel for debugging)
+      # can reach the app, so the forwarding headers the rate limiter trusts
+      # cannot be forged by hitting port 3000 directly.
+      - "127.0.0.1:3000:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -30,7 +33,10 @@ services:
 
       # --- Required ---
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
-      DATABASE_URI: file:/app/data/driveit.db
+      # Postgres is the production database. The default points at the `postgres`
+      # service below; to fall back to SQLite while testing a rollback, set
+      # DATABASE_URI=file:/app/data/driveit.db and keep the driveit-db volume.
+      DATABASE_URI: ${DATABASE_URI:-postgres://${POSTGRES_USER:-driveit}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-driveit}}
       AUTH_SECRET: ${AUTH_SECRET}
       NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
 
@@ -40,15 +46,47 @@ services:
 
       # --- Email (Resend) ---
       RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
 
       # --- WhatsApp (Meta Graph API) ---
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
 
+      # --- Concierge alerts (server-side only) ---
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+
+      # --- WaCRM webhook bridge ---
+      WACRM_WEBHOOK_URL: ${WACRM_WEBHOOK_URL}
+      WACRM_WEBHOOK_SECRET: ${WACRM_WEBHOOK_SECRET}
+
+      # --- UPI payment details shown at checkout ---
+      NEXT_PUBLIC_UPI_ID: ${NEXT_PUBLIC_UPI_ID}
+      NEXT_PUBLIC_UPI_NAME: ${NEXT_PUBLIC_UPI_NAME}
+
+      # --- Schema management ---
+      # Leave empty in production; use it only for the first deploy of an empty
+      # database. Afterwards run `npm run migrate` from CI before rollout.
+      PAYLOAD_SCHEMA_PUSH: ${PAYLOAD_SCHEMA_PUSH:-}
+
+      # --- Rate limiting ---
+      # Points at the `redis` service below. Required once you run more than one
+      # app instance; per-process counters are not shared between replicas.
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
     volumes:
-      # Persistent SQLite database — survives container restarts & updates
+      # Kept for the SQLite fallback / post-cutover rollback window.
       - driveit-db:/app/data
-      # Persistent media uploads (car photos, logos, etc.)
+      # Persistent media uploads (car photos, logos, etc.). Before running more
+      # than one app replica, move media to S3/R2 — every replica needs it.
       - driveit-media:/app/public/media
 
     healthcheck:
@@ -68,20 +106,78 @@ services:
       - driveit-net
 
   # ─────────────────────────────────────────
-  # SQLite Backup: Daily automated backups
-  # Backs up driveit.db to /backups every day at 2 AM UTC
-  # Keeps last 7 days only (auto-prunes older files)
+  # Postgres: the production database. Not published to the host — only the app
+  # (and the backup job) can reach it.
+  # ─────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: driveit-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-driveit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-driveit}
+      # Faster, deterministic init for a fresh volume.
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    volumes:
+      - driveit-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-driveit} -d ${POSTGRES_DB:-driveit}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - driveit-net
+
+  # ─────────────────────────────────────────
+  # Redis: shared store for rate limiting (and a natural home for future
+  # queues/cache). Not published to the host — only the app can reach it.
+  # ─────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: driveit-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --save ""
+    volumes:
+      - driveit-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - driveit-net
+
+  # ─────────────────────────────────────────
+  # Database backup: pg_dump every day at 2 AM UTC, 7 daily files kept.
+  # For point-in-time recovery, enable WAL archiving (or use a managed
+  # Postgres) — a nightly dump only gets you back to last night.
   # ─────────────────────────────────────────
   backup:
-    image: alpine:3.20
+    image: postgres:16-alpine
     container_name: driveit-backup
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-change-me}
     volumes:
-      - driveit-db:/data:ro
       - driveit-backups:/backups
     command: >
       sh -c "
-        echo '0 2 * * * cp /data/driveit.db /backups/driveit_backup_$$(date +%Y%m%d_%H%M%S).db && find /backups -name \"*.db\" -mtime +7 -delete && echo \"[DriveIt] Backup completed\"' > /etc/crontabs/root &&
+        echo '0 2 * * * pg_dump -h postgres -U ${POSTGRES_USER:-driveit} -d ${POSTGRES_DB:-driveit} -Fc -f /backups/driveit_$$(date +%Y%m%d_%H%M%S).dump && find /backups -name \"*.dump\" -mtime +7 -delete' > /etc/crontabs/root &&
         crond -f -l 2
       "
     networks:
@@ -110,7 +206,11 @@ services:
 # Named Volumes (persistent across restarts)
 # ─────────────────────────────────────────
 volumes:
+  driveit-pg:
+    driver: local
   driveit-db:
+    driver: local
+  driveit-redis:
     driver: local
   driveit-media:
     driver: local

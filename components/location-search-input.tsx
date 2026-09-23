@@ -12,16 +12,13 @@ interface LocationSearchInputProps {
 }
 
 export function LocationSearchInput({ value, onChange, placeholder = "Search location...", className, iconClassName }: LocationSearchInputProps) {
-  const [query, setQuery] = useState(value)
+  // Fully controlled: the parent owns the text, so there is no local copy to
+  // keep in sync (the old mirror-state effect caused an extra render per keypress).
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
-
-  useEffect(() => {
-    setQuery(value)
-  }, [value])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -56,7 +53,6 @@ export function LocationSearchInput({ value, onChange, placeholder = "Search loc
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
-    setQuery(val)
     onChange(val)
 
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -64,9 +60,7 @@ export function LocationSearchInput({ value, onChange, placeholder = "Search loc
   }
 
   const handleSelect = (item: any) => {
-    const displayName = item.display_name.split(',').slice(0, 3).join(',')
-    setQuery(displayName)
-    onChange(displayName)
+    onChange(item.display_name.split(',').slice(0, 3).join(','))
     setOpen(false)
   }
 
@@ -74,7 +68,7 @@ export function LocationSearchInput({ value, onChange, placeholder = "Search loc
     <div ref={wrapperRef} className="relative w-full">
       <input
         type="text"
-        value={query}
+        value={value}
         onChange={handleInputChange}
         onFocus={() => { if (results.length > 0) setOpen(true) }}
         placeholder={placeholder}

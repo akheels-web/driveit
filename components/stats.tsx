@@ -2,13 +2,7 @@
 
 import React, { useRef, useEffect, useState } from "react"
 import { motion, useInView } from "motion/react"
-
-const items = [
-  { target: 2000, suffix: "+", label: "Luxury Cars" },
-  { target: 10, suffix: "+", label: "Private Jets" },
-  { target: 500, suffix: "+", label: "Weddings Served" },
-  { target: 24, suffix: "/7", label: "Chauffeurs" },
-]
+import { StatView, statsSeed } from "@/lib/content-seed"
 
 function useCounter(target: number, isInView: boolean, duration: number = 2000) {
   const [count, setCount] = useState(0)
@@ -62,15 +56,18 @@ function StatItem({ target, suffix, label, delay }: { target: number; suffix: st
   )
 }
 
-export function Stats() {
+/** Counters are CMS-driven (Site Settings → Homepage Counters) with seed fallbacks. */
+export function Stats({ items = statsSeed }: { items?: StatView[] }) {
+  if (items.length === 0) return null
+
   return (
     <section className="py-16 md:py-20 bg-[var(--luxury-bg)]">
       <div className="mx-auto max-w-6xl px-4">
         <ul className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {items.map((it, i) => (
             <StatItem
-              key={it.label}
-              target={it.target}
+              key={`${it.label}-${i}`}
+              target={it.value}
               suffix={it.suffix}
               label={it.label}
               delay={i * 0.15}

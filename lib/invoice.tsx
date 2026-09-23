@@ -88,6 +88,11 @@ const styles = StyleSheet.create({
   }
 })
 
+/** Payload uses numeric ids, so the invoice number is derived from the booking id. */
+export function bookingReference(id: unknown): string {
+  return `DRV-${String(id ?? '').padStart(5, '0')}`
+}
+
 // React-PDF Component
 const InvoicePDF = ({ booking }: { booking: any }) => (
   <Document>
@@ -101,7 +106,9 @@ const InvoicePDF = ({ booking }: { booking: any }) => (
         </View>
         <View>
           <Text style={styles.invoiceTitle}>INVOICE</Text>
-          <Text style={{ fontSize: 10, color: '#888', textAlign: 'right', marginTop: 8 }}>#{booking.id?.substring(0, 8).toUpperCase()}</Text>
+          <Text style={{ fontSize: 10, color: '#888', textAlign: 'right', marginTop: 8 }}>
+            #{bookingReference(booking.id)}
+          </Text>
         </View>
       </View>
 
@@ -126,12 +133,26 @@ const InvoicePDF = ({ booking }: { booking: any }) => (
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Start Date</Text>
-          <Text style={styles.value}>{new Date(booking.startDate).toLocaleDateString()}</Text>
+          <Text style={styles.value}>{formatDate(booking.startDate)}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>End Date</Text>
-          <Text style={styles.value}>{new Date(booking.endDate).toLocaleDateString()}</Text>
+          <Text style={styles.value}>{formatDate(booking.endDate)}</Text>
         </View>
+        {Number(booking.days) > 0 ? (
+          <View style={styles.row}>
+            <Text style={styles.label}>Duration</Text>
+            <Text style={styles.value}>
+              {Number(booking.days)} {Number(booking.days) === 1 ? 'day' : 'days'}
+            </Text>
+          </View>
+        ) : null}
+        {booking.couponCode ? (
+          <View style={styles.row}>
+            <Text style={styles.label}>Coupon</Text>
+            <Text style={styles.value}>{String(booking.couponCode)}</Text>
+          </View>
+        ) : null}
         <View style={styles.row}>
           <Text style={styles.label}>Pickup Location</Text>
           <Text style={styles.value}>{booking.pickupLocation}</Text>
@@ -142,12 +163,24 @@ const InvoicePDF = ({ booking }: { booking: any }) => (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Payment Summary</Text>
         <View style={styles.row}>
+          <Text style={styles.label}>Reference</Text>
+          <Text style={styles.value}>{bookingReference(booking.id)}</Text>
+        </View>
+        {Number(booking.discountApplied) > 0 ? (
+          <View style={styles.row}>
+            <Text style={styles.label}>Discount</Text>
+            <Text style={styles.value}>- Rs. {Number(booking.discountApplied).toLocaleString('en-IN')}</Text>
+          </View>
+        ) : null}
+        <View style={styles.row}>
           <Text style={styles.label}>Status</Text>
-          <Text style={styles.value}>PAID</Text>
+          <Text style={styles.value}>{String(booking.status || 'confirmed').toUpperCase()}</Text>
         </View>
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Total Amount Paid</Text>
-          <Text style={styles.totalValue}>Rs. {booking.totalPrice?.toLocaleString()}</Text>
+          <Text style={styles.totalValue}>
+            Rs. {Number(booking.totalPrice || 0).toLocaleString('en-IN')}
+          </Text>
         </View>
       </View>
 
@@ -161,6 +194,12 @@ const InvoicePDF = ({ booking }: { booking: any }) => (
   </Document>
 )
 
+function formatDate(value: unknown): string {
+  if (!value) return '—'
+  const date = new Date(String(value))
+  return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('en-IN')
+}
+
 export async function generateInvoicePDFStream(booking: any) {
   return await renderToStream(<InvoicePDF booking={booking} />)
 }
@@ -168,7 +207,7 @@ export async function generateInvoicePDFStream(booking: any) {
 export async function generateInvoicePDFBuffer(booking: any): Promise<Buffer> {
   const stream = await renderToStream(<InvoicePDF booking={booking} />)
   return new Promise((resolve, reject) => {
-    let chunks: any[] = []
+    const chunks: Buffer[] = []
     stream.on('data', chunk => chunks.push(chunk))
     stream.on('end', () => resolve(Buffer.concat(chunks)))
     stream.on('error', err => reject(err))

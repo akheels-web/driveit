@@ -1,131 +1,121 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { motion } from 'motion/react'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Car, CalendarDays, User, LogOut, Clock, CheckCircle, AlertCircle, Award } from 'lucide-react'
-import { useSession, signOut } from 'next-auth/react'
+import { getPayload } from 'payload'
+import { Award, CalendarDays, Car, CheckCircle, Clock, User } from 'lucide-react'
+
+import { auth } from '@/auth'
+import config from '@/payload.config'
+import { findCustomerByEmail } from '@/lib/customers'
+import { GOLD_THRESHOLD, PLATINUM_THRESHOLD } from '@/lib/loyalty'
 import { SiteHeader } from '@/components/site-header'
-import type { Profile, Booking } from '@/lib/types'
+import { SignOutButton } from '@/components/sign-out-button'
 
-export default function DashboardPage() {
-  const { data: session, status } = useSession()
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+export const metadata = { title: 'Dashboard | DRIVEIT Luxury', robots: { index: false } }
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    } else if (status === 'authenticated' && session?.user) {
-      setLoading(false)
-    }
-  }, [status, session, router])
+const statusStyles: Record<string, string> = {
+  confirmed: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20',
+  completed: 'bg-blue-400/10 text-blue-400 border-blue-400/20',
+  cancelled: 'bg-red-400/10 text-red-400 border-red-400/20',
+  pending: 'bg-[var(--gold-400)]/10 text-[var(--gold-400)] border-[var(--gold-400)]/20',
+}
 
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' })
-  }
+export default async function DashboardPage() {
+  const session = await auth()
+  if (!session?.user?.email) redirect('/login?redirect=/dashboard')
 
-  const stats = {
-    total: bookings.length,
-    upcoming: bookings.filter((b) => b.status === 'pending' || b.status === 'confirmed').length,
-    completed: bookings.filter((b) => b.status === 'completed').length,
-  }
+  const email = session.user.email.toLowerCase()
+  const payload = await getPayload({ config })
 
-  if (loading) {
-    return (
-      <>
-        <SiteHeader />
-        <section className="bg-[var(--luxury-bg)] text-white min-h-screen flex items-center justify-center pt-20">
-          <div className="w-8 h-8 border-2 border-[var(--gold-400)]/30 border-t-[var(--gold-400)] rounded-full animate-spin" />
-        </section>
-      </>
-    )
-  }
+  const [customer, recent] = await Promise.all([
+    findCustomerByEmail(payload, email),
+    payload.find({
+      collection: 'bookings',
+      where: { customerEmail: { equals: email } },
+      sort: '-createdAt',
+      limit: 5,
+      depth: 0,
+      overrideAccess: true, // scoped to the signed-in session email
+    }),
+  ])
+
+  const bookings = recent.docs as Record<string, any>[]
+  const allBookings = await payload.count({
+    collection: 'bookings',
+    where: { customerEmail: { equals: email } },
+    overrideAccess: true,
+  })
+
+  const upcoming = bookings.filter((b) => b.status === 'confirmed' || b.status === 'pending').length
+  const completed = bookings.filter((b) => b.status === 'completed').length
+
+  const profile = customer as Record<string, any> | null
+  const points = Number(profile?.loyaltyPoints) || 0
+  const tier = (profile?.loyaltyTier as string) || 'silver'
+  const nextThreshold = tier === 'platinum' ? PLATINUM_THRESHOLD : tier === 'gold' ? PLATINUM_THRESHOLD : GOLD_THRESHOLD
+  const progress = Math.min(100, Math.round((points / nextThreshold) * 100))
+
+  const displayName = profile?.name || session.user.name || email.split('@')[0]
 
   return (
     <>
       <SiteHeader />
       <section className="bg-[var(--luxury-bg)] text-white min-h-screen pt-28 pb-16">
         <div className="mx-auto max-w-5xl px-4">
-
-          {/* Welcome Header */}
-          <motion.div
-            className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-4">
             <div>
               <span className="text-xs tracking-[0.25em] uppercase text-white/40">Dashboard</span>
-              <h1 className="text-2xl md:text-3xl font-[family-name:var(--font-playfair)] font-bold text-white mt-1">
-                Welcome, <span className="text-gradient-gold">{profile?.full_name || user?.email?.split('@')[0] || 'Guest'}</span>
+              <h1 className="text-2xl md:text-3xl font-[family-name:var(--font-playfair)] font-bold mt-1">
+                Welcome, <span className="text-gradient-gold">{displayName}</span>
               </h1>
-              <p className="text-sm text-white/40 mt-1">{user?.email}</p>
+              <p className="text-sm text-white/40 mt-1">{email}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs text-white/40 border border-white/10 hover:border-red-400/30 hover:text-red-400 transition-colors cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Sign Out
-            </button>
-          </motion.div>
+            <SignOutButton />
+          </div>
 
-          {/* Membership Card */}
-          <motion.div
+          <div
             className="mb-10 relative overflow-hidden rounded-2xl p-6 md:p-8"
-            style={{ 
-               background: profile?.loyalty_tier === 'Platinum' ? 'linear-gradient(135deg, #222, #444)' : 
-                           profile?.loyalty_tier === 'Gold' ? 'linear-gradient(135deg, #b8860b, #6b4e00)' :
-                           'linear-gradient(135deg, #1a1a1a, #0a0a0a)',
-               border: '1px solid rgba(212,175,55,0.2)'
+            style={{
+              background:
+                tier === 'platinum'
+                  ? 'linear-gradient(135deg, #222, #444)'
+                  : tier === 'gold'
+                    ? 'linear-gradient(135deg, #b8860b, #6b4e00)'
+                    : 'linear-gradient(135deg, #1a1a1a, #0a0a0a)',
+              border: '1px solid rgba(212,175,55,0.2)',
             }}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.05 }}
           >
-            <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4">
-               <Award className="w-48 h-48" />
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+              <Award className="w-48 h-48" />
             </div>
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-               <div>
-                  <p className="text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-semibold">DriveIt Luxury Membership</p>
-                  <h2 className="text-3xl font-[family-name:var(--font-playfair)] font-bold text-white mb-1" style={{ color: profile?.loyalty_tier === 'Gold' ? 'white' : 'var(--gold-400)'}}>
-                     {profile?.loyalty_tier || 'Silver'} Member
-                  </h2>
-                  <p className="text-sm text-white/80 font-medium">{profile?.loyalty_points || 0} Reward Points</p>
-               </div>
-               <div className="text-left md:text-right w-full md:w-auto">
-                  <div className="text-xs text-white/60 mb-2">
-                     Next Tier: {profile?.loyalty_tier === 'Silver' ? 'Gold (1000 pts)' : profile?.loyalty_tier === 'Gold' ? 'Platinum (5000 pts)' : 'Max Tier'}
-                  </div>
-                  <div className="w-full md:w-48 h-1.5 bg-black/40 rounded-full overflow-hidden">
-                     <div 
-                        className="h-full" 
-                        style={{ 
-                           background: profile?.loyalty_tier === 'Gold' ? 'white' : 'var(--gold-400)',
-                           width: `${Math.min(((profile?.loyalty_points || 0) / (profile?.loyalty_tier === 'Silver' ? 1000 : 5000)) * 100, 100)}%` 
-                        }} 
-                     />
-                  </div>
-               </div>
+              <div>
+                <p className="text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-semibold">
+                  DriveIt Luxury Membership
+                </p>
+                <h2 className="text-3xl font-[family-name:var(--font-playfair)] font-bold capitalize mb-1">
+                  {tier} Member
+                </h2>
+                <p className="text-sm text-white/80 font-medium">{points} Reward Points</p>
+                <p className="text-xs text-white/50 mt-1">
+                  Earn 100 points for every ₹10,000 of completed bookings.
+                </p>
+              </div>
+              <div className="text-left md:text-right w-full md:w-auto">
+                <div className="text-xs text-white/60 mb-2">
+                  {tier === 'platinum' ? 'Max tier reached' : `Next tier at ${nextThreshold} pts`}
+                </div>
+                <div className="w-full md:w-48 h-1.5 bg-black/40 rounded-full overflow-hidden">
+                  <div className="h-full bg-[var(--gold-400)]" style={{ width: `${progress}%` }} />
+                </div>
+              </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Stats */}
-          <motion.div
-            className="grid grid-cols-3 gap-4 mb-10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
+          <div className="grid grid-cols-3 gap-4 mb-10">
             {[
-              { icon: CalendarDays, label: 'Total Bookings', value: stats.total, color: 'var(--gold-400)' },
-              { icon: Clock, label: 'Upcoming', value: stats.upcoming, color: '#60a5fa' },
-              { icon: CheckCircle, label: 'Completed', value: stats.completed, color: '#34d399' },
+              { icon: CalendarDays, label: 'Total Bookings', value: allBookings.totalDocs, color: 'var(--gold-400)' },
+              { icon: Clock, label: 'Upcoming', value: upcoming, color: '#60a5fa' },
+              { icon: CheckCircle, label: 'Completed', value: completed, color: '#34d399' },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -133,117 +123,82 @@ export default function DashboardPage() {
                 style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
               >
                 <stat.icon className="w-6 h-6 mx-auto mb-2" style={{ color: stat.color }} />
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-2xl font-bold">{stat.value}</p>
                 <p className="text-[10px] text-white/40 uppercase tracking-wider mt-1">{stat.label}</p>
               </div>
             ))}
-          </motion.div>
+          </div>
 
-          {/* Quick Actions */}
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Link
-              href="/cars"
-              className="flex items-center gap-3 rounded-xl p-4 transition-all duration-300 hover:border-[var(--gold-400)]/20"
-              style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
-            >
-              <div className="w-10 h-10 rounded-lg bg-[var(--gold-400)]/10 flex items-center justify-center">
-                <Car className="w-5 h-5 text-[var(--gold-400)]" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">Book a Car</p>
-                <p className="text-[10px] text-white/30">Browse our luxury fleet</p>
-              </div>
-            </Link>
-            <Link
-              href="/dashboard/bookings"
-              className="flex items-center gap-3 rounded-xl p-4 transition-all duration-300 hover:border-[var(--gold-400)]/20"
-              style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
-            >
-              <div className="w-10 h-10 rounded-lg bg-blue-400/10 flex items-center justify-center">
-                <CalendarDays className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">View Bookings</p>
-                <p className="text-[10px] text-white/30">All booking history</p>
-              </div>
-            </Link>
-            <Link
-              href="/dashboard/profile"
-              className="flex items-center gap-3 rounded-xl p-4 transition-all duration-300 hover:border-[var(--gold-400)]/20"
-              style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
-            >
-              <div className="w-10 h-10 rounded-lg bg-emerald-400/10 flex items-center justify-center">
-                <User className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">Edit Profile</p>
-                <p className="text-[10px] text-white/30">Update your details</p>
-              </div>
-            </Link>
-          </motion.div>
-
-          {/* Recent Bookings */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Recent Bookings</h2>
-              <Link href="/dashboard/bookings" className="text-xs text-[var(--gold-400)] hover:text-[var(--gold-200)] transition-colors">
-                View All →
-              </Link>
-            </div>
-
-            {bookings.length === 0 ? (
-              <div
-                className="rounded-xl p-10 text-center"
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            {[
+              { href: '/cars', icon: Car, title: 'Book a Car', copy: 'Browse the luxury fleet' },
+              { href: '/dashboard/bookings', icon: CalendarDays, title: 'View Bookings', copy: 'Full booking history' },
+              { href: '/dashboard/profile', icon: User, title: 'Edit Profile', copy: 'Addresses & contact details' },
+            ].map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="flex items-center gap-3 rounded-xl p-4 transition-all hover:border-[var(--gold-400)]/20"
                 style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
               >
-                <Car className="w-10 h-10 text-white/10 mx-auto mb-3" />
-                <p className="text-sm text-white/30">No bookings yet</p>
-                <Link href="/cars" className="text-xs text-[var(--gold-400)] hover:text-[var(--gold-200)] transition-colors mt-2 inline-block">
-                  Book Your First Ride →
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {bookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-                    style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-white/[0.03] flex items-center justify-center text-xs font-mono text-[var(--gold-400)]">
-                        {booking.booking_ref.replace('DRV-', '')}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">{booking.car_name}</p>
-                        <p className="text-[10px] text-white/30">{booking.booking_date} • {booking.booking_time}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-[10px] px-2.5 py-1 rounded-full font-medium ${
-                        booking.status === 'confirmed' ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20' :
-                        booking.status === 'completed' ? 'bg-blue-400/10 text-blue-400 border border-blue-400/20' :
-                        booking.status === 'cancelled' ? 'bg-red-400/10 text-red-400 border border-red-400/20' :
-                        'bg-[var(--gold-400)]/10 text-[var(--gold-400)] border border-[var(--gold-400)]/20'
-                      }`}>
-                        {booking.status}
-                      </span>
-                      <span className="text-sm font-medium text-[var(--gold-400)]">₹{booking.total_amount?.toLocaleString('en-IN')}</span>
-                    </div>
+                <div className="w-10 h-10 rounded-lg bg-[var(--gold-400)]/10 flex items-center justify-center">
+                  <action.icon className="w-5 h-5 text-[var(--gold-400)]" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{action.title}</p>
+                  <p className="text-[10px] text-white/30">{action.copy}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Recent bookings</h2>
+            <Link href="/dashboard/bookings" className="text-xs text-[var(--gold-400)]">
+              View all →
+            </Link>
+          </div>
+
+          {bookings.length === 0 ? (
+            <div
+              className="rounded-xl p-10 text-center"
+              style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
+            >
+              <Car className="w-10 h-10 text-white/10 mx-auto mb-3" />
+              <p className="text-sm text-white/30">No bookings yet</p>
+              <Link href="/cars" className="text-xs text-[var(--gold-400)] inline-block mt-2">
+                Book your first ride →
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {bookings.map((booking) => (
+                <div
+                  key={String(booking.id)}
+                  className="rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                  style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
+                >
+                  <div>
+                    <p className="text-sm font-medium">{booking.carName}</p>
+                    <p className="text-[10px] text-white/30">
+                      {booking.startDate ? new Date(booking.startDate).toLocaleDateString('en-IN') : '—'}
+                      {booking.pickupLocation ? ` • ${booking.pickupLocation}` : ''}
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </motion.div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`text-[10px] px-2.5 py-1 rounded-full font-medium border ${statusStyles[booking.status] ?? statusStyles.pending}`}
+                    >
+                      {booking.status}
+                    </span>
+                    <span className="text-sm font-medium text-[var(--gold-400)]">
+                      ₹{Number(booking.totalPrice || 0).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>

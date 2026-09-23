@@ -5,15 +5,13 @@ import { MessageSquare, Phone, Car, Plane, Anchor } from "lucide-react";
 
 export default function ContactForm() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
-
-  // Use your actual Telegram credentials
-  const TELEGRAM_BOT_TOKEN = "8068562276:AAFP_ToBxZXbbVmK1gvnnMZYeURT9nTPm6c";
-  const TELEGRAM_CHAT_ID = "6163736948";
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     const formData = new FormData(e.currentTarget);
     const name = formData.get("name") as string;
@@ -22,39 +20,32 @@ export default function ContactForm() {
     const location = formData.get("location") as string;
     const message = formData.get("message") as string;
 
-    const telegramMessage = `🚗 DRIVEIT Luxury Service Request
-
-Name: ${name}
-Phone: ${phone}
-Service: ${service}
-Location: ${location}
-Message: ${message}`;
-
     try {
-      const res = await fetch(
-        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            text: telegramMessage,
-          }),
-        }
-      );
+      // The enquiry is delivered by the server so the bot credentials never
+      // reach the browser and submissions are rate limited + sanitised.
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          phone,
+          service,
+          message: `${message}\n\nPickup location: ${location}`,
+        }),
+      });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-      if (data.ok) {
-        // Force redirect to thank you page
-        window.location.href = "/thankyou";
-      } else {
-        alert("Error sending message. Please call +91 83413 41186");
-        setLoading(false);
+      if (res.ok && data.success) {
+        router.push("/thankyou");
+        return;
       }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Error! Please call +91 83413 41186");
+
+      setError(data.error || "We could not send your message. Please call +91 83413 41186.");
+      setLoading(false);
+    } catch (err) {
+      console.error("Contact form error:", err);
+      setError("Network error. Please call +91 83413 41186.");
       setLoading(false);
     }
   };
@@ -150,6 +141,12 @@ Message: ${message}`;
                   <option>Others</option>
                 </select>
               </div>
+
+              {error && (
+                <p className="text-sm text-red-400 text-center" role="alert">
+                  {error}
+                </p>
+              )}
 
               <textarea
                 name="message"

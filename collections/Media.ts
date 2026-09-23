@@ -1,18 +1,24 @@
 import type { CollectionConfig } from 'payload'
 
+import { adminOnly, anyone } from '@/lib/access'
+
 export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
     useAsTitle: 'alt',
     defaultColumns: ['filename', 'alt', 'mimeType', 'filesize'],
-    description: '🖼️ Media Library: Upload images, car photos, logos, and banners here. Uploaded media can be attached to Cars, Services, Blogs, and Site Settings.',
+    description: '🖼️ Media library: upload car photos, logos and banners here, then attach them to any content.',
   },
   access: {
-    read: () => true,
+    read: anyone,
+    create: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
   upload: {
     staticDir: 'public/media',
     adminThumbnail: 'thumbnail',
+    mimeTypes: ['image/*', 'application/pdf'],
     imageSizes: [
       {
         name: 'thumbnail',

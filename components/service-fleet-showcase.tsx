@@ -3,22 +3,24 @@
 import { useState } from "react"
 import { CarCard } from "@/components/car-card"
 import { CarBookingModal } from "@/components/car-booking-modal"
-import { carsData } from "@/lib/cars"
+import type { CarDetails } from "@/lib/cars"
+import { useFleet } from "@/hooks/use-fleet"
 
 interface ServiceFleetShowcaseProps {
   carNames: string[]
 }
 
 export function ServiceFleetShowcase({ carNames }: ServiceFleetShowcaseProps) {
-  const [selectedCar, setSelectedCar] = useState<typeof carsData[0] | null>(null)
+  const { cars } = useFleet()
+  const [selectedCar, setSelectedCar] = useState<CarDetails | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
-  // Map the requested car names to the actual car objects from centralized data
+  // Map the requested car names to live CMS records
   const displayCars = carNames
-    .map(name => carsData.find(c => c.name === name))
-    .filter((c): c is typeof carsData[0] => c !== undefined)
+    .map(name => cars.find(c => c.name === name))
+    .filter((c): c is CarDetails => c !== undefined)
 
-  const openBooking = (car: typeof carsData[0]) => {
+  const openBooking = (car: CarDetails) => {
     setSelectedCar(car)
     setModalOpen(true)
   }

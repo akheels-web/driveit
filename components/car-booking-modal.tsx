@@ -54,6 +54,8 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
   const [loading, setLoading] = useState(false)
   const [bookingRef, setBookingRef] = useState('')
   const [bookingId, setBookingId] = useState('')
+  // Proof that this browser created the hold — required to confirm the payment.
+  const [holdToken, setHoldToken] = useState('')
 
   const [form, setForm] = useState({
     serviceType: 'chauffeur',
@@ -76,15 +78,20 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
 
   const canSubmit = form.pickup && form.date && form.time && form.name && form.phone
 
-  // Reset when modal opens
-  useEffect(() => {
+  // Reset when the modal opens. Adjusting state during render is React's
+  // documented pattern for "state that depends on a prop change" — it avoids the
+  // extra render pass (and the stale flash) an effect would cause.
+  const [wasOpen, setWasOpen] = useState(isOpen)
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen)
     if (isOpen) {
       setStep(1)
       setForm({ serviceType: 'chauffeur', pickup: '', dropoff: '', date: '', time: '', days: 1, name: '', phone: '', email: '', notes: '' })
       setBookingRef('')
       setBookingId('')
+      setHoldToken('')
     }
-  }, [isOpen])
+  }
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -102,8 +109,8 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
 
     const data: BookingFormData = {
       carId: car.id,
+      carSlug: car.id,
       carName: car.name,
-      carImage: car.image,
       serviceType: form.serviceType,
       pickupLocation: form.pickup,
       dropoffLocation: form.dropoff || undefined,
@@ -121,22 +128,27 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
     const result = await createBooking(data)
 
     if (result.success) {
-      setBookingRef(result.bookingRef!)
-      setBookingId(result.bookingId!)
+      setBookingRef(result.reference)
+      setBookingId(result.bookingId)
+      setHoldToken(result.holdToken)
       if (paymentMethod === 'upi') {
         setStep(2)
       } else {
         setStep(3)
       }
     } else {
-      alert('Error creating booking. Please try again or call +91 83413 41186')
+      alert(result.error || 'Error creating booking. Please try again or call +91 83413 41186')
     }
 
     setLoading(false)
   }
 
   const handlePaymentConfirmed = async (txnId: string) => {
-    await updatePaymentStatus(bookingId, txnId)
+    const result = await updatePaymentStatus(bookingId, txnId, holdToken)
+    if (!result.success) {
+      alert(result.error || 'Could not confirm the payment. Please contact support.')
+      return
+    }
     setStep(3)
   }
 

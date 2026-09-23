@@ -1,80 +1,87 @@
-import { NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { NextResponse } from 'next/server'
+import { z } from 'zod'
+
+import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
+
+export const dynamic = 'force-dynamic'
 
 /**
- * WaCRM Webhook Bridge
+ * WaCRM bridge.
  *
- * This endpoint receives booking events and forwards them to your
- * WaCRM instance to create contacts and start conversations.
- *
- * Configure WACRM_WEBHOOK_URL and WACRM_WEBHOOK_SECRET in .env.local
+ * This used to be an open relay: anyone could POST an arbitrary payload and the
+ * server would forward it to WaCRM. Callers must now prove they hold
+ * WACRM_WEBHOOK_SECRET by signing the raw body with HMAC-SHA256.
  */
+
+const PayloadSchema = z.object({
+  event: z.string().trim().min(1).max(80),
+  data: z.record(z.any()),
+})
+
+const sign = (body: string, secret: string) =>
+  crypto.createHmac('sha256', secret).update(body).digest('hex')
+
+function signaturesMatch(expected: string, provided: string): boolean {
+  const a = Buffer.from(expected)
+  const b = Buffer.from(provided)
+  return a.length === b.length && crypto.timingSafeEqual(a, b)
+}
+
 export async function POST(request: Request) {
+  const verdict = await limitRequest(request, 'wacrm-inbound', {
+    limit: 60,
+    windowMs: 60_000,
+    globalLimit: 3_000,
+  })
+  if (!verdict.ok) return tooManyRequests(verdict.retryAfterSeconds)
+
+  const secret = process.env.WACRM_WEBHOOK_SECRET
+  const target = process.env.WACRM_WEBHOOK_URL
+
+  if (!secret || !target) {
+    return NextResponse.json({ error: 'WaCRM bridge is not configured.' }, { status: 503 })
+  }
+
+  const signature = request.headers.get('x-webhook-signature')
+  const rawBody = await request.text()
+
+  if (!signature || !signaturesMatch(sign(rawBody, secret), signature)) {
+    return NextResponse.json({ error: 'Invalid signature.' }, { status: 401 })
+  }
+
+  let parsedBody: unknown
   try {
-    const body = await request.json()
-    const { event, data } = body
+    parsedBody = JSON.parse(rawBody)
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON payload.' }, { status: 400 })
+  }
 
-    if (!event || !data) {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
-    }
+  const parsed = PayloadSchema.safeParse(parsedBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid payload.' }, { status: 400 })
+  }
 
-    const wacrmUrl = process.env.WACRM_WEBHOOK_URL
-    const wacrmSecret = process.env.WACRM_WEBHOOK_SECRET
+  const forwardBody = JSON.stringify(parsed.data)
 
-    if (!wacrmUrl) {
-      console.warn('WaCRM webhook URL not configured')
-      return NextResponse.json({ message: 'WaCRM not configured, skipping' }, { status: 200 })
-    }
-
-    // Build WaCRM-compatible payload
-    const wacrmPayload = {
-      event_type: 'contact.created',
-      contact: {
-        phone: data.customer_phone?.replace(/[^0-9]/g, ''),
-        name: data.customer_name,
-        email: data.customer_email || null,
-        tags: ['driveit-booking', data.booking_ref],
-        custom_fields: {
-          booking_ref: data.booking_ref,
-          car_name: data.car_name,
-          pickup_location: data.pickup_location,
-          booking_date: data.booking_date,
-          booking_time: data.booking_time,
-          total_amount: data.total_amount,
-          source: 'driveit-website',
-        },
-      },
-      // Initial message to send
-      message: {
-        type: 'text',
-        text: `🚗 Booking Confirmed!\n\nRef: ${data.booking_ref}\nCar: ${data.car_name}\nDate: ${data.booking_date} at ${data.booking_time}\nPickup: ${data.pickup_location}\nAmount: ₹${data.total_amount?.toLocaleString('en-IN')}\n\nThank you for choosing DRIVEIT! We'll confirm your booking shortly.`,
-      },
-    }
-
-    // Generate HMAC signature for security
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (wacrmSecret) {
-      const signature = crypto
-        .createHmac('sha256', wacrmSecret)
-        .update(JSON.stringify(wacrmPayload))
-        .digest('hex')
-      headers['X-Webhook-Signature'] = signature
-    }
-
-    const response = await fetch(wacrmUrl, {
+  try {
+    const response = await fetch(target, {
       method: 'POST',
-      headers,
-      body: JSON.stringify(wacrmPayload),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Webhook-Signature': sign(forwardBody, secret),
+      },
+      body: forwardBody,
     })
 
     if (!response.ok) {
-      console.error('WaCRM webhook failed:', response.status, await response.text())
-      return NextResponse.json({ error: 'WaCRM webhook failed' }, { status: 502 })
+      console.error('[wacrm-bridge] upstream responded with', response.status)
+      return NextResponse.json({ error: 'WaCRM rejected the event.' }, { status: 502 })
     }
 
-    return NextResponse.json({ success: true, message: 'Forwarded to WaCRM' })
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Webhook error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[wacrm-bridge] forwarding failed:', error)
+    return NextResponse.json({ error: 'Could not reach WaCRM.' }, { status: 502 })
   }
 }

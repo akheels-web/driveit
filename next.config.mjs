@@ -2,10 +2,21 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Type errors used to be silently ignored in production builds. Keep this
+  // enabled — `npm run typecheck` is also wired up for CI.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
-  allowedDevOrigins: ['169.254.83.107', 'localhost:3000', 'localhost:3001', '127.0.0.1:3000', '127.0.0.1:3001'],
+  // Docker builds set NEXT_OUTPUT_STANDALONE=true to emit a self-contained
+  // server bundle. Keeping it opt-in means a local `npm run build && npm start`
+  // behaves normally (Next warns that `next start` is unsupported when a
+  // standalone build is present).
+  output: process.env.NEXT_OUTPUT_STANDALONE === 'true' ? 'standalone' : undefined,
+  // sharp and the libSQL client ship native binaries — load them from
+  // node_modules at runtime instead of trying to bundle them.
+  serverExternalPackages: ['sharp', '@payloadcms/db-sqlite', 'libsql', 'ioredis'],
+  poweredByHeader: false,
+  allowedDevOrigins: ['localhost:3000', 'localhost:3001', '127.0.0.1:3000', '127.0.0.1:3001'],
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -34,11 +45,19 @@ const nextConfig = {
           },
           {
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
+            value: 'strict-origin-when-cross-origin',
           },
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains; preload',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), payment=(self)',
+          },
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
           },
         ],
       },

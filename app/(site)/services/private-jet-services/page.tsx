@@ -7,8 +7,6 @@ import { ShieldCheck, Lock, Clock, Plane, Wifi, Utensils, User, Stars, Phone, Me
 import Link from "next/link"
 import { ContactForm } from "@/components/contact-form"
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 export default function PrivateJetServicesPage() {
   const serviceSchema = {

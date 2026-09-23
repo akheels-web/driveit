@@ -4,25 +4,27 @@ import { importMap } from '../importMap'
 
 type Args = {
   params: Promise<{
-    segments?: string[]
+    segments: string[]
   }>
   searchParams: Promise<{
     [key: string]: string | string[]
   }>
 }
 
-export const generateMetadata = async ({ params, searchParams }: Args) =>
+// Payload's views await `params`/`searchParams` internally — pass the promises
+// through instead of awaiting them here.
+export const generateMetadata = ({ params, searchParams }: Args) =>
   generatePageMetadata({
     config: configPromise,
-    params: await params,
-    searchParams: await searchParams,
+    params,
+    searchParams,
   })
 
-const Page = async ({ params, searchParams }: Args) =>
+const Page = ({ params, searchParams }: Args) =>
   RootPage({
     config: configPromise,
-    params: await params,
-    searchParams: await searchParams,
+    params,
+    searchParams,
     importMap,
   })
 

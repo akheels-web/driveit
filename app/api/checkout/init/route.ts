@@ -1,105 +1,158 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import config from '@/payload.config'
-import crypto from 'crypto'
+import { z } from 'zod'
 
-// Very basic in-memory rate limiter for init route (resets on server restart)
-const rateLimitMap = new Map<string, { count: number, timestamp: number }>()
+import config from '@/payload.config'
+import { getCarByIdentifier } from '@/lib/cms'
+import { BookingConflictError, BookingInputError, createBookingHold } from '@/lib/booking-holds'
+import { validateCoupon } from '@/lib/coupons'
+import { computeQuote, QuoteError } from '@/lib/pricing'
+import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
+
+export const dynamic = 'force-dynamic'
+
+const InitSchema = z.object({
+  carSlug: z.string().trim().min(1).max(200),
+  startDate: z.string().trim().min(4),
+  endDate: z.string().trim().min(4),
+  customerName: z.string().trim().min(2).max(160),
+  customerEmail: z.string().trim().email().max(200),
+  customerPhone: z.string().trim().min(6).max(30),
+  pickupLocation: z.string().trim().max(300).optional().nullable(),
+  dropoffLocation: z.string().trim().max(300).optional().nullable(),
+  serviceType: z.enum(['chauffeur', 'selfdrive', 'airport']).optional(),
+  addons: z.string().trim().max(300).optional().nullable(),
+  couponCode: z.string().trim().max(60).optional().nullable(),
+  whatsappNumber: z.string().trim().max(30).optional().nullable(),
+  packageType: z.string().trim().max(40).optional().nullable(),
+})
 
 export async function POST(request: Request) {
+  const verdict = await limitRequest(request, 'checkout-init', {
+    limit: 10,
+    windowMs: 60_000,
+    globalLimit: 600,
+  })
+  if (!verdict.ok) return tooManyRequests(verdict.retryAfterSeconds)
+
+  let rawBody: unknown
   try {
-    // 1. Rate Limiting Check
-    const ip = request.headers.get('x-forwarded-for') || 'unknown'
-    const now = Date.now()
-    const rateLimit = rateLimitMap.get(ip)
+    rawBody = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
+  }
 
-    if (rateLimit && now - rateLimit.timestamp < 60000) { // 1 minute window
-      if (rateLimit.count >= 5) {
-        return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
-      }
-      rateLimitMap.set(ip, { count: rateLimit.count + 1, timestamp: rateLimit.timestamp })
-    } else {
-      rateLimitMap.set(ip, { count: 1, timestamp: now })
-    }
+  const parsed = InitSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? 'Please check the booking details.' },
+      { status: 400 },
+    )
+  }
 
+  const input = parsed.data
+
+  const start = new Date(input.startDate)
+  if (Number.isNaN(start.getTime())) {
+    return NextResponse.json({ error: 'Invalid pickup date.' }, { status: 400 })
+  }
+  if (start.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
+    return NextResponse.json({ error: 'Pickup date cannot be in the past.' }, { status: 400 })
+  }
+
+  const car = await getCarByIdentifier(input.carSlug)
+  if (!car) {
+    return NextResponse.json({ error: 'That vehicle is no longer available.' }, { status: 404 })
+  }
+
+  const addons = (input.addons || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean)
+
+  try {
     const payload = await getPayload({ config })
-    const body = await request.json()
-    const { carSlug, startDate, endDate, customerEmail, customerName, customerPhone, pickupLocation, totalPrice, serviceType } = body
 
-    if (!carSlug || !startDate || !endDate) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    // Price the booking from the CMS, never from the request body.
+    const priced = computeQuote({
+      pricePerDay: car.price,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      addons,
+    })
+
+    let couponCode: string | null = null
+    let discount = 0
+
+    if (input.couponCode) {
+      const coupon = await validateCoupon(payload, {
+        code: input.couponCode,
+        email: input.customerEmail,
+        subtotal: priced.base + priced.addonsTotal,
+      })
+      if (coupon.valid) {
+        couponCode = coupon.code
+        discount = coupon.discount
+      }
     }
 
-    const requestedStart = new Date(startDate).getTime()
-    const requestedEnd = new Date(endDate).getTime()
-
-    const existingBookings = await payload.find({
-      collection: 'bookings',
-      where: {
-        carSlug: { equals: carSlug },
-        or: [
-          { status: { equals: 'confirmed' } },
-          { 
-            and: [
-              { status: { equals: 'pending' } },
-              { holdExpiresAt: { greater_than: new Date().toISOString() } }
-            ]
-          }
-        ]
-      },
-      limit: 100,
+    const quote = computeQuote({
+      pricePerDay: car.price,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      addons,
+      discount,
     })
 
-    const isConflict = existingBookings.docs.some(booking => {
-      const bookStart = new Date(booking.startDate as string).getTime()
-      const bookEnd = new Date(booking.endDate as string).getTime()
-      return requestedStart <= bookEnd && requestedEnd >= bookStart
+    const hold = await createBookingHold(payload, {
+      carSlug: car.slug,
+      carName: car.name,
+      startDate: start.toISOString(),
+      endDate: new Date(input.endDate).toISOString(),
+      days: quote.days,
+      totalPrice: quote.total,
+      serviceType: input.serviceType || 'chauffeur',
+      customerName: input.customerName,
+      customerEmail: input.customerEmail.toLowerCase(),
+      customerPhone: input.customerPhone,
+      pickupLocation: input.pickupLocation ?? null,
+      dropoffLocation: input.dropoffLocation ?? null,
+      addons: addons.join(',') || null,
+      couponCode,
+      discountApplied: quote.discount,
+      whatsappNumber: input.whatsappNumber ?? input.customerPhone,
     })
 
-    if (isConflict) {
-      return NextResponse.json({ 
-        error: 'This car is currently reserved or being booked by someone else for these dates. Please try again later.' 
-      }, { status: 409 })
+    return NextResponse.json({
+      success: true,
+      bookingId: hold.bookingId,
+      holdToken: hold.holdToken,
+      holdExpiresAt: hold.holdExpiresAt,
+      days: quote.days,
+      // Server-computed totals: the UI must display these, not its own estimate.
+      totalPrice: quote.total,
+      basePrice: quote.base,
+      addonsTotal: quote.addonsTotal,
+      addonLines: quote.addonLines,
+      discount: quote.discount,
+      couponCode,
+      car: { id: car.id, slug: car.slug, name: car.name, image: car.src, pricePerDay: car.price },
+    })
+  } catch (error) {
+    if (error instanceof BookingConflictError) {
+      return NextResponse.json(
+        { error: 'This car is currently reserved for those dates. Please choose another vehicle or time.' },
+        { status: 409 },
+      )
+    }
+    if (error instanceof BookingInputError || error instanceof QuoteError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    // Generate secure hold token
-    const holdToken = crypto.randomUUID()
-    const holdExpiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
-    
-    // Create pending booking
-    // Using req.user isn't possible here since it's a public API, but Payload lets us override access locally
-    const newBooking = await payload.create({
-      collection: 'bookings',
-      data: {
-        customerName,
-        customerEmail,
-        customerPhone,
-        carName: carSlug,
-        carSlug,
-        pickupLocation,
-        totalPrice,
-        serviceType: serviceType || 'selfdrive',
-        status: 'pending',
-        startDate: new Date(startDate).toISOString(),
-        endDate: new Date(endDate).toISOString(),
-        holdExpiresAt,
-        // We will store the holdToken temporarily in the database to verify later
-        // Since we don't have a dedicated field for it in schema, we can store it in whatsappNumber temporarily if empty, 
-        // OR better yet, let's just add it to the schema.
-        // For now, we will verify using the customerEmail + holdExpiresAt as a pseudo-token on confirm if we don't change schema.
-      },
-      overrideAccess: true, // IMPORTANT: Bypass CMS auth restriction for this server-side public checkout flow
-    })
-
-    return NextResponse.json({ 
-      success: true, 
-      bookingId: newBooking.id, 
-      holdExpiresAt,
-      holdToken: customerEmail // Pseudo-token for now (using email as verification key)
-    })
-
-  } catch (error: any) {
-    console.error('Init checkout error:', error)
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    console.error('[checkout/init] failed:', error)
+    return NextResponse.json(
+      { error: 'We could not start your booking. Please try again in a moment.' },
+      { status: 500 },
+    )
   }
 }

@@ -3,7 +3,7 @@
 import { useRef, useState, useMemo } from 'react'
 import { motion, useInView } from 'motion/react'
 import { Car, MapPin, CalendarDays, Clock, User, Phone, Mail, ArrowRight, CheckCircle, ChevronDown, Info, ShieldCheck, Users, PartyPopper } from 'lucide-react'
-import { carsData } from '@/lib/cars'
+import { useFleet } from '@/hooks/use-fleet'
 
 const popularLocations = [
   "RGIA Airport (Shamshabad)",
@@ -38,6 +38,8 @@ const occasions = [
 export function BookingSection() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
+  // Fleet comes from the CMS instead of the bundled static catalogue.
+  const { cars: carsData } = useFleet()
 
   const [submitted, setSubmitted] = useState(false)
   const [form, setForm] = useState({

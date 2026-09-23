@@ -9,8 +9,6 @@ import { Bus, ShieldCheck, Crown, MapPin, Phone, Stars, MessageCircle, ArrowRigh
 
 const GOLD = '#b48811'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 export default function LuxuryBusesPage() {
   const serviceSchema = {

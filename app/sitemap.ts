@@ -1,18 +1,20 @@
 import type { MetadataRoute } from 'next'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { getCarsFromCMS, getServicesFromCMS } from '@/lib/cms'
+import { getBlogPosts } from '@/lib/blog-seed'
+
+/** Regenerated hourly; CMS saves also invalidate the affected pages. */
+export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://www.driveitluxury.com'
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com').replace(/\/$/, '')
   const lastmod = new Date().toISOString()
-  const payload = await getPayload({ config })
 
-  // Base static routes
-  const routes = [
+  const staticRoutes: MetadataRoute.Sitemap = [
     '',
     '/about',
     '/contact',
     '/cars',
+    '/blog',
     '/services',
     '/privacy-policy',
     '/terms-conditions',
@@ -23,31 +25,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '' ? 1 : 0.8,
   }))
 
-  // Dynamic Car Routes
-  try {
-    const cars = await payload.find({ collection: 'cars', limit: 100 })
-    cars.docs.forEach((car) => {
-      routes.push({
-        url: `${baseUrl}/cars/${car.slug}`,
-        lastModified: car.updatedAt || lastmod,
-        changeFrequency: 'weekly' as const,
-        priority: 0.9,
-      })
-    })
-  } catch (err) {}
+  // Fleet, services and journal all fall back to their seed content, so a fresh
+  // install still submits a complete sitemap instead of an almost-empty one.
+  const [cars, services, posts] = await Promise.all([
+    getCarsFromCMS().catch(() => []),
+    getServicesFromCMS().catch(() => []),
+    getBlogPosts().catch(() => []),
+  ])
 
-  // Dynamic Blog Routes
-  try {
-    const blogs = await payload.find({ collection: 'blogs', limit: 100 })
-    blogs.docs.forEach((blog) => {
-      routes.push({
-        url: `${baseUrl}/blog/${blog.slug}`,
-        lastModified: blog.updatedAt || lastmod,
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-      })
-    })
-  } catch (err) {}
-
-  return routes
+  return [
+    ...staticRoutes,
+    ...cars.map((car) => ({
+      url: `${baseUrl}/cars/${car.slug}`,
+      lastModified: car.addedDate || lastmod,
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    })),
+    ...services.map((service) => ({
+      url: `${baseUrl}${service.href}`,
+      lastModified: lastmod,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+    ...posts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: lastmod,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+  ]
 }

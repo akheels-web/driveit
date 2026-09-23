@@ -3,8 +3,6 @@ import { metadata } from './metadata'
 
 export { metadata }
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 export default function AirportTaxiLayout({ children }: { children: ReactNode }) {
   return <>{children}</>

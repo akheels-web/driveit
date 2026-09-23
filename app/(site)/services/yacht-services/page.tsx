@@ -7,8 +7,6 @@ import { ShieldCheck, Lock, Clock, Anchor, Wifi, Utensils, User, Stars, Phone, M
 import Link from "next/link"
 import { ContactForm } from "@/components/contact-form"
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 export default function YachtServicesPage() {
   const serviceSchema = {

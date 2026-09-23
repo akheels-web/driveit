@@ -4,53 +4,9 @@ import React, { useRef } from 'react'
 import Image from 'next/image'
 import { Star, Quote } from 'lucide-react'
 import { motion, useInView } from "motion/react"
+import { TestimonialView, testimonialSeed } from "@/lib/content-seed"
 
-const testimonials = [
-  {
-    name: "Rajesh Kumar",
-    role: "CEO, TechSolutions India",
-    image: "/placeholder-user.jpg",
-    quote: "DRIVEIT's luxury car service in Hyderabad is exceptional. Their Rolls-Royce for our corporate events always impresses our international clients. Professional chauffeurs and impeccable service.",
-    rating: 5
-  },
-  {
-    name: "Priya Sharma",
-    role: "Wedding Planner, Elegant Events",
-    image: "/placeholder-user.jpg",
-    quote: "Used DRIVEIT for multiple luxury weddings in Hyderabad. Their wedding car collection is stunning and the service is flawless. Every bride feels like royalty on their special day.",
-    rating: 5
-  },
-  {
-    name: "Arjun Reddy",
-    role: "Managing Director, RedTech Industries",
-    image: "/placeholder-user.jpg",
-    quote: "For our executive transportation needs in Hyderabad, DRIVEIT is our go-to choice. Their luxury fleet and professional service make every business trip memorable and comfortable.",
-    rating: 5
-  },
-  {
-    name: "Anjali Patel",
-    role: "Luxury Travel Consultant",
-    image: "/placeholder-user.jpg",
-    quote: "DRIVEIT's private jet services from Hyderabad are world-class. They handle everything from airport transfers to international travel seamlessly. Highly recommended for luxury travel.",
-    rating: 5
-  },
-  {
-    name: "Vikram Singh",
-    role: "Director, Singh Hospitality Group",
-    image: "/placeholder-user.jpg",
-    quote: "Outstanding luxury transportation service in Hyderabad. Their fleet of premium cars and attention to detail is unmatched. Perfect for our high-profile guests and events.",
-    rating: 5
-  },
-  {
-    name: "Meera Iyer",
-    role: "Event Manager, Grand Celebrations",
-    image: "/placeholder-user.jpg",
-    quote: "DRIVEIT's luxury bus service for our corporate events in Hyderabad is excellent. Comfortable, punctual, and adds a touch of elegance to any group transportation need.",
-    rating: 5
-  }
-]
-
-function TestimonialCard({ testimonial }: { testimonial: (typeof testimonials)[0] }) {
+function TestimonialCard({ testimonial }: { testimonial: TestimonialView }) {
   return (
     <div className="flex-shrink-0 w-[340px] md:w-[400px] p-6 rounded-2xl border-glow-gold bg-[var(--luxury-surface)] hover:bg-[var(--luxury-surface-2)] transition-all duration-500">
       {/* Quote Icon */}
@@ -96,9 +52,16 @@ function TestimonialCard({ testimonial }: { testimonial: (typeof testimonials)[0
   )
 }
 
-export default function Testimonials() {
+/** Reviews come from the `testimonials` collection, with seed fallbacks. */
+export default function Testimonials({
+  testimonials = testimonialSeed,
+}: {
+  testimonials?: TestimonialView[]
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
+
+  if (testimonials.length === 0) return null
 
   return (
     <section ref={ref} className="bg-[var(--luxury-bg)] text-white overflow-hidden py-12 md:py-20">
@@ -134,6 +97,7 @@ export default function Testimonials() {
             {[...testimonials, ...testimonials].map((t, i) => (
               <TestimonialCard key={`a-${t.name}-${i}`} testimonial={t} />
             ))}
+
           </div>
           <div className="marquee-content gap-6 px-3" aria-hidden="true">
             {[...testimonials, ...testimonials].map((t, i) => (

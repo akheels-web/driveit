@@ -12,6 +12,8 @@ export interface CarDetails {
   transmission: string
   fuel: string
   services: string[] // chauffeur, selfdrive, airport
+  /** Optional long-form copy from the CMS. */
+  description?: string
   // Sorting & Display metrics
   rating: number
   reviewsCount: number

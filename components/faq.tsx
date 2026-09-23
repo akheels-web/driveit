@@ -3,43 +3,9 @@
 import { useRef, useState } from "react"
 import { motion, AnimatePresence, useInView } from "motion/react"
 import { ChevronDown } from "lucide-react"
+import { FaqView, faqSeed } from "@/lib/content-seed"
 
-const faqs = [
-  {
-    q: "Do you offer 24/7 concierge service?",
-    a: "Yes, our luxury concierge team operates 24/7 to accommodate last-minute bookings, changes, and special requests. We're always available to ensure your luxury travel experience is seamless.",
-  },
-  {
-    q: "Can I request a professional chauffeur?",
-    a: "Absolutely. Professional, trained chauffeurs are available for all our luxury vehicles. They are experienced in providing discreet, high-quality service for corporate and personal travel.",
-  },
-  {
-    q: "What documents are required for luxury car rental?",
-    a: "For self-drive rentals, we require a valid driver's license, passport/ID, and a security deposit. For chauffeur services, only your booking confirmation is needed.",
-  },
-  {
-    q: "Do you arrange intercity and international travel?",
-    a: "Yes, we provide comprehensive intercity travel services and coordinate private jet charters for international routes. Our team handles all logistics and arrangements.",
-  },
-  {
-    q: "What types of luxury vehicles do you offer?",
-    a: "Our fleet includes flagship luxury cars, private jets, yachts, luxury buses, and wedding cars. We offer everything from Rolls-Royce and Bentley to private aviation and marine vessels.",
-  },
-  {
-    q: "How far in advance should I book?",
-    a: "For peak seasons and special events, we recommend booking 2-4 weeks in advance. However, we can accommodate last-minute requests subject to availability.",
-  },
-  {
-    q: "Do you provide airport transfer services?",
-    a: "Yes, we offer premium airport transportation with meet-and-greet services, flight tracking, and luggage assistance. Our drivers ensure timely arrivals and departures.",
-  },
-  {
-    q: "How do I contact you for bookings?",
-    a: "You can reach us 24/7 at +91 83413 41186, email us at info@driveitluxury.com, or use our contact form. Our team will assist you with all your luxury transportation needs.",
-  },
-]
-
-function FAQItem({ faq, index, isInView }: { faq: (typeof faqs)[0]; index: number; isInView: boolean }) {
+function FAQItem({ faq, index, isInView }: { faq: FaqView; index: number; isInView: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -85,9 +51,12 @@ function FAQItem({ faq, index, isInView }: { faq: (typeof faqs)[0]; index: numbe
   )
 }
 
-export function FAQ() {
+/** FAQs are CMS-driven (Site Settings → Homepage FAQs) with seed fallbacks. */
+export function FAQ({ faqs = faqSeed }: { faqs?: FaqView[] }) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
+
+  if (faqs.length === 0) return null
 
   const faqSchema = {
     "@context": "https://schema.org",

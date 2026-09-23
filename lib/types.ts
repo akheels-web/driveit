@@ -1,75 +1,107 @@
 // ═══════════════════════════════════════════════════════════════
-// DRIVEIT Luxury — Database Types
+// DRIVEIT — shared application types (Payload-aligned)
+//
+// These were previously Supabase row types (booking_ref, total_amount,
+// booking_date, user_id …) which no longer matched what Payload returns, so the
+// dashboard and invoice pages rendered empty rows. Keep them in sync with the
+// Bookings / Customers collections.
 // ═══════════════════════════════════════════════════════════════
 
-export interface Car {
-  id: string
-  name: string
-  image_url: string
-  category: 'sedan' | 'suv' | 'sports' | 'mpv' | 'bus' | 'wedding' | 'convertible'
-  brand: string
-  price_per_day: number
-  price_display: string
-  is_available: boolean
-  service_types: string[]
-  features: string[]
-  seats: number
-  transmission: string
-  fuel_type: string
-  sort_order: number
-  created_at: string
-}
+export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled'
 
 export interface Booking {
   id: string
-  booking_ref: string
-  user_id: string | null
-  car_id: string | null
-  car_name: string
-  service_type: string
-  pickup_location: string
-  dropoff_location: string | null
-  booking_date: string
-  booking_time: string
-  duration_days: number
-  customer_name: string
-  customer_phone: string
-  customer_email: string | null
-  notes: string | null
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
-  payment_status: 'unpaid' | 'pending' | 'paid' | 'refunded'
-  payment_method: string | null
-  upi_transaction_id: string | null
-  total_amount: number
-  created_at: string
-  updated_at: string
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  carName: string
+  carSlug?: string | null
+  pickupLocation?: string | null
+  dropoffLocation?: string | null
+  serviceType?: 'chauffeur' | 'selfdrive' | 'airport' | null
+  status: BookingStatus
+  startDate?: string | null
+  endDate?: string | null
+  days?: number | null
+  totalPrice: number
+  discountApplied?: number | null
+  couponCode?: string | null
+  createdAt: string
 }
 
-export interface Profile {
-  id: string
-  full_name: string | null
+export interface CustomerProfile {
+  name: string | null
   phone: string | null
-  email: string | null
-  avatar_url: string | null
-  created_at: string
-  updated_at: string
+  homeAddress: string | null
+  officeAddress: string | null
+  airportAddress: string | null
+  loyaltyPoints: number
+  loyaltyTier: 'silver' | 'gold' | 'platinum'
+  completedBookings: number
 }
 
-// Form types
 export interface BookingFormData {
   carId?: string
+  carSlug?: string
   carName: string
-  carImage?: string
   serviceType: string
   pickupLocation: string
   dropoffLocation?: string
   bookingDate: string
-  bookingTime: string
+  bookingTime?: string
   durationDays: number
   customerName: string
   customerPhone: string
   customerEmail?: string
   notes?: string
-  totalAmount: number
+  /** Display-only. The server always recomputes the authoritative amount. */
+  totalAmount?: number
   paymentMethod?: 'upi' | 'pay_later'
+}
+
+/** Minimal car shape shipped to the browser by /api/cars. */
+export interface FleetCar {
+  id: string
+  slug: string
+  name: string
+  src: string
+  brand: string
+  price: number
+  priceDisplay: string
+  seats: number
+  services: string[]
+  category?: string
+  transmission?: string
+  fuel?: string
+  rating?: number
+  reviewsCount?: number
+  bookingsCount?: number
+  cancellationPolicy?: string
+  securityDeposit?: string
+}
+
+export interface SavedProfile {
+  name: string | null
+  phone: string | null
+  homeAddress: string | null
+  officeAddress: string | null
+  airportAddress: string | null
+}
+
+export interface QuoteBreakdown {
+  days: number
+  basePrice: number
+  addonsTotal: number
+  addonLines: { id: string; label: string; price: number }[]
+  discount: number
+  totalPrice: number
+}
+
+export type InitResponse = QuoteBreakdown & {
+  success: true
+  bookingId: string | number
+  holdToken: string
+  holdExpiresAt: string
+  couponCode: string | null
+  car: { id: string; slug: string; name: string; image: string; pricePerDay: number }
 }

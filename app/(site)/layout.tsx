@@ -61,10 +61,9 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://www.driveitluxury.com'),
-  alternates: {
-    canonical: '/',
-  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com'),
+  // No global canonical: each page declares its own so child pages are not
+  // all canonicalised to the homepage.
   openGraph: {
     title: "DRIVEIT - Premium Luxury Transportation Services",
     description: "Experience unparalleled luxury with DRIVEIT. Premium car rental, private jet services, yacht charters, and luxury transportation in Hyderabad, India.",
@@ -98,11 +97,11 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
-    yahoo: 'your-yahoo-verification-code',
-  },
+  // Only emit verification tags when real codes are configured — placeholder
+  // strings actively harm Search Console verification.
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+    : {}),
   category: 'Luxury Transportation Services',
   classification: 'Premium Car Rental and Aviation Services',
   other: {
@@ -116,7 +115,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // Never block pinch-zoom (WCAG 1.4.4) — `maximumScale: 1` used to prevent it.
+  themeColor: "#0a0a0a",
 }
 
 import { SessionProvider } from "@/components/providers/session-provider"
@@ -137,8 +137,8 @@ export default function RootLayout({
               "@type": "LocalBusiness",
               "name": "DRIVEIT Luxury",
               "url": "https://www.driveitluxury.com",
-              "telephone": "+91-XXXXXXXXXX",
-              "email": "care@driveitluxury.com",
+              "telephone": "+91-83413-41186",
+              "email": "info@driveitluxury.com",
               "address": {
                 "@type": "PostalAddress",
                 "streetAddress": "Banjara Hills",

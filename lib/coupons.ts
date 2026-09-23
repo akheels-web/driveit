@@ -1,0 +1,98 @@
+import type { Payload } from 'payload'
+
+import { discountForCoupon } from '@/lib/pricing'
+
+export type CouponValidation = {
+  valid: boolean
+  code: string
+  couponId?: number | string
+  discount: number
+  discountType?: string
+  discountValue?: number
+  message: string
+}
+
+const invalid = (code: string, message: string): CouponValidation => ({
+  valid: false,
+  code,
+  discount: 0,
+  message,
+})
+
+/**
+ * Validates a coupon against the CMS.
+ *
+ * This is the only place a discount is ever calculated — the browser cannot
+ * apply a code on its own, and expired / over-used / mis-assigned codes are
+ * rejected here rather than being trusted from the client.
+ */
+export async function validateCoupon(
+  payload: Payload,
+  args: { code: string; email?: string | null; subtotal: number },
+): Promise<CouponValidation> {
+  const code = args.code?.trim().toUpperCase()
+  if (!code) return invalid('', 'Enter a promo code.')
+
+  const { docs } = await payload.find({
+    collection: 'coupons',
+    where: { code: { equals: code } },
+    limit: 1,
+    overrideAccess: true,
+  })
+
+  const coupon = docs[0] as Record<string, any> | undefined
+  if (!coupon) return invalid(code, 'That promo code is not recognised.')
+
+  if (!coupon.isActive) return invalid(code, 'That promo code is no longer active.')
+
+  if (coupon.validUntil && new Date(coupon.validUntil).getTime() < Date.now()) {
+    return invalid(code, 'That promo code has expired.')
+  }
+
+  const usageLimit = Number(coupon.usageLimit ?? 1)
+  const usageCount = Number(coupon.usageCount ?? 0)
+  if (usageLimit > 0 && usageCount >= usageLimit) {
+    return invalid(code, 'That promo code has already been fully redeemed.')
+  }
+
+  if (
+    coupon.customerEmail &&
+    (!args.email || coupon.customerEmail.trim().toLowerCase() !== args.email.trim().toLowerCase())
+  ) {
+    return invalid(code, 'That promo code is not available for this account.')
+  }
+
+  const discount = discountForCoupon(coupon, Math.max(0, args.subtotal))
+  if (discount <= 0) return invalid(code, 'That promo code has no value left to apply.')
+
+  return {
+    valid: true,
+    code,
+    couponId: coupon.id,
+    discount,
+    discountType: coupon.discountType,
+    discountValue: Number(coupon.discountValue) || 0,
+    message:
+      coupon.discountType === 'fixed'
+        ? `Promo ${code} applied: ₹${discount.toLocaleString('en-IN')} off!`
+        : `Promo ${code} applied: ${coupon.discountValue}% off!`,
+  }
+}
+
+/** Increments `usageCount` after a booking is confirmed. */
+export async function redeemCoupon(payload: Payload, couponId: number | string) {
+  const coupon = (await payload.findByID({
+    collection: 'coupons',
+    id: couponId,
+    overrideAccess: true,
+  })) as Record<string, any> | null
+
+  if (!coupon) return
+
+  await payload.update({
+    collection: 'coupons',
+    id: couponId,
+    data: { usageCount: (Number(coupon.usageCount) || 0) + 1 },
+    overrideAccess: true,
+  })
+}

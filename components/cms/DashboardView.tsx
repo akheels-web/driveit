@@ -4,7 +4,7 @@ import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
 
 export async function DashboardView() {
-  let stats = {
+  const stats = {
     totalCars: 0,
     totalBookings: 0,
     confirmedBookings: 0,

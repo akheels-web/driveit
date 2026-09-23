@@ -1,6 +1,6 @@
-import { getPayload } from 'payload'
-import config from '@/payload.config'
 import type { Metadata } from 'next'
+import { getFaqs, getSiteSettings, getStats, getTestimonials } from '@/lib/cms'
+import { SITE_DEFAULTS } from '@/lib/content-seed'
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import Hero from "@/components/hero"
@@ -17,7 +17,11 @@ import { FAQ } from "@/components/faq"
 import { About } from "@/components/about"
 import { TrustStrip } from "@/components/trust-strip"
 
+/** ISR: the homepage is rebuilt at most every 5 minutes, or instantly on a CMS save. */
+export const revalidate = 300
+
 export const metadata: Metadata = {
+  alternates: { canonical: '/' },
   title: "DRIVEIT Luxury | Premium Luxury Car Rental Hyderabad | Book Online",
   description: "Book premium luxury cars in Hyderabad online. Choose from our elite fleet of Rolls Royce, Mercedes, BMW, Range Rover and more for weddings, corporate travel, airport transfers. Serving Jubilee Hills, Banjara Hills, HITEC City, Gachibowli, and all Hyderabad areas.",
   keywords: [
@@ -47,8 +51,14 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const payload = await getPayload({ config })
-  const siteSettings = await payload.findGlobal({ slug: 'site-settings' })
+  // One round-trip for all homepage content instead of serial CMS calls.
+  const [siteSettings, testimonials, stats, faqs] = await Promise.all([
+    getSiteSettings(),
+    getTestimonials(),
+    getStats(),
+    getFaqs(),
+  ])
+
 
   return (
     <>
@@ -58,7 +68,7 @@ export default async function HomePage() {
         <section id="home">
           <Hero videoUrl={siteSettings.headerVideoUrl as string | undefined} />
           <MarqueeStrip />
-          <Stats />
+          <Stats items={stats} />
         </section>
 
         {/* Booking — Primary CTA */}
@@ -80,9 +90,13 @@ export default async function HomePage() {
 
         {/* Social Proof & Info */}
         <section id="about">
-          <Testomonials />
-          <FAQ />
-          <About />
+          <Testomonials testimonials={testimonials} />
+          <FAQ faqs={faqs} />
+          <About
+            phone={siteSettings.contactPhone || SITE_DEFAULTS.contactPhone}
+            mapEmbedUrl={siteSettings.mapEmbedUrl || SITE_DEFAULTS.mapEmbedUrl}
+            mapLink={siteSettings.mapLink || SITE_DEFAULTS.mapLink}
+          />
         </section>
 
         {/* Footer */}

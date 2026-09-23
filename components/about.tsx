@@ -3,14 +3,24 @@
 import React, { useRef } from 'react'
 import { Phone, Calendar } from 'lucide-react'
 import { motion, useInView } from "motion/react"
+import { SITE_DEFAULTS } from '@/lib/content-seed'
 
-export function About() {
+type AboutProps = {
+  phone?: string
+  mapEmbedUrl?: string
+  mapLink?: string
+}
+
+/** Contact details and map come from the Site Settings global. */
+export function About({
+  phone = SITE_DEFAULTS.contactPhone,
+  mapEmbedUrl = SITE_DEFAULTS.mapEmbedUrl,
+  mapLink = SITE_DEFAULTS.mapLink,
+}: AboutProps) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
 
-  const handleCall = () => {
-    window.location.href = 'tel:+918341341186'
-  }
+  const telHref = `tel:${phone.replace(/[^+\d]/g, '')}`
 
   return (
     <section ref={ref} className="bg-[var(--luxury-bg)] text-white">
@@ -56,8 +66,8 @@ export function About() {
               transition={{ duration: 0.6, delay: 0.5 }}
             >
               {/* Primary CTA — Call Now */}
-              <motion.button
-                onClick={handleCall}
+              <motion.a
+                href={telHref}
                 className="flex items-center justify-center gap-2.5 text-black px-10 py-4 rounded-full text-base font-bold cursor-pointer"
                 style={{
                   background: 'linear-gradient(135deg, var(--gold-300), var(--gold-400), var(--gold-500))',
@@ -70,12 +80,12 @@ export function About() {
                 whileTap={{ scale: 0.97 }}
               >
                 <Phone className="w-5 h-5" />
-                Call Now: +91 83413 41186
-              </motion.button>
+                Call Now: {phone}
+              </motion.a>
 
               {/* Secondary CTA — Contact Us */}
-              <motion.button
-                onClick={() => window.location.href = '/cars'}
+              <motion.a
+                href="/cars"
                 className="flex items-center justify-center gap-2.5 px-10 py-4 rounded-full text-base font-semibold cursor-pointer"
                 style={{
                   color: 'var(--gold-400)',
@@ -91,7 +101,7 @@ export function About() {
               >
                 <Calendar className="w-5 h-5" />
                 Book Online
-              </motion.button>
+              </motion.a>
             </motion.div>
           </div>
         </motion.div>
@@ -117,7 +127,7 @@ export function About() {
           transition={{ duration: 0.8, delay: 0.4 }}
         >
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3807.2137599390176!2d78.4565279!3d17.4015263!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb97844e874967%3A0xec0fefe2fefa1e15!2sDriveit%20-%20Selfdrive%20Cars%20-%20Luxury%20Wedding%20Cars%20-%20Cabs%20for%20outstation%20-%20Luxury%20Buses!5e0!3m2!1sen!2sin!4v1756574982222!5m2!1sen!2sin"
+            src={mapEmbedUrl}
             width="100%"
             height="100%"
             style={{ border: 0 }}
@@ -138,8 +148,10 @@ export function About() {
           </div>
 
           {/* Fullscreen button */}
-          <motion.button
-            onClick={() => window.open('https://maps.app.goo.gl/z6g9rBdGoT1gzxku8', '_blank')}
+          <motion.a
+            href={mapLink}
+            target="_blank"
+            rel="noopener noreferrer"
             className="absolute bottom-4 right-4 glass-gold px-4 py-2.5 rounded-lg text-white text-sm flex items-center gap-2 cursor-pointer hover:bg-white/10 transition-colors duration-300"
             whileHover={{ scale: 1.05 }}
           >
@@ -147,7 +159,7 @@ export function About() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
             Open in Maps
-          </motion.button>
+          </motion.a>
         </motion.div>
       </div>
     </section>
