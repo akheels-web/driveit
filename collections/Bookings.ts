@@ -8,10 +8,10 @@ export const Bookings: CollectionConfig = {
     description: '📋 Customer Reservations: Live car bookings placed by customers on /checkout appear here automatically. You can review customer details, track payment statuses, and mark bookings as Confirmed or Completed.',
   },
   access: {
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: ({ req: { user } }) => Boolean(user),
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => Boolean(user),
   },
   hooks: {
     afterChange: [

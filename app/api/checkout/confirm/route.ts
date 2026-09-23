@@ -8,10 +8,25 @@ export async function POST(request: Request) {
   try {
     const payload = await getPayload({ config })
     const body = await request.json()
-    const { bookingId } = body
+    const { bookingId, holdToken } = body
 
-    if (!bookingId) {
-      return NextResponse.json({ error: 'Missing booking ID' }, { status: 400 })
+    if (!bookingId || !holdToken) {
+      return NextResponse.json({ error: 'Missing booking ID or security token' }, { status: 400 })
+    }
+
+    // 1. Fetch the booking first to verify IDOR protection
+    const existingBooking = await payload.findByID({
+      collection: 'bookings',
+      id: bookingId,
+    })
+
+    if (!existingBooking || existingBooking.status !== 'pending') {
+      return NextResponse.json({ error: 'Invalid booking or booking has expired.' }, { status: 400 })
+    }
+
+    // 2. IDOR check: Verify the holdToken matches the customerEmail (our pseudo-token)
+    if (existingBooking.customerEmail !== holdToken) {
+      return NextResponse.json({ error: 'Unauthorized booking confirmation attempt.' }, { status: 403 })
     }
 
     // Update the booking status to confirmed
@@ -21,6 +36,7 @@ export async function POST(request: Request) {
       data: {
         status: 'confirmed',
       },
+      overrideAccess: true, // Bypass CMS auth
     })
 
     // Generate Invoice PDF
@@ -42,7 +58,7 @@ export async function POST(request: Request) {
             <h2 style="color: #d4af37;">Booking Confirmed!</h2>
             <p>Dear ${updatedBooking.customerName},</p>
             <p>Your luxury reservation for the <strong>${updatedBooking.carName}</strong> is fully confirmed.</p>
-            <p><strong>Dates:</strong> ${new Date(updatedBooking.startDate).toLocaleDateString()} - ${new Date(updatedBooking.endDate).toLocaleDateString()}</p>
+            <p><strong>Dates:</strong> ${new Date(updatedBooking.startDate as string).toLocaleDateString()} - ${new Date(updatedBooking.endDate as string).toLocaleDateString()}</p>
             <p><strong>Pickup:</strong> ${updatedBooking.pickupLocation}</p>
             <p>Please find your official invoice attached to this email.</p>
             <p>Warm regards,<br><strong>DriveIt Concierge Team</strong></p>

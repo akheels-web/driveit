@@ -46,6 +46,7 @@ function CheckoutContent() {
   const [discount, setDiscount] = useState(0)
   const [promoMessage, setPromoMessage] = useState('')
   const [bookingId, setBookingId] = useState<string | null>(null)
+  const [holdToken, setHoldToken] = useState<string | null>(null)
   const [checkoutError, setCheckoutError] = useState('')
   
   // If loaded directly without params, return to cars
@@ -98,6 +99,7 @@ function CheckoutContent() {
          return
        }
        setBookingId(data.bookingId)
+       setHoldToken(data.holdToken)
        setStep('payment')
      } catch (err) {
        setCheckoutError('Network error. Please try again.')
@@ -106,13 +108,13 @@ function CheckoutContent() {
   }
 
   const handlePay = async () => {
-     if (!bookingId) return
+     if (!bookingId || !holdToken) return
      setIsProcessing(true)
      try {
        const res = await fetch('/api/checkout/confirm', {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ bookingId })
+         body: JSON.stringify({ bookingId, holdToken })
        })
        if (res.ok) {
          setStep('success')
