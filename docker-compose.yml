@@ -1,0 +1,125 @@
+version: '3.8'
+
+# ============================================================
+# DriveIt — Production Docker Compose
+# ============================================================
+# Usage:
+#   1. Copy .env.example to .env and fill in all values
+#   2. docker compose up -d
+#   3. Access app at http://localhost:3000
+#      (put Nginx in front for HTTPS on your domain)
+# ============================================================
+
+services:
+
+  # ─────────────────────────────────────────
+  # Main Application: Next.js + Payload CMS
+  # ─────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: driveit-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: "0.0.0.0"
+
+      # --- Required ---
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      DATABASE_URI: file:/app/data/driveit.db
+      AUTH_SECRET: ${AUTH_SECRET}
+      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+
+      # --- Google OAuth (NextAuth) ---
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET}
+
+      # --- Email (Resend) ---
+      RESEND_API_KEY: ${RESEND_API_KEY}
+
+      # --- WhatsApp (Meta Graph API) ---
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
+
+    volumes:
+      # Persistent SQLite database — survives container restarts & updates
+      - driveit-db:/app/data
+      # Persistent media uploads (car photos, logos, etc.)
+      - driveit-media:/app/public/media
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+    networks:
+      - driveit-net
+
+  # ─────────────────────────────────────────
+  # SQLite Backup: Daily automated backups
+  # Backs up driveit.db to /backups every day at 2 AM UTC
+  # Keeps last 7 days only (auto-prunes older files)
+  # ─────────────────────────────────────────
+  backup:
+    image: alpine:3.20
+    container_name: driveit-backup
+    restart: unless-stopped
+    volumes:
+      - driveit-db:/data:ro
+      - driveit-backups:/backups
+    command: >
+      sh -c "
+        echo '0 2 * * * cp /data/driveit.db /backups/driveit_backup_$$(date +%Y%m%d_%H%M%S).db && find /backups -name \"*.db\" -mtime +7 -delete && echo \"[DriveIt] Backup completed\"' > /etc/crontabs/root &&
+        crond -f -l 2
+      "
+    networks:
+      - driveit-net
+
+  # ─────────────────────────────────────────
+  # Nginx: Reverse proxy + SSL termination
+  # Uncomment this block after running Certbot
+  # ─────────────────────────────────────────
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: driveit-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - /etc/letsencrypt:/etc/letsencrypt:ro
+  #   depends_on:
+  #     - app
+  #   networks:
+  #     - driveit-net
+
+# ─────────────────────────────────────────
+# Named Volumes (persistent across restarts)
+# ─────────────────────────────────────────
+volumes:
+  driveit-db:
+    driver: local
+  driveit-media:
+    driver: local
+  driveit-backups:
+    driver: local
+
+# ─────────────────────────────────────────
+# Internal Docker Network
+# ─────────────────────────────────────────
+networks:
+  driveit-net:
+    driver: bridge
