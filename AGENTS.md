@@ -51,6 +51,14 @@
     2. Sync high-value inquiries (wedding fleet bookings, corporate accounts, bespoke luxury chauffeur packages) into Twenty via GraphQL/REST API (`POST /rest/opportunities`).
     3. Concierge sales team manages the pipeline visually (Lead → Discovery → Proposal Sent → Contract Won) while DriveIt continues to handle automated payments, vehicle hold locks, and customer dashboard access.
 
+- **Google Maps Location Search & Interactive Pin Picker — Phase 2 Roadmap**:
+  - **Decision**: Keep Google Places Autocomplete and Interactive Map Pin Picker in the Phase 2 roadmap to tackle after initial production launch.
+  - **Planned Features**:
+    1. **Google Places Autocomplete**: Real-time POI search (e.g., "Karachi Bakery Banjara Hills", "Taj Falaknuma", "Novotel HICC") using session tokens to optimize API usage.
+    2. **Interactive Map Pin Picker**: Modal with obsidian-gold dark map styling (`#050505` asphalt, `#d4af37` gold pin/route markers). Users can drag a pointer on the map to pinpoint exact pickup/drop-off spots with reverse geocoding into exact street addresses.
+    3. **Cost Architecture**: Uses Google Maps Platform's recurring **$200 USD (~₹16,500 INR) free monthly credit**, providing ~11,700 search sessions and ~28,500 dynamic map loads each month at zero cost ($0). A budget alert and quota limit in Google Cloud Console ensures zero unexpected charges.
+    4. **Integration Targets**: Replace preset zones in [`components/booking-section.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/booking-section.tsx), [`components/car-booking-modal.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/car-booking-modal.tsx), and upgrade [`components/location-search-input.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/location-search-input.tsx).
+
 ## 4. Deployment Architecture & Fresher Runbook
 - **Unified Full-Stack Deployment**: The app runs as a single unified Next.js 16 + Payload 3 standalone container via [`docker-compose.yml`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/docker-compose.yml).
   - Do NOT attempt a split Vercel frontend / VPS backend rewrite proxy: server components in `app/(site)/dashboard/*` rely on Payload's Local API (`getPayload()`), which requires direct database access and shared secrets (`PAYLOAD_SECRET`, `DATABASE_URI`).
