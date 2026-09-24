@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { getPayload } from 'payload'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -135,29 +135,48 @@ export async function POST(request: Request) {
       }
     }
 
-    await sendConfirmationEmail(payload, updated)
-    await sendWhatsAppConfirmation(updated).catch((error) =>
-      console.error('[checkout/confirm] WhatsApp failed:', error?.message ?? error),
-    )
+    // Leverage Next.js after() to dispatch notifications and revalidate cache
+    // asynchronously without holding up the customer's checkout response.
+    after(async () => {
+      try {
+        await sendConfirmationEmail(payload, updated)
+      } catch (emailErr) {
+        console.error('[checkout/confirm] background email error:', emailErr)
+      }
 
-    await sendTelegramAlert(
-      bookingAlertText({
-        reference,
-        carName: updated.carName,
-        serviceType: updated.serviceType,
-        pickupLocation: updated.pickupLocation,
-        startDate: updated.startDate ? new Date(updated.startDate).toLocaleString('en-IN') : null,
-        endDate: updated.endDate ? new Date(updated.endDate).toLocaleString('en-IN') : null,
-        totalPrice: updated.totalPrice,
-        customerName: updated.customerName,
-        customerPhone: updated.customerPhone,
-        customerEmail: updated.customerEmail,
-        paymentReference: updated.upiTransactionId ?? upiTransactionId ?? null,
-      }),
-    )
+      try {
+        await sendWhatsAppConfirmation(updated)
+      } catch (error) {
+        console.error('[checkout/confirm] background WhatsApp error:', error)
+      }
 
-    revalidatePath('/dashboard')
-    revalidatePath('/dashboard/bookings')
+      try {
+        await sendTelegramAlert(
+          bookingAlertText({
+            reference,
+            carName: updated.carName,
+            serviceType: updated.serviceType,
+            pickupLocation: updated.pickupLocation,
+            startDate: updated.startDate ? new Date(updated.startDate).toLocaleString('en-IN') : null,
+            endDate: updated.endDate ? new Date(updated.endDate).toLocaleString('en-IN') : null,
+            totalPrice: updated.totalPrice,
+            customerName: updated.customerName,
+            customerPhone: updated.customerPhone,
+            customerEmail: updated.customerEmail,
+            paymentReference: updated.upiTransactionId ?? upiTransactionId ?? null,
+          }),
+        )
+      } catch (tgErr) {
+        console.error('[checkout/confirm] background Telegram error:', tgErr)
+      }
+
+      try {
+        revalidatePath('/dashboard')
+        revalidatePath('/dashboard/bookings')
+      } catch (revalErr) {
+        console.warn('[checkout/confirm] revalidatePath warning:', revalErr)
+      }
+    })
 
     return NextResponse.json({
       success: true,
