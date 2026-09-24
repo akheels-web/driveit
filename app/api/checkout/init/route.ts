@@ -53,9 +53,28 @@ export async function POST(request: Request) {
   const input = parsed.data
 
   const start = new Date(input.startDate)
+  const end = new Date(input.endDate)
+
   if (Number.isNaN(start.getTime())) {
     return NextResponse.json({ error: 'Invalid pickup date.' }, { status: 400 })
   }
+  if (Number.isNaN(end.getTime())) {
+    return NextResponse.json({ error: 'Invalid return date.' }, { status: 400 })
+  }
+
+  // A return before pickup would otherwise be quietly coerced into a one-day
+  // rental by the pricing rules (see lib/pricing.ts) — a silent wrong price is
+  // worse than a rejected request.
+  if (end.getTime() < start.getTime()) {
+    return NextResponse.json(
+      { error: 'The return date cannot be before the pickup date.' },
+      { status: 400 },
+    )
+  }
+
+  // Dates arrive as calendar days, and a customer booking "today" in UTC+13 is
+  // already quoting yesterday in UTC — so allow a day of slack rather than
+  // rejecting legitimate same-day bookings from the wrong timezone.
   if (start.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
     return NextResponse.json({ error: 'Pickup date cannot be in the past.' }, { status: 400 })
   }
@@ -108,7 +127,7 @@ export async function POST(request: Request) {
       carSlug: car.slug,
       carName: car.name,
       startDate: start.toISOString(),
-      endDate: new Date(input.endDate).toISOString(),
+      endDate: end.toISOString(),
       days: quote.days,
       totalPrice: quote.total,
       serviceType: input.serviceType || 'chauffeur',

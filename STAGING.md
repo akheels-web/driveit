@@ -1,14 +1,19 @@
 # 🧪 Staging & database migration runbook
 
 Staging runs the **same stack as production** (`app` + `postgres` + `redis`, plus a nightly
-`pg_dump` job) so that everything verified here is what ships. Local development keeps using
-SQLite for zero-setup work; the driver is chosen from `DATABASE_URI`, so the two never conflict.
+`pg_dump` job) so that everything verified here is what ships. Local development runs the same
+Postgres and Redis, started from the same compose file with a loopback-only override — there is no
+second database driver any more, so the schema and queries you develop against are the ones that
+run in production.
 
 | Environment | Database | Rate limiter | Notes |
 |---|---|---|---|
-| Local dev | `file:./driveit.db` (SQLite) | in-process | `npm run dev`, schema pushed automatically |
+| Local dev | `postgres://…@localhost:55432/driveit` | Redis (`localhost:56379`) | `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d postgres redis`, then `npm run migrate && npm run dev` |
 | Staging | `postgres://…@postgres:5432/driveit` | Redis | `docker compose up -d --build` |
 | Production | same as staging | Redis | identical compose file, real domain + secrets |
+
+Postgres is not optional. `lib/db.ts` rejects anything that is not a `postgres://` URL at boot, so
+a misconfigured deploy fails immediately instead of quietly writing to a throwaway file.
 
 ---
 
@@ -50,28 +55,35 @@ npm run seed
   ```
 
   Commit the generated files. Run `npm run migrate` as a deploy step *before* the new container
-  starts accepting traffic.
+  starts accepting traffic — from CI or a host checkout pointed at the same `DATABASE_URI`, because
+  the app image is intentionally slim and has no toolchain. (`docker compose run --rm app` will not
+  work for this: there is no `tsx` in that image.)
 
 ---
 
-## 3. Moving data from SQLite to Postgres
+## 3. Moving data between instances (backup, restore, promotion)
 
-The tooling is HTTP-based, so it works from any machine and doubles as a general backup/restore:
+The tooling is HTTP-based, so it works from any machine and doubles as a general backup/restore.
+It is how you promote staging → production, and how you would move a database between hosts:
 
 ```bash
-# 1. Export the old (SQLite) instance — do this first, ideally with the site in maintenance
-SEED_BASE_URL=http://localhost:3000 npm run export:content -- --out=backup/pre-cutover
+# 1. Export the source instance — ideally with the site in maintenance
+SEED_BASE_URL=http://localhost:3000 npm run export:content -- --out=backup/pre-promotion
 
-# 2. Start the new instance against Postgres (fresh database, schema pushed or migrated)
-DATABASE_URI=postgres://driveit:secret@localhost:5432/driveit npm run dev -- -p 3001
-#    …or just deploy staging, which does this for you.
+# 2. Start the target against an empty Postgres (schema created first)
+DATABASE_URI=postgres://driveit:secret@localhost:55432/driveit npm run migrate
+DATABASE_URI=postgres://driveit:secret@localhost:55432/driveit npm run dev -- -p 3001
 
 # 3. Import. Documents keep their original ids, so relationships and
-#    DRV-00001-style booking references stay valid.
-SEED_BASE_URL=http://localhost:3001 npm run import:content -- --dir=backup/pre-cutover
+#    DRV-00001-style booking references stay valid, and the importer verifies
+#    every stored id — it exits non-zero instead of silently re-keying.
+SEED_BASE_URL=http://localhost:3001 npm run import:content -- --dir=backup/pre-promotion
 
 # 4. REQUIRED: resync id sequences, or the next normal insert reuses an existing id
 docker compose exec -T postgres psql -U driveit -d driveit < scripts/sql/fix-sequences.sql
+
+# 5. Staff logins do not travel (password hashes are never exported). Create one:
+ADMIN_PASSWORD='a-strong-password' npm run create:admin -- --email you@example.com
 ```
 
 Other useful invocations:
@@ -96,50 +108,48 @@ must use **forgot password** once and set a new one.
 
 ## 4. Verification checklist
 
-Run these after any cutover or staging deploy. Everything here has been exercised at least once
-on a real instance:
+**One command does most of it.** `npm run smoke` writes a real booking, so it refuses to run
+against anything that is not loopback unless you pass `--allow-remote`:
 
 ```bash
-# content arrived, with ids intact
-curl -s http://localhost:3001/api/fleet | head -c 120
-
-# the public site renders from the CMS, not from the seed fallback
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3001/
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3001/blog
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3001/admin
-
-# private data is NOT public
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3001/api/bookings   # expect 403
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3001/api/profile    # expect 401
-
-# a whole booking, including server-side pricing and the hold token
-curl -s -X POST http://localhost:3001/api/checkout/init -H 'Content-Type: application/json' \
-  -d '{"carSlug":"volvo-xc60","startDate":"2026-12-01","endDate":"2026-12-03","customerName":"Verify","customerEmail":"verify@example.com","customerPhone":"+919999999999"}'
-# → totalPrice must equal days × the CMS price, and the response must contain holdToken
-
-# coupons are validated from the CMS, not hardcoded
-curl -s -X POST http://localhost:3001/api/coupons/validate -H 'Content-Type: application/json' \
-  -d '{"code":"FIRST10","email":"verify@example.com","subtotal":18000}'   # expect valid:false
+SEED_BASE_URL=http://localhost:3001 npm run smoke
+SMOKE_BASE_URL=https://staging.example.com SEED_ADMIN_PASSWORD='…' npm run smoke -- --allow-remote
 ```
 
-Then, by hand: open `/admin`, edit a car price, reload `/cars` and confirm the change appears;
-place one full booking and confirm the invoice PDF renders and the reference matches.
+It asserts, in order: the CMS-backed pages and `/admin` answer 200; `/api/fleet` returns the real
+fleet; `/api/bookings` and `/api/profile` are still private (403/401); a hold + confirm completes
+with the price recomputed server-side; a replayed confirm is not double-charged; a forged hold
+token is rejected; **three parallel holds on one car leave exactly one winner**; staff can log in
+and completing a booking does not deadlock (and does not award loyalty twice); and the rate limiter
+returns 429.
+
+Run it from a checkout, not from inside the app image — that runtime image is deliberately slim
+(no TypeScript toolchain, no scripts). Against a staging host, remember `--allow-remote`:
+
+Manual spot-checks that the script cannot judge:
+
+- `/admin` → edit a car price → reload `/cars` and confirm the change appears (ISR + cache tag).
+- Place a booking and open the emailed PDF invoice; the reference must match `DRV-000NN`.
+- `docker compose exec -T postgres psql -U driveit -d driveit -c "select last_value, is_called from cars_id_seq"`
+  — `last_value` must be ≥ `max(id)` in `cars` (see `scripts/sql/fix-sequences.sql`).
+- Query counts after an import: cars / services / testimonials / blogs / bookings / customers.
 
 ---
 
 ## 5. Promoting staging → production
 
 1. Freeze writes (short maintenance notice) or accept a small gap.
-2. `npm run export:content` against staging → `backup/prod-cutover`.
+2. `npm run export:content` against staging → `backup/prod-promotion`.
 3. Provision production Postgres, deploy, `npm run migrate`.
 4. `npm run import:content` against production, then `scripts/sql/fix-sequences.sql`.
 5. Copy media.
-6. Run the checklist above against the real domain, on both customer and admin flows.
-7. Remove `PAYLOAD_SCHEMA_PUSH`, confirm `REDIS_URL` is set, and confirm `PAYLOAD_SECRET` /
+6. `npm run smoke -- --allow-remote` against the real domain, plus the manual checks above.
+7. Confirm `PAYLOAD_SCHEMA_PUSH` is unset, `REDIS_URL` is set, and `PAYLOAD_SECRET` /
    `AUTH_SECRET` are strong and unique to production.
 
-**Rollback:** the old database is untouched by every step above. Point `DATABASE_URI` back at it,
-redeploy the previous image, and only then investigate. Keep the old data for at least two weeks.
+**Rollback:** the previous database is untouched by every step above (the export is read-only).
+Point `DATABASE_URI` back at it, redeploy the previous image, and only then investigate. Keep the
+old dump and the previous database for at least two weeks.
 
 ---
 
@@ -152,4 +162,5 @@ redeploy the previous image, and only then investigate. Keep the old data for at
   rate-limit quota. `lib/rate-limit.ts` warns loudly in production when `REDIS_URL` is missing.
 - **Backups are nightly `pg_dump`s** (7 days kept). For point-in-time recovery, enable WAL
   archiving or use a managed Postgres.
-- **SQLite stays supported** as a local/fallback driver, but not for staging or production.
+- **Migrations are the only way schema changes ship.** `PAYLOAD_SCHEMA_PUSH=true` is for the first
+  boot of an empty database; leaving it on lets a deploy reshape live tables without review.

@@ -5,8 +5,8 @@
  *   SEED_BASE_URL=http://localhost:3000 npm run export:content -- --out=backup/pre-cutover
  *
  * Used for two things:
- *   • the SQLite → Postgres cutover (export from the old instance, import into
- *     the new one with `npm run import:content`)
+ *   • promoting one instance to another (staging → production) or restoring a
+ *     dump with `npm run import:content`
  *   • an ad-hoc backup before risky schema work
  *
  * Not included:
@@ -16,7 +16,7 @@
  *     accounts must reset their passwords.
  *
  * The output is plain documents with numeric ids, so `import-content.ts` can
- * restore them into a database with the same table shapes (SQLite ↔ Postgres).
+ * restore them into a database with the same schema version.
  */
 import fs from 'node:fs'
 import path from 'node:path'

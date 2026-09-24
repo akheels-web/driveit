@@ -244,10 +244,18 @@ export function CheckoutClient() {
             <CheckCircle2 className="w-10 h-10 text-green-500" />
           </div>
           <h2 className="text-3xl font-bold mb-2">Booking Confirmed</h2>
-          <p className="text-white/50 mb-8">
+          <p className="text-white/50 mb-6">
             Your {car.name} reservation is confirmed. A receipt with your invoice is on its way to{' '}
             {form.email}.
           </p>
+          {/* We do not claim the money arrived: the UPI reference is typed by the
+              customer and a human checks it against our account. */}
+          {hold?.paymentStatus === 'awaiting_verification' ? (
+            <p className="text-left text-xs text-[var(--gold-400)] bg-[var(--gold-400)]/10 border border-[var(--gold-400)]/20 rounded-xl px-4 py-3 mb-6">
+              Payment under review — we will match your UPI reference against our account within one
+              business day. Your car is held for you meanwhile.
+            </p>
+          ) : null}
           <div className="bg-black/40 rounded-xl p-5 border border-white/5 mb-8 text-left space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-white/40">Reference</span>

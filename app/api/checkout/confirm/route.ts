@@ -11,7 +11,9 @@ import { redeemCoupon, validateCoupon } from '@/lib/coupons'
 import { escapeHtml } from '@/lib/html'
 import { serverUrl } from '@/lib/env'
 import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
-import { bookingAlertText, sendTelegramAlert } from '@/lib/telegram'
+import { bookingAlertText, couponAlertText, sendTelegramAlert } from '@/lib/telegram'
+import { bookingReference } from '@/lib/invoice'
+import { AWAITING_VERIFICATION, paymentNeedsReview } from '@/lib/payments'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,7 +65,15 @@ export async function POST(request: Request) {
     }
 
     if (existing.status === 'confirmed') {
-      return NextResponse.json({ success: true, alreadyConfirmed: true, bookingId: existing.id })
+      return NextResponse.json({
+        success: true,
+        alreadyConfirmed: true,
+        bookingId: existing.id,
+        reference: bookingReference(existing.id),
+        totalPrice: existing.totalPrice,
+        status: existing.status,
+        paymentStatus: existing.paymentStatus ?? AWAITING_VERIFICATION,
+      })
     }
 
     if (existing.status !== 'pending') {
@@ -82,20 +92,46 @@ export async function POST(request: Request) {
       id: existing.id,
       data: {
         status: 'confirmed',
+        // Confirming reserves the car; it does NOT assert that money arrived.
+        // The UPI reference below is typed by the customer and nothing verifies
+        // it, so the booking starts life awaiting a human check. See
+        // lib/payments.ts for why 'paid' does not exist as a state.
+        paymentStatus: existing.paymentStatus ?? AWAITING_VERIFICATION,
         ...(upiTransactionId ? { upiTransactionId } : {}),
       },
       overrideAccess: true,
       depth: 0,
     })) as Record<string, any>
 
+    const reference = bookingReference(updated.id)
+
     // A confirmed booking is money — claim the coupon only after this point.
+    // The claim is atomic, so two people confirming at once cannot both use the
+    // last redemption of a limited code.
     if (existing.couponCode) {
       const coupon = await validateCoupon(payload, {
         code: existing.couponCode,
         email: existing.customerEmail,
         subtotal: Number(existing.totalPrice) || 0,
       })
-      if (coupon.couponId) await redeemCoupon(payload, coupon.couponId)
+
+      const redeemed = coupon.couponId ? await redeemCoupon(payload, coupon.couponId) : false
+
+      if (!redeemed) {
+        console.warn(
+          `[checkout/confirm] coupon ${existing.couponCode} was not counted for ${reference}`,
+        )
+        await sendTelegramAlert(
+          couponAlertText({
+            reference,
+            couponCode: existing.couponCode,
+            discount: Number(existing.discountApplied) || 0,
+            reason: coupon.valid
+              ? 'the redemption limit was reached between checkout and confirmation'
+              : coupon.message,
+          }),
+        )
+      }
     }
 
     await sendConfirmationEmail(payload, updated)
@@ -105,7 +141,7 @@ export async function POST(request: Request) {
 
     await sendTelegramAlert(
       bookingAlertText({
-        reference: `DRV-${String(updated.id).padStart(5, '0')}`,
+        reference,
         carName: updated.carName,
         serviceType: updated.serviceType,
         pickupLocation: updated.pickupLocation,
@@ -115,6 +151,7 @@ export async function POST(request: Request) {
         customerName: updated.customerName,
         customerPhone: updated.customerPhone,
         customerEmail: updated.customerEmail,
+        paymentReference: updated.upiTransactionId ?? upiTransactionId ?? null,
       }),
     )
 
@@ -124,9 +161,10 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       bookingId: updated.id,
-      reference: `DRV-${String(updated.id).padStart(5, '0')}`,
+      reference,
       totalPrice: updated.totalPrice,
       status: updated.status,
+      paymentStatus: updated.paymentStatus ?? AWAITING_VERIFICATION,
     })
   } catch (error) {
     console.error('[checkout/confirm] failed:', error)
@@ -146,8 +184,17 @@ async function sendConfirmationEmail(payload: Awaited<ReturnType<typeof getPaylo
     console.error('[checkout/confirm] invoice PDF failed:', error)
   }
 
-  const reference = `DRV-${String(booking.id).padStart(5, '0')}`
+  const reference = bookingReference(booking.id)
   const invoiceUrl = `${serverUrl()}/dashboard/invoices/${booking.id}`
+  // The customer is told the truth: the reference they typed has not been
+  // checked yet, so the money is not confirmed.
+  const paymentNotice = paymentNeedsReview(booking)
+    ? `<p style="padding:12px 16px;background:#fff8e1;border-left:3px solid #d4af37;">
+         <strong>Payment under review.</strong> We have your UPI reference
+         (<code>${escapeHtml(booking.upiTransactionId || 'not provided')}</code>) and will verify it against
+         our account within one business day. Your reservation is held meanwhile.
+       </p>`
+    : `<p><strong>Payment:</strong> verified — thank you.</p>`
 
   try {
     await payload.sendEmail({
@@ -166,6 +213,7 @@ async function sendConfirmationEmail(payload: Awaited<ReturnType<typeof getPaylo
           )}</p>
           <p><strong>Pickup:</strong> ${escapeHtml(booking.pickupLocation || '—')}</p>
           <p><strong>Total:</strong> ₹${Number(booking.totalPrice || 0).toLocaleString('en-IN')}</p>
+          ${paymentNotice}
           <p><a href="${escapeHtml(invoiceUrl)}" style="color:#b48811;">View your invoice online</a></p>
           <p>Please find your official invoice attached to this email.</p>
           <p>Warm regards,<br><strong>DriveIt Concierge Team</strong></p>

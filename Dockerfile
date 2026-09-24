@@ -47,6 +47,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 USER nextjs
 EXPOSE 3000
 
-# Mount volumes at /app/data (SQLite) and /app/public/media (uploads).
-# Set DATABASE_URI=file:/app/data/driveit.db
+# Mount a volume at /app/public/media (uploads). The database is Postgres —
+# nothing persists inside this container, so it can be replaced freely.
+# Set DATABASE_URI=postgres://<user>:<password>@postgres:5432/<database>
 CMD ["node", "server.js"]

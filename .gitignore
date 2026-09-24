@@ -30,8 +30,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# database — local SQLite files contain customer PII and admin credentials.
-# Never commit them; back them up out-of-band (volume + Litestream/`sqlite3 .backup`).
+# database files. Postgres is the store now, but these rules stay: a stray dump or
+# an old SQLite file contains customer PII and staff accounts, and neither belongs in git.
 *.db
 *.db-journal
 *.db-wal

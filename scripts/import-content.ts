@@ -3,9 +3,8 @@
  *
  *   SEED_BASE_URL=http://localhost:3001 npm run import:content -- --dir=backup/<stamp>
  *
- * Typical use is the SQLite → Postgres cutover: point this at the Postgres-backed
- * instance (start it, let the schema push/migrate, then import), verify, then
- * switch traffic over.
+ * Typical use is a promotion or a restore: point this at the target instance
+ * (start it, migrate its schema, then import), verify, then switch traffic over.
  *
  * Behaviour:
  *   • documents keep their original numeric ids, so relationships and the

@@ -4,10 +4,11 @@
 ![Payload CMS](https://img.shields.io/badge/Payload_CMS-3.90-white?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
-![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
+![Postgres](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 
 A luxury car-rental and concierge site: Next.js App Router front end, Payload CMS 3 as the
-admin/API back end, SQLite (libSQL) for storage — all in one deployable Next.js app.
+admin/API back end, Postgres for storage, Redis for shared rate limiting — all in one deployable
+Next.js app.
 
 Everything a marketer sees on the website (fleet, services, reviews, journal articles, counters,
 FAQs, branding and contact details) is editable in `/admin`. Nothing is hardcoded into the pages.
@@ -54,7 +55,7 @@ FAQs, branding and contact details) is editable in `/admin`. Nothing is hardcode
 |---|---|
 | Framework | Next.js 16 (App Router, Turbopack, React 19) |
 | CMS / API | Payload CMS 3.90 |
-| Database | Postgres (staging/production) or SQLite (local dev) — chosen from `DATABASE_URI` |
+| Database | **Postgres 16** (only supported driver — see `lib/db.ts`) |
 | Auth | Auth.js (NextAuth v5) for customers, Payload auth for staff |
 | Styling | Tailwind CSS 4, Framer Motion (`motion`) |
 | Email | Resend (`@payloadcms/email-resend`) |
@@ -77,28 +78,33 @@ npm install
 cp .env.local.example .env.local
 ```
 
-Then fill in at least `PAYLOAD_SECRET` and `AUTH_SECRET`:
+Then fill in at least `DATABASE_URI`, `PAYLOAD_SECRET` and `AUTH_SECRET`:
 
 ```bash
+# Postgres + Redis for local development (loopback-only ports, 55432 / 56379)
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d postgres redis
+
+# generate each secret
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-Every variable is documented in `.env.local.example`. The only required ones are the two secrets;
-`AUTH_GOOGLE_*`, `RESEND_API_KEY`, `WHATSAPP_*`, `TELEGRAM_*` and `WACRM_*` enable optional features
-and warn (rather than crash) when absent.
+Every variable is documented in `.env.local.example`. The only required ones are the database URL
+and the two secrets; `AUTH_GOOGLE_*`, `RESEND_API_KEY`, `WHATSAPP_*`, `TELEGRAM_*` and `WACRM_*`
+enable optional features and warn (rather than crash) when absent.
 
-### 3. Run
+### 3. Migrate and run
 
 ```bash
+npm run migrate      # apply migrations/ (never rely on schema auto-push)
 npm run dev
 ```
 
 - Website: <http://localhost:3000>
 - Admin: <http://localhost:3000/admin>
 
-On first boot in development Payload creates the SQLite schema (`driveit.db`) from the collections.
-The site works immediately: while a collection is still empty the pages fall back to the bootstrap
-content in `lib/*-seed.ts`.
+The site works immediately after migrating: while a collection is still empty the pages fall back to
+the bootstrap content in `lib/*-seed.ts`. Without a reachable Postgres the app refuses to boot —
+there is deliberately no local-file fallback, so what you develop against is what you deploy.
 
 ### 4. Seed content into the CMS (recommended)
 
@@ -112,6 +118,10 @@ This creates the first staff account and moves the bootstrap fleet (28 cars), se
 journal entries, homepage counters and FAQs into Payload, where they can be edited. It is
 idempotent, and prints a generated password when `SEED_ADMIN_PASSWORD` is not supplied.
 
+If you only need an admin account (the database already has content), use
+`ADMIN_PASSWORD='…' npm run create:admin -- --email you@example.com` instead — it works offline via
+Payload's local API and can also reset a forgotten password with `--reset-password`.
+
 ---
 
 ## 📜 Scripts
@@ -124,29 +134,46 @@ idempotent, and prints a generated password when `SEED_ADMIN_PASSWORD` is not su
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint (flat config, 0 errors enforced) |
 | `npm run seed` | Seed a running instance through the Payload REST API |
+| `npm run create:admin` | Create (or password-reset) a staff account via the local API |
+| `npm run smoke` | End-to-end verification: pages, booking, concurrency, rate limits. Writes a real booking, so it only runs against localhost unless you pass `--allow-remote` |
 | `npm run export:content` | Dump every collection + global to JSON (backups, migrations) |
 | `npm run import:content` | Restore such a dump, preserving ids |
 | `npm run migrate` / `migrate:create` | Apply / generate Payload migrations |
+| `npm run migrate:status` / `migrate:down` | Inspect / roll back applied migrations |
 | `npm run generate:types` | Regenerate `payload-types.ts` from the collections |
 
 ---
 
 ## 🗄 Database
 
-The driver is inferred from `DATABASE_URI` (see `lib/db.ts`) — no code changes to switch:
+**Postgres is the only supported database**, and `lib/db.ts` enforces it: `DATABASE_URI` must be a
+`postgres://` URL or the app refuses to boot. There is no second driver to keep in sync, so the
+schema you develop against is the schema you deploy.
 
-- `file:./driveit.db` — SQLite. Local development, zero setup, schema pushed automatically.
-- `postgres://…` — Postgres. **Required for staging and production**, because SQLite has a single
-  writer: replicas would fight over one file, every deploy restarts the only writer, and shared-file
-  locking over network storage is unsafe.
+```bash
+DATABASE_URI=postgres://driveit:<password>@localhost:55432/driveit
+```
 
-Both adapters run with numeric ids, so the two databases are interchangeable for data tooling.
+- Schema changes come from committed migrations (`migrations/`), applied with `npm run migrate`.
+  `PAYLOAD_SCHEMA_PUSH=true` exists for the very first boot of an empty database and should then be
+  turned off permanently (`payload.config.ts` logs which mode it is in).
+- Single-writer limits, data moves, verification checklist, promotion and rollback are all in
+  **[STAGING.md](./STAGING.md)**.
+- Never commit a database dump or a `.env*` file — both are git-ignored, and both contain customer
+data or credentials.
 
-- Never commit `driveit.db` (it is git-ignored) — it contains staff accounts and customer data.
-- First deploy of an empty database: `PAYLOAD_SCHEMA_PUSH=true` once, then migrations only:
-  `npm run migrate:create` (commit the SQL) and `npm run migrate` as a deploy step.
-- Moving an existing database, verification checklist, rollback and the production promotion
-  steps are all in **[STAGING.md](./STAGING.md)**.
+## 🧪 Verifying a deployment
+
+```bash
+npm run smoke                    # against http://localhost:3000
+SMOKE_BASE_URL=https://staging.example.com npm run smoke
+```
+
+`scripts/smoke.ts` checks the things that actually break: the CMS-backed pages render, private
+collections stay private (403/401), a full booking works with server-side pricing, a replayed or
+forged confirm is rejected, concurrent holds on one car leave exactly one winner, staff can
+complete a booking without deadlocking, and the rate limiter returns 429. Staff checks run when
+`SEED_ADMIN_PASSWORD` is set — put it in `.env.smoke` (git-ignored) or pass it inline.
 
 ---
 
@@ -161,9 +188,8 @@ docker compose up -d --build
 
 Persist `/app/public/media` (uploads) and the `driveit-pg` volume (database).
 
-- Staging setup, data migration, verification checklist and promotion/rollback: **[STAGING.md](./STAGING.md)**
+- Staging setup, data movement, verification checklist and promotion/rollback: **[STAGING.md](./STAGING.md)**
 - Server hardening, HTTPS, monitoring, rollout: [`deployment_guide.md`](./deployment_guide.md)
-- Resource sizing: [`vps_sizing_report.md`](./vps_sizing_report.md)
 
 ---
 

@@ -80,12 +80,25 @@ export function CarCard({ car, onBook, isCompared, onToggleCompare }: CarCardPro
              <div className="text-sm font-bold text-[var(--gold-400)]">{car.priceDisplay}</div>
           </div>
           <div className="flex gap-2 pt-1">
-            <Link
-              href={`/cars/${car.slug}`}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/10"
-            >
-              View Details
-            </Link>
+            {onBook ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  onBook(car)
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all bg-[var(--gold-400)] hover:bg-[var(--gold-300)] text-black cursor-pointer shadow-[0_2px_10px_rgba(212,175,55,0.2)]"
+              >
+                Book Now
+              </button>
+            ) : (
+              <Link
+                href={`/cars/${car.slug}`}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/10"
+              >
+                View Details
+              </Link>
+            )}
             <a
               href={`https://wa.me/918341341186?text=${encodeURIComponent(`Hi, I'm interested in the ${car.name} (${car.priceDisplay}). Can you check availability?`)}`}
               target="_blank"

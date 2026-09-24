@@ -134,6 +134,12 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
       if (paymentMethod === 'upi') {
         setStep(2)
       } else {
+        const confirmed = await updatePaymentStatus(result.bookingId, 'pay_at_pickup', result.holdToken)
+        if (!confirmed.success) {
+          alert(confirmed.error || 'Could not confirm booking. Please try again.')
+          setLoading(false)
+          return
+        }
         setStep(3)
       }
     } else {
@@ -374,7 +380,16 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
                       amount={totalAmount}
                       bookingRef={bookingRef}
                       onPaymentConfirmed={handlePaymentConfirmed}
-                      onPayLater={() => setStep(3)}
+                      onPayLater={async () => {
+                        setLoading(true)
+                        const confirmed = await updatePaymentStatus(bookingId, 'pay_at_pickup', holdToken)
+                        setLoading(false)
+                        if (confirmed.success) {
+                          setStep(3)
+                        } else {
+                          alert(confirmed.error || 'Could not confirm booking. Please contact support.')
+                        }
+                      }}
                     />
                   </motion.div>
                 )}

@@ -176,8 +176,28 @@ const InvoicePDF = ({ booking }: { booking: any }) => (
           <Text style={styles.label}>Status</Text>
           <Text style={styles.value}>{String(booking.status || 'confirmed').toUpperCase()}</Text>
         </View>
+        {booking.upiTransactionId ? (
+          <View style={styles.row}>
+            <Text style={styles.label}>UPI Reference</Text>
+            <Text style={styles.value}>{String(booking.upiTransactionId)}</Text>
+          </View>
+        ) : null}
+        <View style={styles.row}>
+          <Text style={styles.label}>Payment</Text>
+          {/* The reference is customer-supplied, so the invoice never claims the
+              money is confirmed unless staff verified it. */}
+          <Text style={styles.value}>
+            {booking.paymentStatus === 'verified'
+              ? 'VERIFIED'
+              : booking.paymentStatus === 'rejected'
+                ? 'REJECTED — NOT RECEIVED'
+                : 'AWAITING VERIFICATION'}
+          </Text>
+        </View>
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Total Amount Paid</Text>
+          <Text style={styles.totalLabel}>
+            {booking.paymentStatus === 'verified' ? 'Total Amount Paid' : 'Total Amount Due'}
+          </Text>
           <Text style={styles.totalValue}>
             Rs. {Number(booking.totalPrice || 0).toLocaleString('en-IN')}
           </Text>

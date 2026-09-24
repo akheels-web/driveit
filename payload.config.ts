@@ -1,5 +1,6 @@
 import { buildConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
@@ -18,18 +19,26 @@ import { Coupons } from './collections/Coupons'
 import { SiteSettings } from './globals/SiteSettings'
 import { withRevalidation } from './lib/revalidate'
 import { requiredSecret } from './lib/env'
-import { buildDatabaseAdapter, databaseDriver, describeDatabase } from './lib/db'
+import { buildDatabaseAdapter, databaseUri, describeDatabase } from './lib/db'
+import { cloudinaryAdapter, cloudinarySettings } from './lib/cloudinary'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const isProduction = process.env.NODE_ENV === 'production'
+// Migrations are the single source of truth (`npm run migrate`), in every
+// environment. Auto-push is opt-in via PAYLOAD_SCHEMA_PUSH=true and exists only
+// to bootstrap a throwaway database — leaving it on in development is what makes
+// a local schema quietly differ from the one staging and production migrate to.
+const pushSchema = process.env.PAYLOAD_SCHEMA_PUSH === 'true'
 
-// Schema auto-push is a development convenience. Production should run Payload
-// migrations (`payload migrate`) so a deploy can never mutate the live schema.
-// Set PAYLOAD_SCHEMA_PUSH=true to temporarily allow push in production (e.g. for
-// a first deploy that has no migrations yet).
-const pushSchema = process.env.PAYLOAD_SCHEMA_PUSH === 'true' || !isProduction
+// Resolved once at boot; throws when DATABASE_URI is missing or not Postgres.
+const dbUri = databaseUri()
+
+// Media storage: Cloudinary when its three credentials are present, local disk
+// otherwise (development, and the build phase where runtime secrets are absent).
+// `alwaysInsertFields` keeps the schema identical in both modes, so switching a
+// deployment to Cloudinary is an env change and a restart — not a migration.
+const cloudinary = cloudinarySettings()
 
 export default buildConfig({
   admin: {
@@ -66,6 +75,22 @@ export default buildConfig({
     withRevalidation(Coupons),
   ],
   globals: [SiteSettings],
+  plugins: [
+    cloudStoragePlugin({
+      enabled: cloudinary !== null,
+      alwaysInsertFields: true,
+      collections: {
+        media: {
+          adapter: cloudinaryAdapter(),
+          // Local copies are pointless once the CDN serves the file, and worse
+          // than pointless with more than one replica (each container would
+          // have its own, divergent `public/media`).
+          disableLocalStorage: cloudinary !== null,
+          ...(cloudinary ? { disablePayloadAccessControl: true as const } : {}),
+        },
+      },
+    }),
+  ],
   editor: lexicalEditor(),
   // Required for the Media collection's imageSizes/formatOptions (thumbnails,
   // AVIF/WebP conversion). Without it Payload silently skips resizing.
@@ -82,18 +107,20 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  // Postgres when DATABASE_URI is a postgres:// URL, SQLite otherwise.
-  db: buildDatabaseAdapter({
-    uri: process.env.DATABASE_URI || 'file:./driveit.db',
-    push: pushSchema,
-  }),
+  // Postgres only — `databaseUri()` throws rather than falling back to a local
+  // file, so a misconfigured deploy fails loudly instead of starting empty.
+  db: buildDatabaseAdapter({ uri: dbUri, push: pushSchema }),
   onInit: async (payload) => {
     // One line at boot makes it obvious which database a deployment is on —
-    // mixing them up is the classic way to "lose" content after a cutover.
+    // mixing up staging and production is the classic way to "lose" content.
     payload.logger.info(
-      `[db] ${databaseDriver(process.env.DATABASE_URI || 'file:./driveit.db')} · ` +
-        `${describeDatabase(process.env.DATABASE_URI || 'file:./driveit.db')} · ` +
+      `[db] postgres · ${describeDatabase(dbUri)} · ` +
         `${pushSchema ? 'schema push ENABLED' : 'migrations only'}`,
+    )
+    payload.logger.info(
+      cloudinary
+        ? `[media] cloudinary · ${cloudinary.cloudName} · folder "${cloudinary.folder}"`
+        : '[media] local disk (public/media) — set CLOUDINARY_* to serve uploads from the CDN',
     )
   },
 })

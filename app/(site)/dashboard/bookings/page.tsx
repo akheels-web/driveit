@@ -6,6 +6,7 @@ import { ArrowLeft, CalendarDays, Car } from 'lucide-react'
 import { auth } from '@/auth'
 import config from '@/payload.config'
 import { SiteHeader } from '@/components/site-header'
+import { PaymentStatusBadge } from '@/components/payment-status-badge'
 
 export const metadata = { title: 'My Bookings | DRIVEIT Luxury', robots: { index: false } }
 
@@ -118,6 +119,7 @@ export default async function BookingsPage({
                         >
                           {booking.status}
                         </span>
+                        <PaymentStatusBadge booking={booking} />
                       </div>
                       <h3 className="text-base font-semibold mt-1">{booking.carName}</h3>
                     </div>

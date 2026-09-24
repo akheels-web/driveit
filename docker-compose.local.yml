@@ -1,0 +1,23 @@
+# ============================================================
+# Local development override — loopback-only ports
+# ============================================================
+# The base compose file deliberately does NOT publish Postgres or Redis, so a
+# staging/production host has no database port on the internet. When you run
+# Next.js on your own machine and only want the backing services in Docker,
+# layer this file on top:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d postgres redis
+#   npm run dev
+#
+# Ports are pinned to 127.0.0.1 and use non-default numbers so they cannot
+# collide with a Postgres/Redis you already run natively.
+# ============================================================
+
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:55432:5432"
+
+  redis:
+    ports:
+      - "127.0.0.1:56379:6379"

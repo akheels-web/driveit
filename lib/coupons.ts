@@ -79,20 +79,71 @@ export async function validateCoupon(
   }
 }
 
-/** Increments `usageCount` after a booking is confirmed. */
-export async function redeemCoupon(payload: Payload, couponId: number | string) {
+/** The subset of Payload's Drizzle adapter used for an atomic update. */
+type DrizzleLike = { execute: (query: string) => Promise<unknown> }
+
+function drizzleOf(payload: Payload): DrizzleLike | null {
+  const db = (payload.db as unknown as { drizzle?: DrizzleLike }).drizzle
+  return db && typeof db.execute === 'function' ? db : null
+}
+
+/**
+ * Claims one redemption of a coupon, atomically.
+ *
+ * Returns false when the coupon was already exhausted.
+ *
+ * **Why this is not a read-then-write.** The obvious implementation — read
+ * `usageCount`, add one, save — loses redemptions under concurrency: two
+ * confirms that both read `usageCount = 0` against a single-use code will both
+ * write `1`, and the code gets used twice. That was a real bug here. The
+ * conditional `UPDATE ... WHERE usage_count < usage_limit` is evaluated by
+ * Postgres under a row lock, so exactly one of them can win, and `RETURNING`
+ * tells us which.
+ *
+ * Booking confirmation is the caller, and a failure here is not silently
+ * ignored — see `app/api/checkout/confirm/route.ts`, which alerts staff rather
+ * than letting a discount be applied without being counted.
+ */
+export async function redeemCoupon(payload: Payload, couponId: number | string): Promise<boolean> {
+  const id = Number(couponId)
+  if (!Number.isFinite(id)) return false
+
+  const drizzle = drizzleOf(payload)
+
+  if (drizzle) {
+    const result = await drizzle.execute(
+      `update "coupons"
+         set "usage_count" = coalesce("usage_count", 0) + 1,
+             "updated_at" = now()
+       where "id" = ${id}
+         and ("usage_limit" is null or "usage_limit" <= 0 or coalesce("usage_count", 0) < "usage_limit")
+       returning "usage_count"`,
+    )
+
+    // node-postgres gives `{ rows }`; drizzle may hand back a plain array.
+    // One row back = this caller claimed the last redemption.
+    const rows = Array.isArray(result) ? result : ((result as { rows?: unknown[] })?.rows ?? [])
+    return rows.length > 0
+  }
+
+  // Fallback for a non-Drizzle adapter: best effort, and honest about the race.
   const coupon = (await payload.findByID({
     collection: 'coupons',
     id: couponId,
     overrideAccess: true,
   })) as Record<string, any> | null
 
-  if (!coupon) return
+  if (!coupon) return false
+
+  const usageLimit = Number(coupon.usageLimit ?? 0)
+  const usageCount = Number(coupon.usageCount ?? 0)
+  if (usageLimit > 0 && usageCount >= usageLimit) return false
 
   await payload.update({
     collection: 'coupons',
     id: couponId,
-    data: { usageCount: (Number(coupon.usageCount) || 0) + 1 },
+    data: { usageCount: usageCount + 1 },
     overrideAccess: true,
   })
+  return true
 }

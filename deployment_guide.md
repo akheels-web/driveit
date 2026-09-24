@@ -1,5 +1,5 @@
 # 🚀 DriveIt — Complete Production Deployment Guide
-> **Stack:** Next.js 16 + Payload CMS 3 + SQLite · **VPS:** Hetzner CX32 (4 vCPU / 8 GB)  
+> **Stack:** Next.js 16 + Payload CMS 3 + Postgres 16 + Redis · **VPS:** Hetzner CX32 (4 vCPU / 8 GB)  
 > **Frontend:** Vercel · **Backend + Admin + API:** VPS (Docker)
 
 ---
@@ -193,8 +193,9 @@ PAYLOAD_SECRET=REPLACE_WITH_64_CHAR_RANDOM_STRING# ── Database ──
 POSTGRES_USER=driveit
 POSTGRES_PASSWORD=REPLACE_WITH_A_STRONG_PASSWORD
 POSTGRES_DB=driveit
-# SQLite remains available as a fallback for a rollback window:
-# DATABASE_URI=file:/app/data/driveit.db
+# Postgres is the only supported database — lib/db.ts refuses to boot on anything
+# else. Make sure the password here matches POSTGRES_PASSWORD above if you set
+# DATABASE_URI by hand instead of letting compose build it.
 
 # ── Rate limiting (required once you run more than one app instance) ──
 REDIS_URL=redis://redis:6379
@@ -595,18 +596,6 @@ docker compose exec -T backup ls -lh /backups
 docker compose exec -T postgres pg_restore -U driveit -d driveit --clean --if-exists \
   /backups/driveit_YYYYMMDD_HHMMSS.dump
 ```
-
-<details>
-<summary>Legacy SQLite backup (only while the fallback volume is still in use)</summary>
-
-```bash
-docker exec driveit-app cp /app/data/driveit.db /app/data/manual_backup_$(date +%Y%m%d).db
-
-# Copy backup to host machine
-docker cp driveit-app:/app/data/manual_backup_$(date +%Y%m%d).db ~/backups/
-```
-
-</details>
 
 ### 📤 Download Backup to Your Local Machine
 

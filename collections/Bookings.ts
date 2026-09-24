@@ -1,15 +1,24 @@
 import type { CollectionConfig } from 'payload'
 
 import { adminOnly } from '@/lib/access'
-import { onBookingStatusChange } from '@/lib/loyalty'
+import { onBookingStatusChange, stampBookingTransitions } from '@/lib/loyalty'
+import { AWAITING_VERIFICATION, PAYMENT_STATUS_OPTIONS, stampPaymentVerification } from '@/lib/payments'
 
 export const Bookings: CollectionConfig = {
   slug: 'bookings',
   admin: {
     useAsTitle: 'customerName',
-    defaultColumns: ['customerName', 'carName', 'totalPrice', 'status', 'startDate', 'createdAt'],
+    defaultColumns: [
+      'customerName',
+      'carName',
+      'totalPrice',
+      'paymentStatus',
+      'status',
+      'startDate',
+      'createdAt',
+    ],
     description:
-      '📋 Customer reservations. Customers create these through the secure checkout flow; you can review details, confirm payment and close bookings here.',
+      '📋 Customer reservations. Customers create these through the secure checkout flow; check the UPI reference against the account, then mark the payment verified.',
   },
   access: {
     // Customer-facing reads always go through server code that checks the
@@ -20,6 +29,9 @@ export const Bookings: CollectionConfig = {
     delete: adminOnly,
   },
   hooks: {
+    // Data-only stamping happens in the same write (see lib/loyalty.ts for why a
+    // nested same-row update deadlocks on Postgres).
+    beforeChange: [stampBookingTransitions, stampPaymentVerification],
     afterChange: [onBookingStatusChange],
   },
   fields: [
@@ -99,6 +111,35 @@ export const Bookings: CollectionConfig = {
       },
     },
     { name: 'upiTransactionId', type: 'text', label: 'UPI / Payment Reference' },
+    {
+      name: 'paymentStatus',
+      type: 'select',
+      defaultValue: AWAITING_VERIFICATION,
+      index: true,
+      options: [...PAYMENT_STATUS_OPTIONS],
+      label: 'Payment Verification',
+      admin: {
+        description:
+          'The UPI reference is typed in by the customer. Confirm it against the account, then set this to Verified — nothing else in the system claims the money arrived.',
+      },
+    },
+    {
+      name: 'paymentVerifiedAt',
+      type: 'date',
+      label: 'Payment Verified At',
+      admin: {
+        readOnly: true,
+        date: { pickerAppearance: 'dayAndTime' },
+        description: 'Stamped automatically when the payment status is set to Verified.',
+      },
+    },
+    {
+      name: 'paymentVerifiedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      label: 'Payment Verified By',
+      admin: { readOnly: true, description: 'Which staff account verified the payment.' },
+    },
     { name: 'whatsappNumber', type: 'text', label: 'WhatsApp Number' },
     { name: 'notes', type: 'textarea', label: 'Internal Notes' },
     {

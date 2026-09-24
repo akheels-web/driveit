@@ -12,14 +12,19 @@ const nextConfig = {
   // behaves normally (Next warns that `next start` is unsupported when a
   // standalone build is present).
   output: process.env.NEXT_OUTPUT_STANDALONE === 'true' ? 'standalone' : undefined,
-  // sharp and the libSQL client ship native binaries — load them from
-  // node_modules at runtime instead of trying to bundle them.
-  serverExternalPackages: ['sharp', '@payloadcms/db-sqlite', 'libsql', 'ioredis'],
+  // sharp and ioredis ship native binaries — load them from node_modules at
+  // runtime instead of trying to bundle them.
+  serverExternalPackages: ['sharp', '@payloadcms/db-postgres', 'ioredis'],
   poweredByHeader: false,
   allowedDevOrigins: ['localhost:3000', 'localhost:3001', '127.0.0.1:3000', '127.0.0.1:3001'],
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
+      {
+        // CMS uploads are delivered straight from Cloudinary when configured.
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
       {
         protocol: 'https',
         hostname: 'i.pinimg.com',

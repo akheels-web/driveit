@@ -9,6 +9,7 @@ import { findCustomerByEmail } from '@/lib/customers'
 import { GOLD_THRESHOLD, PLATINUM_THRESHOLD } from '@/lib/loyalty'
 import { SiteHeader } from '@/components/site-header'
 import { SignOutButton } from '@/components/sign-out-button'
+import { PaymentStatusBadge } from '@/components/payment-status-badge'
 
 export const metadata = { title: 'Dashboard | DRIVEIT Luxury', robots: { index: false } }
 
@@ -186,6 +187,7 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
+                    <PaymentStatusBadge booking={booking} />
                     <span
                       className={`text-[10px] px-2.5 py-1 rounded-full font-medium border ${statusStyles[booking.status] ?? statusStyles.pending}`}
                     >

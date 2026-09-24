@@ -5,7 +5,10 @@ npm-debug.log
 README.md
 .next
 .git
-.env*.local
+# Never ship env files or database files into an image: configuration arrives as
+# runtime environment variables, and .env.smoke holds a staff password.
+.env*
+*.db
 driveit.db
 data/
 scratch/

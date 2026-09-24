@@ -104,4 +104,8 @@ export type InitResponse = QuoteBreakdown & {
   holdExpiresAt: string
   couponCode: string | null
   car: { id: string; slug: string; name: string; image: string; pricePerDay: number }
+  /** Set once the booking is confirmed; 'awaiting_verification' until staff check the UPI reference. */
+  paymentStatus?: 'awaiting_verification' | 'verified' | 'rejected'
+  reference?: string
+  status?: BookingStatus
 }
