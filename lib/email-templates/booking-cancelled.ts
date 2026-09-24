@@ -48,7 +48,7 @@ export function renderBookingCancelledEmail(props: BookingCancelledEmailProps) {
       },
       secondaryButton: {
         label: 'Contact Concierge',
-        url: 'https://wa.me/919876543210',
+        url: 'https://wa.me/916300041186',
       },
     }),
   }

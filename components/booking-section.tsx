@@ -113,7 +113,7 @@ ${form.notes ? `• Special Requests: ${form.notes}` : ""}
 ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
 • *Total Est.*: ₹${priceEstimate.total.toLocaleString()} for ${priceEstimate.days} day(s)` : "Pending Quote"}`
 
-    const whatsappUrl = `https://wa.me/918341341186?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `https://wa.me/916300041186?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
     setSubmitted(true)
   }

@@ -43,7 +43,7 @@ export default function AboutPage() {
                   Contact Us
                 </Link>
                 <a
-                  href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20DRIVEIT%20services."
+                  href="https://wa.me/916300041186?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20DRIVEIT%20services."
                   target="_blank"
                   className="inline-flex items-center gap-2 px-6 md:px-8 py-3 rounded-full border border-neutral-700 hover:border-gold text-zinc-200 hover:text-gold transition text-sm md:text-base"
                 >
@@ -288,7 +288,7 @@ export default function AboutPage() {
                 Book Now
               </Link>
               <a
-                href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20DRIVEIT%20services."
+                href="https://wa.me/916300041186?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20DRIVEIT%20services."
                 target="_blank"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/30 text-zinc-200 hover:border-gold hover:text-gold transition text-lg"
               >
@@ -296,7 +296,7 @@ export default function AboutPage() {
                 WhatsApp Us
               </a>
               <a
-                href="tel:+918341341186"
+                href="tel:+916300041186"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/30 text-zinc-200 hover:border-gold hover:text-gold transition text-lg"
               >
                 <Phone className="w-5 h-5" />
@@ -313,7 +313,7 @@ export default function AboutPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4" style={{ color: GOLD }} />
-                  <span>+91 83413 41186</span>
+                  <span>+91 63000 41186</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" style={{ color: GOLD }} />

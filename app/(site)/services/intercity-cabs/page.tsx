@@ -65,7 +65,7 @@ export default function IntercityCabsPage() {
                   Book Now
                 </Link>
                 <a
-                  href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20an%20intercity%20cab%20from%20Hyderabad."
+                  href="https://wa.me/916300041186?text=Hi%2C%20I%27d%20like%20to%20book%20an%20intercity%20cab%20from%20Hyderabad."
                   target="_blank"
                   className="inline-flex items-center gap-2 px-6 md:px-8 py-3 rounded-full border border-neutral-700 hover:border-gold text-zinc-200 hover:text-gold transition text-sm md:text-base"
                 >
@@ -169,7 +169,7 @@ export default function IntercityCabsPage() {
                 <h3 className="text-lg font-semibold text-white mb-4">{car.title}</h3>
                 <div className="flex gap-2">
                   <a
-                    href={`https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20${car.title}%20for%20self%20drive%20in%20Hyderabad.`}
+                    href={`https://wa.me/916300041186?text=Hi%2C%20I%27d%20like%20to%20book%20${car.title}%20for%20self%20drive%20in%20Hyderabad.`}
                     target="_blank"
                     className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-black font-medium text-sm hover:scale-105 transition"
                     style={{ backgroundColor: GOLD }}
@@ -399,7 +399,7 @@ export default function IntercityCabsPage() {
             
             <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
               <a
-                href="tel:+918341341186"
+                href="tel:+916300041186"
                 className="inline-flex items-center gap-2 px-8 py-4 text-black font-medium rounded-full text-lg hover:scale-105 transition"
                 style={{ backgroundColor: GOLD }}
               >
@@ -407,7 +407,7 @@ export default function IntercityCabsPage() {
                 Call Now
               </a>
               <a
-                href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20an%20intercity%20cab%20from%20Hyderabad."
+                href="https://wa.me/916300041186?text=Hi%2C%20I%27d%20like%20to%20book%20an%20intercity%20cab%20from%20Hyderabad."
                 target="_blank"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/30 text-zinc-200 hover:border-gold hover:text-gold transition text-lg"
               >

@@ -43,6 +43,14 @@
   5. **Return Verification (`/checkout/verify`)**:
      - Query Cashfree `GET /pg/orders/{order_id}` as fallback to display instant confirmation to the returning user.
 
+- **Twenty CRM (Sales & Concierge Deal Pipeline) — Phase 2 Roadmap**:
+  - **Decision**: Keep Twenty CRM in the roadmap for post-launch concierge operations.
+  - **Architecture**: Self-hosted on Contabo VPS via Docker Compose (~1.5 GB RAM footprint, fits comfortably within the 12 GB RAM allocation).
+  - **Integration Strategy**:
+    1. Run official Twenty Docker container alongside DriveIt on `driveit-net`.
+    2. Sync high-value inquiries (wedding fleet bookings, corporate accounts, bespoke luxury chauffeur packages) into Twenty via GraphQL/REST API (`POST /rest/opportunities`).
+    3. Concierge sales team manages the pipeline visually (Lead → Discovery → Proposal Sent → Contract Won) while DriveIt continues to handle automated payments, vehicle hold locks, and customer dashboard access.
+
 ## 4. Deployment Architecture & Fresher Runbook
 - **Unified Full-Stack Deployment**: The app runs as a single unified Next.js 16 + Payload 3 standalone container via [`docker-compose.yml`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/docker-compose.yml).
   - Do NOT attempt a split Vercel frontend / VPS backend rewrite proxy: server components in `app/(site)/dashboard/*` rely on Payload's Local API (`getPayload()`), which requires direct database access and shared secrets (`PAYLOAD_SECRET`, `DATABASE_URI`).
@@ -72,3 +80,14 @@
 ## 6. Performance & Search Optimizations (Next.js 16 + Postgres)
 - **Non-blocking Checkout with Next.js `after()`**: [`app/api/checkout/confirm/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/checkout/confirm/route.ts) wraps Brevo emails, WhatsApp alerts, Telegram concierge alerts, and `revalidatePath` inside `after()`. Checkout returns `<50ms` JSON immediately to the customer while notifications complete in the background.
 - **Intelligent Fleet Search Endpoint**: [`app/api/fleet/search/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/fleet/search/route.ts) provides multi-token matching, occasion/vibe intent parsing (e.g., "wedding", "corporate", "airport transfer", "family"), and price/seat filters, returning ranked results with match metadata. Ready for `pgvector` embedding extensions.
+
+## 7. Unified Concierge & Customer Contact
+- **Primary Support Mobile / Voice**: `+91 63000 41186` (tel link: `tel:+916300041186`).
+- **Official WhatsApp Concierge**: `+916300041186` (wa.me link: `https://wa.me/916300041186`).
+- **Standardized Everywhere**:
+  - `globals/SiteSettings.ts` default values (`contactPhone`, `whatsappNumber`).
+  - `lib/content-seed.ts` (`SITE_DEFAULTS.contactPhone`, `SITE_DEFAULTS.whatsappNumber`, FAQ).
+  - All 8 transactional email templates in `lib/email-templates/`.
+  - Floating CTA buttons (`components/Sidectabtn.tsx`), booking modal, booking estimate forms, and car cards.
+  - All public site pages, footer, service pages, and invoice preview.
+

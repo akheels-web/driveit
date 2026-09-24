@@ -137,7 +137,7 @@ export default function RootLayout({
               "@type": "LocalBusiness",
               "name": "DRIVEIT Luxury",
               "url": "https://www.driveitluxury.com",
-              "telephone": "+91-83413-41186",
+              "telephone": "+91 63000 41186",
               "email": "info@driveitluxury.com",
               "address": {
                 "@type": "PostalAddress",

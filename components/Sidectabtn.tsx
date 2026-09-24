@@ -23,14 +23,14 @@ function Sidectabtn() {
 
 
   const handleWhatsApp = () => {
-    const phoneNumber = '918341341186'
+    const phoneNumber = '916300041186'
     const message = 'Hi! I would like to book an appointment for your luxury services.'
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
 
   const handleCall = () => {
-    window.location.href = 'tel:+918341341186'
+    window.location.href = 'tel:+916300041186'
   }
 
   if (!isVisible) return null

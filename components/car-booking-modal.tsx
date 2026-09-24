@@ -143,7 +143,7 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
         setStep(3)
       }
     } else {
-      alert(result.error || 'Error creating booking. Please try again or call +91 83413 41186')
+      alert(result.error || 'Error creating booking. Please try again or call +91 63000 41186')
     }
 
     setLoading(false)
@@ -427,7 +427,7 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
                         Done
                       </button>
                       <a
-                        href={`https://wa.me/918341341186?text=${encodeURIComponent(`Hi, my booking ref is ${bookingRef}. Please confirm.`)}`}
+                        href={`https://wa.me/916300041186?text=${encodeURIComponent(`Hi, my booking ref is ${bookingRef}. Please confirm.`)}`}
                         target="_blank"
                         className="px-6 py-2.5 rounded-xl text-sm font-medium text-[var(--gold-400)] border border-[var(--gold-400)]/30 hover:bg-[var(--gold-400)]/5 transition-colors"
                       >

@@ -100,7 +100,7 @@ export function CarCard({ car, onBook, isCompared, onToggleCompare }: CarCardPro
               </Link>
             )}
             <a
-              href={`https://wa.me/918341341186?text=${encodeURIComponent(`Hi, I'm interested in the ${car.name} (${car.priceDisplay}). Can you check availability?`)}`}
+              href={`https://wa.me/916300041186?text=${encodeURIComponent(`Hi, I'm interested in the ${car.name} (${car.priceDisplay}). Can you check availability?`)}`}
               target="_blank"
               className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 text-white hover:border-[#25D366]/50 hover:bg-[#25D366]/10 hover:text-[#25D366] transition-all text-sm"
               aria-label="WhatsApp"

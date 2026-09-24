@@ -46,7 +46,7 @@ export function renderPaymentFailedEmail(props: PaymentFailedEmailProps) {
       },
       secondaryButton: {
         label: 'Call Concierge Desk',
-        url: 'tel:+919876543210',
+        url: 'tel:+916300041186',
       },
     }),
   }

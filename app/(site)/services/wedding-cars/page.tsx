@@ -48,7 +48,7 @@ export default function WeddingCarsPage() {
                   Book Now
                 </Link>
                 <a
-                  href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20a%20wedding%20car%20in%20Hyderabad."
+                  href="https://wa.me/916300041186?text=Hi%2C%20I%27d%20like%20to%20book%20a%20wedding%20car%20in%20Hyderabad."
                   target="_blank"
                   className="inline-flex items-center gap-2 px-6 md:px-8 py-3 rounded-full border border-neutral-700 hover:border-[#25D366]/50 hover:bg-[#25D366]/10 hover:text-[#25D366] text-zinc-200 transition text-sm md:text-base font-medium"
                 >

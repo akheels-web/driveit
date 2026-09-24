@@ -46,7 +46,7 @@ export function renderVehicleReturnReminderEmail(props: VehicleReturnReminderEma
       contentHtml,
       actionButton: {
         label: 'Request Extension on WhatsApp',
-        url: 'https://wa.me/919876543210?text=Hello%2C%20I%20would%20like%20to%20request%20an%20extension%20for%20reservation%20' + encodeURIComponent(reference),
+        url: 'https://wa.me/916300041186?text=Hello%2C%20I%20would%20like%20to%20request%20an%20extension%20for%20reservation%20' + encodeURIComponent(reference),
       },
       secondaryButton: {
         label: 'View Reservation',

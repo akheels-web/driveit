@@ -100,7 +100,7 @@ export function renderBookingConfirmedEmail(props: BookingConfirmedEmailProps) {
       },
       secondaryButton: {
         label: 'WhatsApp Concierge',
-        url: 'https://wa.me/919876543210',
+        url: 'https://wa.me/916300041186',
       },
     }),
   }

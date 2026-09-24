@@ -6,7 +6,7 @@ import Image from 'next/image'
 
 export default function ThankYouPage() {
   const handleCall = () => {
-    window.location.href = 'tel:+918341341186'
+    window.location.href = 'tel:+916300041186'
   }
 
   const handleGoBack = () => {
@@ -70,7 +70,7 @@ export default function ThankYouPage() {
             style={{ backgroundColor: '#b48811' }}
           >
             <Phone className="w-5 h-5" />
-            Call Now: +91 83413 41186
+            Call Now: +91 63000 41186
           </button>
           
           <button

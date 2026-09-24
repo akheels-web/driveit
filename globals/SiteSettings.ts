@@ -28,7 +28,7 @@ export const SiteSettings: GlobalConfig = {
       name: 'contactPhone',
       type: 'text',
       label: 'Primary Phone Number',
-      defaultValue: '+91 98765 43210',
+      defaultValue: '+91 63000 41186',
     },
     {
       name: 'contactEmail',
@@ -40,7 +40,7 @@ export const SiteSettings: GlobalConfig = {
       name: 'whatsappNumber',
       type: 'text',
       label: 'WhatsApp Concierge Number',
-      defaultValue: '+919876543210',
+      defaultValue: '+916300041186',
     },
     {
       name: 'headerLogo',

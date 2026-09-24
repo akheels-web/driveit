@@ -206,8 +206,8 @@ export function renderBaseEmailLayout(options: BaseEmailLayoutOptions): string {
             DriveIt Luxury Concierge Desk &bull; 24/7 White-Glove Support
           </p>
           <p style="margin: 0 0 16px 0;">
-            Direct Concierge: <a href="tel:+919876543210">+91 98765 43210</a> &bull;
-            WhatsApp: <a href="https://wa.me/919876543210" target="_blank">Chat with Concierge</a> &bull;
+            Direct Concierge: <a href="tel:+916300041186">+91 63000 41186</a> &bull;
+            WhatsApp: <a href="https://wa.me/916300041186" target="_blank">Chat with Concierge</a> &bull;
             Email: <a href="mailto:concierge@driveitluxury.com">concierge@driveitluxury.com</a>
           </p>
           <p style="margin: 0; font-size: 11px; color: #475569;">

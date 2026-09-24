@@ -41,17 +41,17 @@ export default function ContactForm() {
         return;
       }
 
-      setError(data.error || "We could not send your message. Please call +91 83413 41186.");
+      setError(data.error || "We could not send your message. Please call +91 63000 41186.");
       setLoading(false);
     } catch (err) {
       console.error("Contact form error:", err);
-      setError("Network error. Please call +91 83413 41186.");
+      setError("Network error. Please call +91 63000 41186.");
       setLoading(false);
     }
   };
 
   const handleCall = () => {
-    window.location.href = 'tel:+918341341186'
+    window.location.href = 'tel:+916300041186'
   }
 
   return (
@@ -82,7 +82,7 @@ export default function ContactForm() {
                 className="font-semibold text-gold hover:text-yellow-400 underline"
                 style={{ color: '#b48811' }}
               >
-                +91 83413 41186
+                +91 63000 41186
               </button>
             </p>
 
@@ -179,7 +179,7 @@ export default function ContactForm() {
                   className="font-semibold hover:text-yellow-400"
                   style={{ color: '#b48811' }}
                 >
-                  Call +91 83413 41186
+                  Call +91 63000 41186
                 </button>
               </div>
             </form>

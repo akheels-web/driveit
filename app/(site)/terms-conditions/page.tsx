@@ -71,7 +71,7 @@ export default function TermsConditionsPage() {
               Contact Information
             </h2>
             <p className="text-zinc-400 leading-relaxed">
-              For questions about these terms or to make special arrangements, please contact us at +91 83413 41186 or through our contact form.
+              For questions about these terms or to make special arrangements, please contact us at +91 63000 41186 or through our contact form.
             </p>
           </div>
         </div>

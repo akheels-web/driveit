@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
               Contact Us
             </h2>
             <p className="text-zinc-400 leading-relaxed">
-              If you have any questions about this Privacy Policy, please contact us at +91 83413 41186 or through our contact form.
+              If you have any questions about this Privacy Policy, please contact us at +91 63000 41186 or through our contact form.
             </p>
           </div>
         </div>
@@ -107,7 +107,7 @@ export default function PrivacyPolicyPage() {
                 <li>Any illegal activities, money laundering, and items (firearms, drugs, etc.) terminate trip.</li>
                 <li>Maximum: 12 hours or 300 km daily, whichever comes first.</li>
                 <li>Treat chauffeurs respectfully; violations may lead to legal action.</li>
-                <li>Contact: <a href="mailto:care@driveitluxury.com" className="underline">care@driveitluxury.com</a> or +91-83413 41186</li>
+                <li>Contact: <a href="mailto:care@driveitluxury.com" className="underline">care@driveitluxury.com</a> or +91 63000 41186</li>
               </ul>
             </div>
             <div>

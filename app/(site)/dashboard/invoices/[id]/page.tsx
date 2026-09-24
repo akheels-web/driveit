@@ -59,7 +59,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <div className="mt-4 text-xs text-zinc-500 print:text-black/50 space-y-1">
                 <p>123 Jubilee Hills, Road No 36</p>
                 <p>Hyderabad, Telangana 500033</p>
-                <p>+91 83413 41186 | info@driveit.in</p>
+                <p>+91 63000 41186 | info@driveit.in</p>
               </div>
             </div>
             <div className="text-left md:text-right">

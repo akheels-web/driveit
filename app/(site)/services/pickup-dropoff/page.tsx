@@ -66,7 +66,7 @@ export default function PickupDropoffPage() {
                   Book Pickup Service
                 </Link>
                 <a
-                  href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20pickup%20and%20dropoff%20service%20in%20Hyderabad."
+                  href="https://wa.me/916300041186?text=Hi%2C%20I%27d%20like%20to%20book%20pickup%20and%20dropoff%20service%20in%20Hyderabad."
                   target="_blank"
                   className="inline-flex items-center gap-2 px-6 md:px-8 py-3 rounded-full border border-neutral-700 hover:border-[#25D366]/50 hover:bg-[#25D366]/10 hover:text-[#25D366] text-zinc-200 transition text-sm md:text-base font-medium"
                 >
@@ -457,14 +457,14 @@ export default function PickupDropoffPage() {
                 </p>
                 <div className="mt-6 flex justify-center gap-3">
                   <a
-                    href="tel:+918341341186"
+                    href="tel:+916300041186"
                     className="px-6 md:px-8 py-3 rounded-full border border-white/20 hover:border-gold text-zinc-200 hover:text-gold transition text-sm md:text-base inline-flex items-center gap-2"
                   >
                     <Phone className="w-4 h-4" style={{ color: GOLD }} />
                     Call Now
                   </a>
                   <a
-                    href="https://wa.me/918341341186?text=Hi%2C%20I%27d%20like%20to%20book%20a%20luxury%20car%20in%20Hyderabad."
+                    href="https://wa.me/916300041186?text=Hi%2C%20I%27d%20like%20to%20book%20a%20luxury%20car%20in%20Hyderabad."
                     target="_blank"
                     className="px-6 md:px-8 py-3 text-black font-medium rounded-full text-sm md:text-base hover:scale-105 transition inline-flex items-center gap-2"
                     style={{ backgroundColor: GOLD }}

@@ -46,9 +46,9 @@ export default function ContactPage() {
               {/* Info Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { icon: Phone, label: 'Call Us', value: '+91 83413 41186', href: 'tel:+918341341186', sub: 'Available 24/7' },
+                  { icon: Phone, label: 'Call Us', value: '+91 63000 41186', href: 'tel:+916300041186', sub: 'Available 24/7' },
                   { icon: Mail, label: 'Email', value: 'info@driveit.in', href: 'mailto:info@driveit.in', sub: 'Quick response' },
-                  { icon: MessageSquare, label: 'WhatsApp', value: 'Chat with us', href: 'https://wa.me/918341341186', sub: 'Instant reply' },
+                  { icon: MessageSquare, label: 'WhatsApp', value: 'Chat with us', href: 'https://wa.me/916300041186', sub: 'Instant reply' },
                   { icon: Clock, label: 'Business Hours', value: '24 / 7', href: null, sub: 'Always available' },
                 ].map((item, i) => (
                   <motion.div

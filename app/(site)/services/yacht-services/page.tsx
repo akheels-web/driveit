@@ -64,10 +64,10 @@ export default function YachtServicesPage() {
                   Book Now / Get a Quote
                 </a>
                 <a
-                  href="tel:+918341341186"
+                  href="tel:+916300041186"
                   className="px-6 py-3 text-sm md:text-base rounded-full border border-neutral-700 hover:border-gold text-zinc-200 hover:text-gold transition"
                 >
-                  Call: +91 83413 41186
+                  Call: +91 63000 41186
                 </a>
               </div>
             </div>
