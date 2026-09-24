@@ -1,140 +1,245 @@
-# 🚀 DriveIt — Complete Production Deployment Guide
-> **Stack:** Next.js 16 + Payload CMS 3 + Postgres 16 + Redis · **VPS:** Hetzner CX32 (4 vCPU / 8 GB)  
-> **Frontend:** Vercel · **Backend + Admin + API:** VPS (Docker)
+# 🚀 DriveIt Luxury — Complete Production Deployment Guide
+
+> **Audience:** Junior Developers, DevOps Beginners, and First-Time Deployers ("Fresher Guide")  
+> **Target Infrastructure:** Contabo VPS (6 vCPU / 12 GB RAM / 200 GB SSD) or Hetzner CX32 + Cloudflare DNS  
+> **Stack:** Unified Full-Stack Container (Next.js 16 + Payload CMS 3 + Postgres 16 + Redis 7 + Cloudinary + Zoho Mail + Brevo + Nginx + Cloudflare SSL)  
+> **Target OS:** Ubuntu 24.04 LTS (x64)
+
+---
+
+## 📖 Welcome & Introduction
+
+If you are a fresher or junior engineer deploying this project for the first time: **welcome! Don't panic.** This guide was written specifically for your exact setup.
+
+This guide assumes:
+- You have a **Contabo VPS** (e.g. 6 vCPU, 12 GB RAM, 200 GB SSD) or any Ubuntu 24.04 server.
+- Your domain DNS is managed by **Cloudflare** (Free plan).
+- You want **Cloudflare 15-Year Free SSL** (no 90-day renewal headaches).
+- You want **Zoho Free Business Mail** (5 free business mailboxes like `concierge@yourdomain.com`).
+- You want **Cloudinary** (Free CDN for car photos and CMS media).
+- You want **Brevo** (Free 300 emails/day for transactional booking invoices & email marketing).
+- You want **Google Sign-In** (OAuth 2.0 customer login for dashboard & wishlists).
+
+Follow each phase sequentially. Do not skip steps. If you encounter any issue, refer to [Section 17: Fresher Troubleshooting & FAQ](#17-step-15-fresher-troubleshooting--faq).
 
 ---
 
 ## 📋 Table of Contents
 
-1. [Prerequisites Checklist](#1-prerequisites-checklist)
-2. [Provision Your VPS](#2-provision-your-vps)
-3. [Initial Server Setup](#3-initial-server-setup)
-4. [Install Docker & Docker Compose](#4-install-docker--docker-compose)
-5. [Deploy the App](#5-deploy-the-app)
-6. [Configure Environment Variables](#6-configure-environment-variables)
-7. [Build & Run with Docker Compose](#7-build--run-with-docker-compose)
-8. [Setup Nginx Reverse Proxy](#8-setup-nginx-reverse-proxy)
-9. [SSL Certificate (HTTPS)](#9-ssl-certificate-https)
-10. [Configure Vercel Frontend](#10-configure-vercel-frontend)
-11. [Configure Google OAuth](#11-configure-google-oauth)
-12. [Verify Deployment](#12-verify-deployment)
-13. [Maintenance Runbook](#13-maintenance-runbook)
-14. [Environment Variables Reference](#14-environment-variables-reference)
+1. [Architecture Overview (How Everything Works)](#1-architecture-overview)
+2. [Prerequisites & Accounts Checklist](#2-prerequisites--accounts-checklist)
+3. [Step 1: Provisioning Your VPS Server (Contabo / Hetzner)](#3-step-1-provisioning-your-vps-server-contabo--hetzner)
+4. [Step 2: Initial Server Setup & Security Hardening](#4-step-2-initial-server-setup--security-hardening)
+5. [Step 3: Installing Docker & Docker Compose](#5-step-3-installing-docker--docker-compose)
+6. [Step 4: Cloning Code & Configuring Environment (.env)](#6-step-4-cloning-code--configuring-environment-env)
+7. [Step 5: Starting Services & Initial Database Setup](#7-step-5-starting-services--initial-database-setup)
+8. [Step 6: Setting Up Cloudinary (Free Fleet Asset CDN)](#8-step-6-setting-up-cloudinary-free-fleet-asset-cdn)
+9. [Step 7: Seeding Initial Data & Admin Account](#9-step-7-seeding-initial-data--admin-account)
+10. [Step 8: Configuring Nginx Reverse Proxy](#10-step-8-configuring-nginx-reverse-proxy)
+11. [Step 9: Securing SSL (Cloudflare 15-Year Origin CA vs Let's Encrypt)](#11-step-9-securing-ssl-cloudflare-15-year-origin-ca-vs-lets-encrypt)
+12. [Step 10: Setting Up Zoho Mail (Free 5 Business Inboxes)](#12-step-10-setting-up-zoho-mail-free-5-business-inboxes)
+13. [Step 11: Setting Up Brevo (Transactional Emails & Marketing)](#13-step-11-setting-up-brevo-transactional-emails--marketing)
+14. [Step 12: Configuring Google OAuth (Customer Login)](#14-step-12-configuring-google-oauth-customer-login)
+15. [Step 13: Cloudflare DNS Master Reference Table](#15-step-13-cloudflare-dns-master-reference-table)
+16. [Step 14: Post-Deployment Smoke Tests & Verification](#16-step-14-post-deployment-smoke-tests--verification)
+17. [Step 15: Day-2 Maintenance & Updates Runbook](#17-step-15-day-2-maintenance--updates-runbook)
+18. [Step 16: Production Environment Variables Reference](#18-step-16-production-environment-variables-reference)
+19. [Step 17: Fresher Troubleshooting & FAQ](#19-step-17-fresher-troubleshooting--faq)
 
 ---
 
-## 1. Prerequisites Checklist
+## 1. Architecture Overview
 
-Before you begin, have these ready:
-
-- [ ] **Domain name** (e.g. `driveit.in`) with DNS access
-- [ ] **Hetzner / DigitalOcean / Vultr** account
-- [ ] **Resend account** → get API key at [resend.com](https://resend.com)
-- [ ] **Google Cloud Console** → OAuth 2.0 credentials (Client ID + Secret)
-- [ ] **Meta Developer account** → WhatsApp Business API token & Phone ID (optional)
-- [ ] **Vercel account** for frontend hosting
-- [ ] **GitHub repo** with this codebase pushed
-
----
-
-## 2. Provision Your VPS
-
-### Recommended: Hetzner Cloud CX32
-
-1. Go to [console.hetzner.cloud](https://console.hetzner.cloud)
-2. Create a new project → **Add Server**
-3. Settings:
-   - **Location:** Falkenstein (Europe) or Ashburn (US)
-   - **Image:** Ubuntu 24.04 LTS
-   - **Type:** CX32 (4 vCPU / 8 GB / 80 GB NVMe) — ~€13/mo
-   - **SSH Key:** Add your public key (`~/.ssh/id_rsa.pub`)
-   - **Firewall:** Create new firewall with these rules:
-
-| Rule | Protocol | Port | Source |
-|------|----------|------|--------|
-| SSH  | TCP | 22 | Your IP only |
-| HTTP | TCP | 80 | Any (0.0.0.0/0) |
-| HTTPS | TCP | 443 | Any (0.0.0.0/0) |
-
-4. Click **Create & Buy**
-5. Note the server's **public IP address**
-
-### Point Your Domain DNS
-
-In your domain registrar (Cloudflare, GoDaddy, etc.):
+Before typing commands, let's understand how the DriveIt Luxury system is organized:
 
 ```
-Type    Name     Value              TTL
-A       @        YOUR_VPS_IP        300
-A       www      YOUR_VPS_IP        300
-A       api      YOUR_VPS_IP        300   (optional subdomain)
+                  ┌─────────────────────────────────────────────────────────┐
+                  │                 VISITORS / BROWSERS                     │
+                  └────────────────────────────┬────────────────────────────┘
+                                               │
+                                      Cloudflare Edge SSL (HTTPS)
+                                               ▼
+                  ┌─────────────────────────────────────────────────────────┐
+                  │           CLOUDFLARE GLOBAL NETWORK (Free Plan)         │
+                  │  • DDoS Protection  • DNS Management  • Edge Caching    │
+                  └────────────────────────────┬────────────────────────────┘
+                                               │
+                                    Origin SSL (Port 443)
+                                               ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│ CONTABO VPS (6 vCPU / 12 GB RAM / 200 GB SSD · Ubuntu 24.04)              │
+│                                                                           │
+│   ┌───────────────────────────────────────────────────────────────────┐   │
+│   │ Nginx Web Server (Reverse Proxy + Cloudflare Origin CA SSL)       │   │
+│   └──────────────────────────────────┬────────────────────────────────┘   │
+│                                      │ Passes traffic to 127.0.0.1:3000   │
+│                                      ▼                                    │
+│   ┌───────────────────────────────────────────────────────────────────┐   │
+│   │ DOCKER COMPOSE INTERNAL NETWORK (driveit-net)                     │   │
+│   │                                                                   │   │
+│   │  ┌─────────────────────────┐        ┌──────────────────────────┐  │   │
+│   │  │   driveit-app           │        │   driveit-postgres       │  │   │
+│   │  │   (Next.js 16 +         ├───────►│   (PostgreSQL 16)        │  │   │
+│   │  │    Payload CMS 3)       │        │   Port 5432 (Internal)   │  │   │
+│   │  └───────────┬─────────────┘        └─────────────▲────────────┘  │   │
+│   │              │                                    │               │   │
+│   │              ├───────────────────┐                │               │   │
+│   │              ▼                   ▼                │               │   │
+│   │  ┌───────────────────────┐ ┌───────────────┐ ┌────┴────────────┐  │   │
+│   │  │   driveit-redis       │ │ driveit-      │ │ driveit-backup  │  │   │
+│   │  │   (Rate Limiting)     │ │ scheduler     │ │ (Nightly Dumps) │  │   │
+│   │  │   Port 6379           │ │ (Hold Sweeper)│ └─────────────────┘  │   │
+│   │  └───────────────────────┘ └───────────────┘                      │   │
+│   └───────────────────────────────────────────────────────────────────┘   │
+│                                                                           │
+│   EXTERNAL SERVICES:                                                      │
+│   • Cloudflare: DNS & 15-Year Origin CA SSL                               │
+│   • Cloudinary: Fast global CDN for car images and CMS media uploads      │
+│   • Zoho Mail: 5 free custom business inboxes (concierge@yourdomain.com)  │
+│   • Brevo: 300 free emails/day (booking PDF invoices + email marketing)   │
+│   • Google Cloud: OAuth 2.0 customer sign-in                              │
+└───────────────────────────────────────────────────────────────────────────┘
 ```
 
-> Wait 5–30 minutes for DNS to propagate. Test with: `ping yourdomain.com`
+### Why Everything Runs Together (Unified Deployment)
+Unlike setups that split frontends and backends across multiple hosting providers, **Next.js 16 + Payload CMS 3 is a unified full-stack application**.
+- Customer pages (`/cars`, `/checkout`, `/dashboard`) and the admin CMS (`/admin`) run in the **exact same Node.js container**.
+- Server components query the database in microseconds using Payload's Local API (`getPayload()`), eliminating network latency.
+- Postgres and Redis run on an isolated internal Docker network, never exposed to the open internet.
 
 ---
 
-## 3. Initial Server Setup
+## 2. Prerequisites & Accounts Checklist
 
-SSH into your new server:
+Have these free accounts ready before you begin:
+
+| Resource | Purpose | Provider | Free Tier Available? |
+|---|---|---|---|
+| **Domain Name** | Your brand web address (e.g. `driveitluxury.com`) | Any registrar | Must purchase domain (~$10/yr) |
+| **DNS Manager** | DNS, proxy, DDoS protection & free SSL | [Cloudflare](https://dash.cloudflare.com) | ✅ 100% Free Plan |
+| **Linux VPS** | High-performance server (6 vCPU / 12 GB RAM) | [Contabo](https://contabo.com) / Hetzner | ~$7 - $13 / month |
+| **Cloudinary** | Fast global image CDN for vehicle fleet & CMS uploads | [Cloudinary](https://cloudinary.com) | ✅ Free (25 credits/mo) |
+| **Zoho Mail** | 5 free custom email inboxes (`concierge@...`) | [Zoho Mail](https://www.zoho.com/mail) | ✅ Forever Free Plan (5 users) |
+| **Brevo** | Outgoing booking receipts, PDF invoices & email marketing | [Brevo](https://www.brevo.com) | ✅ Free (300 emails/day) |
+| **Google Cloud** | Customer Google Sign-In (OAuth 2.0) | [Google Cloud](https://console.cloud.google.com) | ✅ Free |
+| **Git Repository** | Codebase pushed to GitHub or GitLab | [GitHub](https://github.com) | ✅ Free |
+
+---
+
+## 3. Step 1: Provisioning Your VPS Server (Contabo / Hetzner)
+
+### 3.1 Your Contabo VPS Specs
+Your Contabo VPS features:
+- **6 vCPU Cores**
+- **12 GB RAM** (Ample memory; builds will be lightning fast)
+- **200 GB NVMe / SSD**
+- **1 Static Public IPv4 Address** (e.g., `123.45.67.89`)
+
+**OS Selection:** Make sure your Contabo VPS is installed with **Ubuntu 24.04 LTS (64-bit)**. (If needed, you can re-install Ubuntu 24.04 from the Contabo Customer Control Panel under *VPS Control → Reinstall*).
+
+---
+
+### 3.2 Generating an SSH Key on Your Laptop
+Open your laptop's terminal (PowerShell on Windows, or Terminal on macOS/Linux):
 
 ```bash
-ssh root@YOUR_VPS_IP
+# Press Enter to accept default location, and enter an optional passphrase
+ssh-keygen -t ed25519 -C "deployer@driveit"
 ```
 
-### 3.1 Create a non-root user
+View and copy your public key:
+- **Windows (PowerShell):** `cat ~/.ssh/id_ed25519.pub`
+- **macOS / Linux:** `cat ~/.ssh/id_ed25519.pub`
+
+---
+
+### 3.3 Adding Initial A-Records in Cloudflare DNS
+Log into your **[Cloudflare Dashboard](https://dash.cloudflare.com/)** → Select your domain → Navigate to **DNS → Records**. Add two **A Records**:
+
+| Type | Name | IPv4 Address | Proxy Status | TTL |
+|---|---|---|---|---|
+| **A** | `@` | `YOUR_CONTABO_VPS_IP` | **Proxied (Orange Cloud)** 🟠 | Auto |
+| **A** | `www` | `YOUR_CONTABO_VPS_IP` | **Proxied (Orange Cloud)** 🟠 | Auto |
+
+**Test DNS Propagation:**
+Wait 2 minutes, then in your laptop terminal run:
+```bash
+ping yourdomain.com
+```
+When it responds, your domain is pointing to Cloudflare!
+
+---
+
+## 4. Step 2: Initial Server Setup & Security Hardening
+
+Connect to your Contabo server via SSH:
 
 ```bash
-# Create user
+ssh root@YOUR_CONTABO_VPS_IP
+```
+*(Enter the root password provided by Contabo in your welcome email).*
+
+### 4.1 Create a Dedicated Non-Root User
+Never run production apps as `root`. Let's create a user named `driveit`:
+
+```bash
+# 1. Create user and set a strong password
 adduser driveit
+
+# 2. Grant sudo privileges
 usermod -aG sudo driveit
 
-# Copy SSH keys to new user
-rsync --archive --chown=driveit:driveit ~/.ssh /home/driveit
+# 3. Copy SSH authorization keys to the new user
+mkdir -p /home/driveit/.ssh
+cp ~/.ssh/authorized_keys /home/driveit/.ssh/ 2>/dev/null || true
+chown -R driveit:driveit /home/driveit/.ssh
+chmod 700 /home/driveit/.ssh
+chmod 600 /home/driveit/.ssh/authorized_keys 2>/dev/null || true
 
-# Switch to new user
+# 4. Switch to the new driveit user
 su - driveit
 ```
 
-### 3.2 Update packages & basic hardening
+---
 
+### 4.2 Update Packages & Configure UFW Firewall
 ```bash
+# Update Ubuntu package lists and upgrade existing software
 sudo apt update && sudo apt upgrade -y
 
-# Install essentials
-sudo apt install -y curl git ufw fail2ban
+# Install essential server packages
+sudo apt install -y curl git ufw fail2ban unzip htop
 
-# Configure firewall
+# Configure Firewall (UFW)
+# IMPORTANT: Allow OpenSSH first, so you don't lock yourself out!
 sudo ufw allow OpenSSH
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
+
+# Enable Firewall
 sudo ufw --force enable
 
-# Enable fail2ban
-sudo systemctl enable fail2ban
-sudo systemctl start fail2ban
-
-echo "✅ Server hardened"
+# Check firewall status
+sudo ufw status
 ```
 
 ---
 
-## 4. Install Docker & Docker Compose
+## 5. Step 3: Installing Docker & Docker Compose
+
+Docker packages the Next.js app, Postgres, Redis, and cron tasks into isolated containers.
 
 ```bash
-# Remove old Docker versions (if any)
-sudo apt remove -y docker docker-engine docker.io containerd runc 2>/dev/null
-
-# Install Docker via official script
+# 1. Download and run the official Docker install script
 curl -fsSL https://get.docker.com | sudo sh
 
-# Add your user to docker group (no sudo needed)
+# 2. Add 'driveit' user to the docker group
 sudo usermod -aG docker $USER
 
-# Apply group change (or logout & login again)
+# 3. Apply group membership immediately without logging out
 newgrp docker
 
-# Verify Docker
+# 4. Verify Docker and Docker Compose
 docker --version
 docker compose version
 ```
@@ -147,101 +252,25 @@ Docker Compose version v2.x.x
 
 ---
 
-## 5. Deploy the App
+## 6. Step 4: Cloning Code & Configuring Environment (.env)
 
-### 5.1 Clone the repository
-
+### 6.1 Clone the Code Repository
 ```bash
 cd ~
-git clone https://github.com/YOUR_GITHUB_USERNAME/driveit.git
-cd driveit
+git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY.git driveit
+cd ~/driveit
 ```
 
-### 5.2 Create required directories
-
+Create local volume folders:
 ```bash
-# These will be mounted as Docker volumes
 mkdir -p ~/driveit/data
 mkdir -p ~/driveit/backups
 ```
 
 ---
 
-## 6. Configure Environment Variables
-
-Create the production `.env` file. **Never commit this file to git.**
-
-```bash
-cd ~/driveit
-nano .env
-```
-
-Paste and fill in the following:
-
-```env
-# =============================================
-# DriveIt — Production Environment Variables
-# =============================================
-
-# ── App URL (your actual domain, no trailing slash) ──
-NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
-
-# ── Payload CMS Secret (generate with: openssl rand -hex 32) ──
-PAYLOAD_SECRET=REPLACE_WITH_64_CHAR_RANDOM_STRING# ── Database ──
-# Production runs Postgres. The compose file builds this URL from POSTGRES_* below,
-# so you normally only set the password:
-POSTGRES_USER=driveit
-POSTGRES_PASSWORD=REPLACE_WITH_A_STRONG_PASSWORD
-POSTGRES_DB=driveit
-# Postgres is the only supported database — lib/db.ts refuses to boot on anything
-# else. Make sure the password here matches POSTGRES_PASSWORD above if you set
-# DATABASE_URI by hand instead of letting compose build it.
-
-# ── Rate limiting (required once you run more than one app instance) ──
-REDIS_URL=redis://redis:6379
-TRUSTED_PROXY_HOPS=1
-
-# ── NextAuth Secret (generate with: openssl rand -hex 32) ──
-AUTH_SECRET=REPLACE_WITH_ANOTHER_64_CHAR_RANDOM_STRING
-
-# ── Google OAuth ──
-AUTH_GOOGLE_ID=your_google_client_id.apps.googleusercontent.com
-AUTH_GOOGLE_SECRET=your_google_client_secret
-
-# ── Resend Email ──
-RESEND_API_KEY=re_your_resend_api_key
-
-# ── WhatsApp Meta API (optional) ──
-WHATSAPP_TOKEN=EAALyour_whatsapp_token
-WHATSAPP_PHONE_ID=your_phone_number_id
-
-# ── Email sender identity ──
-EMAIL_FROM_ADDRESS=concierge@yourdomain.com
-EMAIL_FROM_NAME=DriveIt Luxury Concierge
-
-# ── Concierge alerts (server-side only, never NEXT_PUBLIC_*) ──
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
-
-# ── WaCRM webhook bridge (inbound calls must match this secret) ──
-WACRM_WEBHOOK_URL=
-WACRM_WEBHOOK_SECRET=
-
-# ── UPI payment details shown at checkout ──
-NEXT_PUBLIC_UPI_ID=yourupi@upi
-NEXT_PUBLIC_UPI_NAME=DRIVEIT Luxury
-```
-
-> **The app now refuses to boot without `PAYLOAD_SECRET` and `AUTH_SECRET`.** Older copies of this
-> guide relied on the code having hardcoded fallbacks — those are gone on purpose. If a container
-> starts and immediately exits, read the first lines of its logs: the missing variable is named there.
-
-> **Schema management.** `PAYLOAD_SCHEMA_PUSH=true` lets Payload create/alter tables on boot, which
-> is convenient for the very first deploy. For every deploy after that, run `npm run migrate`
-> (`payload migrate`) so a release can never silently reshape the live database. Leave
-> `PAYLOAD_SCHEMA_PUSH` unset in production once migrations exist.
-
-### Generate secure secrets quickly:
+### 6.2 Generate Secure Production Secrets
+Run these commands to generate cryptographically random 64-character hex strings:
 
 ```bash
 # Generate PAYLOAD_SECRET
@@ -249,149 +278,335 @@ openssl rand -hex 32
 
 # Generate AUTH_SECRET
 openssl rand -hex 32
-```
 
-Copy each output into the respective `.env` field.
+# Generate CRON_SECRET (Mandatory for the hold-sweeper container!)
+openssl rand -hex 32
+
+# Generate strong POSTGRES_PASSWORD
+openssl rand -hex 24
+```
+Keep these values handy; you will paste them into `.env` next.
 
 ---
 
-## 7. Build & Run with Docker Compose
+### 6.3 Create the Production `.env` File
+```bash
+nano .env
+```
 
-### 7.1 Copy the docker-compose.yml
+Paste the following configuration and fill in your values:
 
-Save the `docker-compose.yml` file to `~/driveit/docker-compose.yml`.
+```env
+# ============================================================
+# DRIVEIT LUXURY — PRODUCTION CONFIGURATION
+# ============================================================
 
-### 7.2 Build the Docker image
+# ── App Public URL (No trailing slash!) ──
+NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
+AUTH_URL=https://yourdomain.com
 
-This step compiles your Next.js app. Takes ~3–5 minutes on first build.
+# ── Cryptographic Secrets (Generated in Step 6.2) ──
+PAYLOAD_SECRET=PASTE_GENERATED_PAYLOAD_SECRET_HERE
+AUTH_SECRET=PASTE_GENERATED_AUTH_SECRET_HERE
 
+# ── Housekeeping Secret (MANDATORY for Docker Scheduler) ──
+CRON_SECRET=PASTE_GENERATED_CRON_SECRET_HERE
+
+# ── Production PostgreSQL Database ──
+POSTGRES_USER=driveit
+POSTGRES_PASSWORD=PASTE_GENERATED_POSTGRES_PASSWORD_HERE
+POSTGRES_DB=driveit
+DATABASE_URI=postgres://driveit:PASTE_GENERATED_POSTGRES_PASSWORD_HERE@postgres:5432/driveit
+
+# ── Redis (Rate Limiting & Advisory Locks) ──
+REDIS_URL=redis://redis:6379
+TRUSTED_PROXY_HOPS=1
+
+# ── Cloudinary CDN (Vehicle Fleet & Uploads - Step 8) ──
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+CLOUDINARY_FOLDER=driveit
+
+# ── Google OAuth 2.0 (Customer Sign-In - Step 12) ──
+AUTH_GOOGLE_ID=your_google_client_id.apps.googleusercontent.com
+AUTH_GOOGLE_SECRET=your_google_client_secret
+
+# ── Email Service (Brevo API for 8 automated templates + reminders) ──
+BREVO_API_KEY=xkeysib-your_brevo_api_key_here
+BREVO_SENDER_EMAIL=concierge@yourdomain.com
+BREVO_SENDER_NAME=DriveIt Luxury Concierge
+BREVO_MARKETING_LIST_ID=2
+# Optional fallback if using Resend
+RESEND_API_KEY=
+
+# ── UPI Payment Details ──
+NEXT_PUBLIC_UPI_ID=yourupi@bank
+NEXT_PUBLIC_UPI_NAME=DRIVEIT Luxury
+
+# ── First Deploy Bootstrapping Flag ──
+# Set to 'true' only on your very first boot so Payload creates database tables.
+PAYLOAD_SCHEMA_PUSH=true
+```
+
+Save and exit in nano: `Ctrl + O` → `Enter` → `Ctrl + X`.
+
+---
+
+## 7. Step 5: Starting Services & Initial Database Setup
+
+### 7.1 Start PostgreSQL and Redis
 ```bash
 cd ~/driveit
+docker compose up -d postgres redis
+```
+
+Wait 10 seconds and check their health:
+```bash
+docker compose ps
+```
+Both `driveit-postgres` and `driveit-redis` should show `Up (healthy)`.
+
+---
+
+### 7.2 Build the Application Container
+On your 6-core / 12 GB RAM Contabo VPS, this build will finish in just 2–3 minutes:
+
+```bash
 docker compose build
 ```
 
-Watch for: `=> exporting to image` at the end = success ✅
+---
 
-### 7.3 Start the containers
-
+### 7.3 Start All Containers
 ```bash
 docker compose up -d
 ```
 
-### 7.4 Check running containers
-
+Verify all 5 containers are running:
 ```bash
 docker compose ps
 ```
 
 Expected output:
 ```
-NAME              STATUS          PORTS
-driveit-app       Up (healthy)    0.0.0.0:3000->3000/tcp
-driveit-backup    Up              
+NAME                STATUS
+driveit-app         Up (healthy)
+driveit-postgres    Up (healthy)
+driveit-redis       Up (healthy)
+driveit-backup      Up
+driveit-scheduler   Up
 ```
 
-### 7.5 Check application logs
-
+Test internal response:
 ```bash
-# Follow live logs
-docker compose logs -f app
-
-# Or check last 50 lines
-docker compose logs --tail=50 app
+curl -I http://127.0.0.1:3000
 ```
-
-Look for: `✓ Ready in Xms` or `started server on 0.0.0.0:3000`
-
-### 7.6 Quick test
-
-```bash
-curl http://localhost:3000
-```
-
-Should return HTML. If so, the app is running. ✅
+It should return `HTTP/1.1 200 OK` or `307 Temporary Redirect`. ✅
 
 ---
 
-## 8. Setup Nginx Reverse Proxy
+## 8. Step 6: Setting Up Cloudinary (Free Fleet Asset CDN)
 
-Nginx sits in front of your app, handles port 80/443, and forwards traffic to port 3000.
+Cloudinary hosts and optimizes all vehicle photos, hero banners, and CMS media uploads via a global CDN. The free plan includes **25 credits/month** (~25 GB storage), which is plenty for your luxury fleet.
 
-### 8.1 Install Nginx
+### 8.1 Register and Get API Credentials
+1. Go to **[cloudinary.com](https://cloudinary.com/users/register_free)** and create a free account.
+2. After logging in, go to the **Dashboard** (Console Home).
+3. Find the **Product Environment Credentials** box:
+   - **Cloud Name** (e.g. `driveit-cdn`)
+   - **API Key** (e.g. `483726194829104`)
+   - **API Secret** (e.g. `XyZ9_aBcDeFgHiJkLmNoPqRsTuV`)
+4. Add these keys into your VPS `.env` file (`nano ~/driveit/.env`):
+   ```env
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   CLOUDINARY_FOLDER=driveit
+   ```
 
+---
+
+### 8.2 Upload Fleet Images to Cloudinary
+Sync all static car photos from `public/sadan`, `public/suv`, and `public/trending` directly to Cloudinary:
+
+```bash
+cd ~/driveit
+
+# Install host node_modules so tsx utility scripts can run
+npm install --no-audit
+
+# Run the automated fleet uploader
+npm run upload:fleet:cloudinary
+```
+
+Expected output:
+```
+[cloudinary-upload] Starting asset upload to cloud "driveit-cdn" folder "driveit/fleet"...
+  ✓ Uploaded: sadan/mercedes-maybach.jpg → https://res.cloudinary.com/...
+  ✓ Uploaded: suv/rolls-royce-cullinan.jpg → https://res.cloudinary.com/...
+[cloudinary-upload] Finished. Upload mapping written to cloudinary-fleet-map.json
+```
+
+All fleet assets are now securely hosted on the CDN!
+
+---
+
+## 9. Step 7: Seeding Initial Data & Admin Account
+
+Now populate the database with the initial cars, services, FAQs, and create your CMS administrator account:
+
+```bash
+cd ~/driveit
+
+SEED_BASE_URL=http://localhost:3000 \
+SEED_ADMIN_EMAIL=admin@yourdomain.com \
+SEED_ADMIN_PASSWORD='YourStrongAdminPassword123!' \
+npm run seed
+```
+
+Expected output:
+```
+[seed] Connecting to http://localhost:3000...
+[seed] Creating admin user: admin@yourdomain.com
+[seed] Seeding 28 fleet vehicles...
+[seed] Seeding services & experiences...
+[seed] Seeding testimonials & journal articles...
+[seed] Seeding site settings...
+✅ Seed complete! You can now log in at /admin
+```
+
+> 💡 **Tip:** After seeding is complete, disable `PAYLOAD_SCHEMA_PUSH` in `.env` to prevent future schema auto-modifications:
+> ```bash
+> nano ~/driveit/.env
+> # Change: PAYLOAD_SCHEMA_PUSH=
+> docker compose restart app
+> ```
+
+---
+
+## 10. Step 8: Configuring Nginx Reverse Proxy
+
+Nginx listens on ports 80 and 443, handles SSL termination, and proxies traffic to the Next.js app on `127.0.0.1:3000`.
+
+### 10.1 Install Nginx on Ubuntu
 ```bash
 sudo apt install -y nginx
 sudo systemctl enable nginx
 sudo systemctl start nginx
 ```
 
-### 8.2 Create site configuration
+---
 
+### 10.2 Create the Nginx Virtual Host File
 ```bash
 sudo nano /etc/nginx/sites-available/driveit
 ```
 
-Paste the following (replace `yourdomain.com` with your actual domain):
+Paste the following block (replace `yourdomain.com` with your actual domain):
 
 ```nginx
-# HTTP → Redirect to HTTPS (fill in after Certbot runs)
+# 1. HTTP Redirect to HTTPS
 server {
     listen 80;
+    listen [::]:80;
     server_name yourdomain.com www.yourdomain.com;
-
-    # Allow Certbot challenges
-    location /.well-known/acme-challenge/ {
-        root /var/www/html;
-    }
-
-    # Redirect all HTTP to HTTPS
-    location / {
-        return 301 https://$host$request_uri;
-    }
+    return 301 https://$host$request_uri;
 }
 
-# HTTPS — Main server block (uncomment after SSL setup)
-# server {
-#     listen 443 ssl http2;
-#     server_name yourdomain.com www.yourdomain.com;
-#
-#     ssl_certificate     /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-#     ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-#     ssl_protocols TLSv1.2 TLSv1.3;
-#     ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
-#     ssl_prefer_server_ciphers on;
-#
-#     # Security headers
-#     add_header X-Frame-Options "SAMEORIGIN";
-#     add_header X-Content-Type-Options "nosniff";
-#     add_header X-XSS-Protection "1; mode=block";
-#
-#     # Upload size limit (for media uploads in Payload)
-#     client_max_body_size 50M;
-#
-#     # Proxy to Next.js app
-#     location / {
-#         proxy_pass         http://localhost:3000;
-#         proxy_http_version 1.1;
-#         proxy_set_header   Upgrade $http_upgrade;
-#         proxy_set_header   Connection 'upgrade';
-#         proxy_set_header   Host $host;
-#         proxy_set_header   X-Real-IP $remote_addr;
-#         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-#         proxy_set_header   X-Forwarded-Proto $scheme;
-#         proxy_cache_bypass $http_upgrade;
-#         proxy_read_timeout 120s;
-#     }
-# }
+# 2. HTTPS Main Server Block
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name yourdomain.com www.yourdomain.com;
+
+    # SSL Certificate Paths (Cloudflare Origin CA - see Step 9)
+    ssl_certificate     /etc/ssl/cloudflare/cert.pem;
+    ssl_certificate_key /etc/ssl/cloudflare/key.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    # Security Headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # Max body upload size for CMS media
+    client_max_body_size 50M;
+
+    # Proxy to Docker container on port 3000
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 120s;
+    }
+}
 ```
 
-### 8.3 Enable the site
+Save and exit: `Ctrl + O` → `Enter` → `Ctrl + X`.
+
+---
+
+## 11. Step 9: Securing SSL (Cloudflare 15-Year Origin CA vs Let's Encrypt)
+
+### Why Cloudflare Origin CA is the Best Choice
+Because your domain is on Cloudflare:
+- **Let's Encrypt** expires every 90 days and often fails automated renewal when Cloudflare's Orange Cloud proxy is active.
+- **Cloudflare Origin CA** gives you a free **15-year SSL certificate** for your origin server. It never expires, never needs renewal scripts, and allows you to keep Cloudflare's Orange Cloud proxy permanently active!
+
+---
+
+### 11.1 Generating Your 15-Year Cloudflare Origin Certificate
+1. Log in to your **[Cloudflare Dashboard](https://dash.cloudflare.com/)** and click your domain.
+2. In the left navigation menu, go to **SSL/TLS → Origin Server**.
+3. Click the **Create Certificate** button:
+   - Key Type: **RSA (2048)** (Default)
+   - Hostnames: `yourdomain.com`, `*.yourdomain.com` (Default)
+   - Certificate Validity: Select **15 years**
+   - Click **Create**.
+4. You will see two text areas on your screen:
+   - **Origin Certificate**
+   - **Private Key**
+
+---
+
+### 11.2 Installing the Certificate on Your Contabo VPS
+In your VPS terminal:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/driveit /etc/nginx/sites-enabled/
+# Create directory for Cloudflare certificates
+sudo mkdir -p /etc/ssl/cloudflare
+
+# 1. Create cert.pem and paste the Origin Certificate:
+sudo nano /etc/ssl/cloudflare/cert.pem
+
+# 2. Create key.pem and paste the Private Key:
+sudo nano /etc/ssl/cloudflare/key.pem
+
+# 3. Secure the private key permissions
+sudo chmod 600 /etc/ssl/cloudflare/key.pem
+```
+
+---
+
+### 11.3 Enable Site and Reload Nginx
+```bash
+# Enable the driveit site
+sudo ln -sf /etc/nginx/sites-available/driveit /etc/nginx/sites-enabled/
+
+# Remove default boilerplate site
 sudo rm -f /etc/nginx/sites-enabled/default
 
-# Test config
+# Test configuration syntax
 sudo nginx -t
 
 # Reload Nginx
@@ -400,270 +615,395 @@ sudo systemctl reload nginx
 
 ---
 
-## 9. SSL Certificate (HTTPS)
+### 11.4 Set Cloudflare SSL/TLS Encryption Mode to Full (Strict)
+1. In Cloudflare Dashboard, go to **SSL/TLS → Overview**.
+2. Select **Full (strict)** encryption mode.
+3. In **DNS → Records**, ensure the proxy status for both `@` and `www` is set to **Proxied (Orange Cloud)** 🟠.
 
-### 9.1 Install Certbot
-
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-```
-
-### 9.2 Obtain SSL certificate
-
-```bash
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com \
-  --non-interactive --agree-tos -m your@email.com
-```
-
-Certbot will:
-1. Verify domain ownership
-2. Issue a Let's Encrypt certificate
-3. **Automatically update your Nginx config** with SSL settings
-
-### 9.3 Enable the HTTPS server block
-
-After Certbot runs, uncomment the `server { listen 443 ... }` block in your Nginx config:
-
-```bash
-sudo nano /etc/nginx/sites-available/driveit
-# Remove the comment markers (#) from the HTTPS block
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-### 9.4 Auto-renewal
-
-Certbot sets up a cron automatically. Test it:
-
-```bash
-sudo certbot renew --dry-run
-```
-
-Your site is now live at `https://yourdomain.com` ✅
+Visit `https://yourdomain.com` in your browser. You now have end-to-end encrypted HTTPS that will remain valid for 15 years! 🔒
 
 ---
 
-## 10. Configure Vercel Frontend
+## 12. Step 10: Setting Up Zoho Mail (Free 5 Business Inboxes)
 
-Since Vercel hosts the static frontend that calls your VPS for dynamic data:
+Zoho Mail provides a **Forever Free plan** for up to 5 users (5 GB per mailbox) on your custom domain (e.g. `concierge@yourdomain.com`, `bookings@yourdomain.com`, `support@yourdomain.com`).
 
-### 10.1 Deploy to Vercel
-
-```bash
-# Install Vercel CLI (on your local machine)
-npm i -g vercel
-
-# In your project root
-vercel --prod
-```
-
-### 10.2 Set Vercel Environment Variables
-
-In [vercel.com/dashboard](https://vercel.com) → Your Project → **Settings → Environment Variables**:
-
-| Variable | Value |
-|----------|-------|
-| `NEXT_PUBLIC_SERVER_URL` | `https://yourdomain.com` |
-| `AUTH_SECRET` | Same value as your VPS `.env` |
-| `AUTH_GOOGLE_ID` | Your Google Client ID |
-| `AUTH_GOOGLE_SECRET` | Your Google Client Secret |
-| `RESEND_API_KEY` | Your Resend key |
-| `WHATSAPP_TOKEN` | Your Meta token |
-| `WHATSAPP_PHONE_ID` | Your phone ID |
-
-> [!IMPORTANT]
-> `PAYLOAD_SECRET` and `DATABASE_URI` should **only** be on the VPS, not on Vercel. The Vercel deployment will call your VPS API endpoints.
-
-### 10.3 Configure `next.config.mjs` for split deployment
-
-Make sure API routes and Payload routes are routed to the VPS. You may need to add rewrites to your `next.config.mjs`:
-
-```js
-// In next.config.mjs — add rewrites to proxy API calls to VPS
-async rewrites() {
-  return [
-    {
-      source: '/api/:path*',
-      destination: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/:path*`,
-    },
-    {
-      source: '/admin/:path*',
-      destination: `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/:path*`,
-    },
-  ]
-},
-```
+### 12.1 Sign Up on Zoho Mail Free Plan
+1. Go to **[zoho.com/mail](https://www.zoho.com/mail/)**.
+2. Scroll to the bottom pricing comparison and click **Sign Up** under **Forever Free Plan**.
+3. Select "Sign up with a domain that you already own" and enter `yourdomain.com`.
 
 ---
 
-## 11. Configure Google OAuth
+### 12.2 Verify Domain in Cloudflare DNS
+Zoho will provide a TXT verification code. In Cloudflare **DNS → Records**, add:
+- **Type:** `TXT`
+- **Name:** `@`
+- **Content:** `zoho-verification=zbXXXXXXXX.zmverify.zoho.com` (copy from Zoho)
+- **TTL:** `Auto`
 
-In [Google Cloud Console](https://console.cloud.google.com):
+Click **Verify** in Zoho.
 
-1. Go to **APIs & Services → Credentials**
-2. Click your OAuth 2.0 Client ID
-3. Under **Authorized redirect URIs**, add:
+---
+
+### 12.3 Add Zoho MX Records in Cloudflare DNS
+Delete any existing MX records in Cloudflare, then add these 3 MX records:
+
+| Type | Name | Mail Server | Priority | TTL |
+|---|---|---|---|---|
+| **MX** | `@` | `mx.zoho.in` (or `mx.zoho.com`)* | `10` | Auto |
+| **MX** | `@` | `mx2.zoho.in` (or `mx2.zoho.com`)* | `20` | Auto |
+| **MX** | `@` | `mx3.zoho.in` (or `mx3.zoho.com`)* | `50` | Auto |
+
+*(Use `.in` if registered under Zoho India, or `.com` if international, as instructed in your Zoho setup wizard).*
+
+---
+
+### 12.4 Add Zoho SPF & DKIM Records (Spam Prevention)
+- **SPF Record (Combined with Brevo in Step 11):**
+  - **Type:** `TXT`
+  - **Name:** `@`
+  - **Content:** `v=spf1 include:zoho.in include:spf.brevo.com ~all`
+- **DKIM Record:**
+  - In Zoho Mail Admin Console → **Email Authentication → DKIM** → Add Selector named `zoho` → Copy TXT record.
+  - In Cloudflare DNS, add:
+    - **Type:** `TXT`
+    - **Name:** `zoho._domainkey`
+    - **Content:** `v=DKIM1; k=rsa; p=MIGfMA0GCSq...` (pasted from Zoho)
+
+You can now create user accounts (e.g. `concierge@yourdomain.com`) in the Zoho Admin Console and access your webmail at [mail.zoho.in](https://mail.zoho.in).
+
+---
+
+## 13. Step 11: Setting Up Brevo (Transactional Emails & Marketing)
+
+**Brevo (formerly Sendinblue)** offers **300 free emails per day forever**.
+- Use Brevo's **SMTP Relay** to deliver booking receipts and PDF invoices with high deliverability.
+- Use Brevo's **Marketing Campaigns** to design promotional newsletters and manage customer lists.
+
+### 13.1 Register and Authenticate Domain in Brevo
+1. Sign up at **[brevo.com](https://www.brevo.com/)**.
+2. Go to **Settings (top right) → Senders, Domains & Dedicated IPs → Domains**.
+3. Click **Add a Domain** → Enter `yourdomain.com`.
+4. Brevo will provide 2 verification records for Cloudflare DNS:
+   - **Brevo Code (TXT):**
+     - Name: `@`
+     - Content: `brevo-code:xxxxxxxxxxxxxxxxxxxx`
+   - **Brevo DKIM (TXT):**
+     - Name: `mail._domainkey`
+     - Content: `k=rsa; p=MIGfMA0GCSq...` (from Brevo)
+5. Click **Verify this domain** in Brevo.
+
+---
+
+### 13.2 Generate Brevo API Key (Powers Automated Templates & Reminders)
+DriveIt is pre-wired with 8 luxury HTML email templates in `lib/email-templates/` and an automated Brevo client (`lib/brevo.ts`).
+
+1. In your Brevo dashboard, go to **SMTP & API → API Keys tab**.
+2. Click **Generate a new API key** → Name it `driveit-api`.
+3. Copy the generated key (starts with `xkeysib-`).
+4. In `nano ~/driveit/.env`, set:
+   ```env
+   BREVO_API_KEY=xkeysib-your_copied_api_key_here
+   BREVO_SENDER_EMAIL=concierge@yourdomain.com
+   BREVO_SENDER_NAME=DriveIt Luxury Concierge
+   BREVO_MARKETING_LIST_ID=2
    ```
-   https://yourdomain.com/api/auth/callback/google
-   https://your-vercel-app.vercel.app/api/auth/callback/google
-   ```
-4. Under **Authorized JavaScript origins**, add:
+
+### 13.3 The 8 Built-in Luxury Email Templates in Code
+DriveIt automatically dispatches responsive, obsidian-gold luxury email templates for these events:
+1. **Booking Confirmed (`booking-confirmed.ts`):** Triggered immediately upon checkout completion with vehicle itinerary, dynamic pricing, and an attached official PDF tax invoice.
+2. **Payment Verified (`payment-verified.ts`):** Triggered when staff marks `paymentStatus: 'verified'` in Payload CMS, delivering an official payment receipt.
+3. **Payment Action Required (`payment-failed.ts`):** Triggered if a UPI reference is rejected, giving the customer a direct link to retry payment before hold release.
+4. **24-Hour Pickup Reminder (`booking-reminder.ts`):** Dispatched 24 hours before trip start with vehicle inspection status, documents checklist, and chauffeur arrival timeline.
+5. **2-Hour Return Reminder (`vehicle-return-reminder.ts`):** Dispatched 2 hours before trip end with dropoff instructions and 1-tap WhatsApp trip extension option.
+6. **Reservation Cancelled (`booking-cancelled.ts`):** Dispatched upon booking cancellation with refund policy terms and re-booking incentive.
+7. **VIP Club Welcome (`account-welcome.ts`):** Dispatched when a customer creates an account / signs in with Google, providing a `WELCOME10` 10% onboarding voucher.
+8. **Trip Completed & Review Request (`trip-completed-review.ts`):** Dispatched when a booking is completed, showing loyalty points credited and a 5-star Google review prompt.
+
+### 13.4 Automated Reminders Cron Endpoint
+The reminder system runs automatically via:
+```
+POST /api/cron/reminders
+Header: x-cron-secret: $CRON_SECRET
+```
+The Docker `scheduler` calls this along with `expire-holds` to scan upcoming pickups and scheduled returns.
+
+### 13.5 VIP Contact Sync & Email Marketing in Brevo
+Every new customer and confirmed booking automatically syncs to your Brevo Contacts List with booking metadata (`LAST_CAR_BOOKED`, `LAST_BOOKING_REF`), allowing you to create promotional email campaigns inside the Brevo web dashboard without manual exports!
+
+---
+
+## 14. Step 12: Configuring Google OAuth (Customer Login)
+
+DriveIt allows customers to sign in with Google to view their bookings, wishlists, and loyalty tier under `/dashboard`.
+
+### 14.1 Create Project in Google Cloud Console
+1. Go to the **[Google Cloud Console](https://console.cloud.google.com/)**.
+2. Click the project dropdown at the top → **New Project**.
+3. Name: `DriveIt Luxury` → Click **Create**, then select the project.
+
+---
+
+### 14.2 Configure OAuth Consent Screen
+1. Go to **APIs & Services → OAuth consent screen**.
+2. Select User Type: **External** → Click **Create**.
+3. Enter:
+   - **App name:** `DriveIt Luxury`
+   - **User support email:** Your email address
+   - **Developer contact info:** Your email address
+4. Click **Save and Continue**.
+5. Under **Scopes**, click **Add or Remove Scopes**:
+   - Check `.../auth/userinfo.email`
+   - Check `.../auth/userinfo.profile`
+   - Check `openid`
+6. Click **Save and Continue** → Click **Publish App** to make it live.
+
+---
+
+### 14.3 Create OAuth Client ID
+1. In the left menu, go to **Credentials**.
+2. Click **+ Create Credentials → OAuth client ID**.
+3. Application type: Select **Web application**.
+4. Name: `DriveIt Production Web`.
+5. **Authorized JavaScript origins** (Add both):
    ```
    https://yourdomain.com
-   https://your-vercel-app.vercel.app
+   https://www.yourdomain.com
    ```
-5. Click **Save**
+6. **Authorized redirect URIs** (Add both):
+   ```
+   https://yourdomain.com/api/auth/callback/google
+   https://www.yourdomain.com/api/auth/callback/google
+   ```
+7. Click **Create**.
 
 ---
 
-## 12. Verify Deployment
+### 14.4 Add to Contabo VPS `.env`
+Google will show a modal with your **Client ID** and **Client Secret**.
 
-Run these checks after going live:
-
+Open `.env` on your Contabo server:
 ```bash
-# 1. Check HTTPS is working
-curl -I https://yourdomain.com
-# Expect: HTTP/2 200
-
-# 2. Check admin panel
-curl -I https://yourdomain.com/admin
-# Expect: HTTP/2 200 or redirect
-
-# 3. Check the public fleet feed (read-only, cached 5 min)
-curl https://yourdomain.com/api/fleet | head -c 200
-
-# 4. Confirm private data is NOT public (bookings/coupons/profile all require auth)
-curl -o /dev/null -s -w '%{http_code}\n' https://yourdomain.com/api/bookings
-# Expect: 403
-
-# 5. Check container health
-docker compose ps
-# Expect: driveit-app Status = Up (healthy)
-
-# 6. Check the database is reachable and has content
-docker compose exec -T postgres psql -U driveit -d driveit -c "select count(*) from cars;"
-# Expect: a count, and the app logs "[db] postgres · postgres://postgres:5432/driveit"
-docker compose logs app | grep "\[db\]"
-
-# 7. Check media volume
-docker exec driveit-app ls /app/public/media/
+nano ~/driveit/.env
 ```
-
-### Payload First Admin Setup
-
-Option A — from the CLI (also loads the starter fleet, services, reviews and journal
-entries so the site is not blank):
-
+Paste the keys:
+```env
+AUTH_GOOGLE_ID=your_client_id.apps.googleusercontent.com
+AUTH_GOOGLE_SECRET=GOCSPX-your_client_secret
+```
+Save (`Ctrl+O`, `Enter`, `Ctrl+X`) and restart the app:
 ```bash
-cd ~/driveit
-SEED_ADMIN_EMAIL=you@yourdomain.com \
-SEED_ADMIN_PASSWORD='a-strong-password' \
-SEED_BASE_URL=https://yourdomain.com \
-npm run seed
+docker compose restart app
 ```
-The script is idempotent — re-running it skips anything that already exists.
-
-Option B — visit `https://yourdomain.com/admin` and use the first-user form.
-
-Either way you land in the Payload CMS dashboard, where every car, service, review,
-article, coupon, booking and the global site settings are editable.
 
 ---
 
-## 13. Maintenance Runbook
+## 15. Step 13: Cloudflare DNS Master Reference Table
 
-### 🔄 Updating the App (new code push)
+Here is the single reference table of all DNS records to enter into your Cloudflare Dashboard:
+
+| Record Type | Name / Host | Target / Content / Mail Server | Priority | Proxy Status | Notes |
+|---|---|---|---|---|---|
+| **A** | `@` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | Main website address |
+| **A** | `www` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | WWW subdomain |
+| **MX** | `@` | `mx.zoho.in` (or `mx.zoho.com`) | `10` | ⚪ DNS Only | Zoho Mail Primary Server |
+| **MX** | `@` | `mx2.zoho.in` (or `mx2.zoho.com`) | `20` | ⚪ DNS Only | Zoho Mail Backup 1 |
+| **MX** | `@` | `mx3.zoho.in` (or `mx3.zoho.com`) | `50` | ⚪ DNS Only | Zoho Mail Backup 2 |
+| **TXT** | `@` | `v=spf1 include:zoho.in include:spf.brevo.com ~all` | - | ⚪ DNS Only | Combined SPF for Zoho + Brevo |
+| **TXT** | `zoho._domainkey` | `v=DKIM1; k=rsa; p=MIGf...` | - | ⚪ DNS Only | Zoho DKIM authentication key |
+| **TXT** | `mail._domainkey` | `k=rsa; p=MIGf...` | - | ⚪ DNS Only | Brevo DKIM authentication key |
+| **TXT** | `@` | `zoho-verification=zbXXXXXXXX...` | - | ⚪ DNS Only | Zoho domain ownership check |
+| **TXT** | `@` | `brevo-code:xxxxxxxxxxxxxxxx...` | - | ⚪ DNS Only | Brevo domain ownership check |
+| **TXT** | `_dmarc` | `v=DMARC1; p=none; sp=none;` | - | ⚪ DNS Only | DMARC email security policy |
+
+---
+
+## 16. Step 14: Post-Deployment Smoke Tests & Verification
+
+Never announce a site to customers without running verification. DriveIt includes an automated, end-to-end smoke test script.
+
+### 16.1 Run the Automated Smoke Suite
+The smoke test checks page rendering, verifies that private API routes (`/api/bookings`) are protected, places a test booking, checks server-side pricing recalculation, tests concurrency locks, and verifies rate limiting:
 
 ```bash
 cd ~/driveit
+SMOKE_BASE_URL=https://yourdomain.com \
+SEED_ADMIN_PASSWORD='YourStrongAdminPassword123!' \
+npm run smoke -- --allow-remote
+```
 
-# Pull latest code
+Expected output:
+```
+  ✓ homepage — 200, renders HTML
+  ✓ fleet feed — returns cars array
+  ✓ bookings private — 403 Forbidden for anonymous
+  ✓ profile private — 401 Unauthorized for anonymous
+  ✓ booking hold — created 10-minute hold with token
+  ✓ server-side pricing — calculated accurately
+  ✓ booking confirm — confirmed with hold token
+  ✓ concurrency — 3 simultaneous holds resulted in exactly 1 winner
+  ✓ rate limiter — returns 429 Too Many Requests on burst
+  
+✅ 14/14 checks passed! System is verified production-ready.
+```
+
+---
+
+### 16.2 Manual Verification Checklist
+1. **Visit Homepage:** `https://yourdomain.com` → Verify images load via Cloudflare/Cloudinary CDN.
+2. **Visit Fleet Page:** `https://yourdomain.com/cars` → Verify luxury car inventory renders with daily pricing.
+3. **Visit Admin Panel:** `https://yourdomain.com/admin` → Log in with `admin@yourdomain.com` and your seed password.
+4. **Test Customer Login:** Click "Sign In" and test the Google OAuth flow.
+5. **Place Test Booking:** Go through `/checkout`, enter a coupon code, submit booking, and verify receipt email.
+
+---
+
+## 17. Step 15: Day-2 Maintenance & Updates Runbook
+
+### 🔄 Pushing an Application Update (New Git Commit)
+```bash
+cd ~/driveit
+
+# 1. Pull latest code
 git pull origin main
 
-# Rebuild and restart (zero-data-loss — volumes are preserved)
+# 2. Run database migrations if any were added
+npm run migrate
+
+# 3. Rebuild app container
 docker compose build app
+
+# 4. Restart app container (Database and Redis remain unaffected!)
 docker compose up -d app
 
-# Verify
+# 5. Check logs
 docker compose logs -f app
-```### 📦 Manual Database Backup
+```
+
+---
+
+### 📦 Manual Database Backup
 ```bash
-# Create an immediate compressed dump inside the backup volume
+# Create immediate snapshot
 docker compose exec -T postgres pg_dump -U driveit -d driveit -Fc \
-  -f /backups/manual_$(date +%Y%m%d).dump
+  -f /backups/manual_backup_$(date +%Y%m%d_%H%M%S).dump
+
+# List all backups
 docker compose exec -T backup ls -lh /backups
-
-# Restore one (into an empty database) if you ever need to:
-docker compose exec -T postgres pg_restore -U driveit -d driveit --clean --if-exists \
-  /backups/driveit_YYYYMMDD_HHMMSS.dump
 ```
 
-### 📤 Download Backup to Your Local Machine
-
+To download a backup to your personal laptop:
 ```bash
-# From your local machine
-scp driveit@YOUR_VPS_IP:~/driveit/backups/driveit_*.dump ./local-backups/
-```
-
-### 🔍 View Live Logs
-
-```bash
-docker compose logs -f app          # App logs
-docker compose logs -f backup       # Backup cron logs
-```
-
-### ♻️ Restart Services
-
-```bash
-docker compose restart app          # Restart app only
-docker compose down && docker compose up -d   # Full restart
-```
-
-### 🧹 Cleanup Old Docker Images
-
-```bash
-docker system prune -f              # Remove unused images/containers
-docker volume ls                    # List volumes (do NOT prune these!)
-```
-
-### 📊 Monitor Resource Usage
-
-```bash
-# Real-time container stats
-docker stats
-
-# Disk usage
-df -h
-du -sh ~/driveit/data/
+# Run on your local laptop:
+scp driveit@YOUR_CONTABO_VPS_IP:~/driveit/backups/manual_backup_*.dump ./
 ```
 
 ---
 
-## 14. Environment Variables Reference
+### 🔍 Viewing Live Logs
+```bash
+# App logs
+docker compose logs -f app
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `NEXT_PUBLIC_SERVER_URL` | ✅ Yes | Your full domain `https://yourdomain.com` |
-| `PAYLOAD_SECRET` | ✅ Yes | 32+ char random string for Payload encryption |
-| `DATABASE_URI` | ✅ Yes | `postgres://…@postgres:5432/driveit` (compose builds it from `POSTGRES_*`) |
-| `POSTGRES_PASSWORD` | ✅ Yes | strong password shared by the `postgres` and `backup` services |
-| `REDIS_URL` | ✅ Yes (staging/production) | `redis://redis:6379` — shared rate-limit store |
-| `AUTH_SECRET` | ✅ Yes | 32+ char random string for NextAuth sessions |
-| `AUTH_GOOGLE_ID` | ✅ Yes | Google OAuth Client ID |
-| `AUTH_GOOGLE_SECRET` | ✅ Yes | Google OAuth Client Secret |
-| `RESEND_API_KEY` | ⚠️ Optional | Email sending (booking confirmations, coupons) |
-| `WHATSAPP_TOKEN` | ⚠️ Optional | Meta Graph API token for WhatsApp notifications |
-| `WHATSAPP_PHONE_ID` | ⚠️ Optional | WhatsApp Business phone number ID |
+# Hold-sweeper scheduler logs
+docker compose logs -f scheduler
 
-> [!CAUTION]
-> Never expose `PAYLOAD_SECRET` or `AUTH_SECRET` publicly. If compromised, rotate immediately and restart containers.
+# Nginx access & error logs
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/nginx/access.log
+```
 
 ---
 
-## ✅ Deployment Complete!
+## 18. Step 16: Production Environment Variables Reference
 
-| Service | URL |
-|---------|-----|
-| 🌐 Public Site | `https://yourdomain.com` |
-| 🔧 Admin Panel | `https://yourdomain.com/admin` |
-| 📦 API | `https://yourdomain.com/api/*` |
-| 🎨 Frontend (Vercel) | `https://your-app.vercel.app` |
+| Environment Variable | Required? | Example | Purpose |
+|---|---|---|---|
+| `NEXT_PUBLIC_SERVER_URL` | ✅ Required | `https://yourdomain.com` | Base public URL for assets, links, and SEO |
+| `AUTH_URL` | ✅ Required | `https://yourdomain.com` | NextAuth callback base URL |
+| `PAYLOAD_SECRET` | ✅ Required | 64-char hex | Payload CMS encryption key for JWTs and sessions |
+| `AUTH_SECRET` | ✅ Required | 64-char hex | NextAuth encryption secret for customer cookies |
+| `CRON_SECRET` | ✅ Required | 64-char hex | Shared secret authorizing `POST /api/cron/expire-holds` |
+| `DATABASE_URI` | ✅ Required | `postgres://user:pass@postgres:5432/driveit` | PostgreSQL connection string |
+| `REDIS_URL` | ✅ Required | `redis://redis:6379` | Redis connection for rate limits & concurrency |
+| `TRUSTED_PROXY_HOPS` | ✅ Required | `1` | Number of reverse proxies (1 for Nginx) |
+| `CLOUDINARY_CLOUD_NAME` | ✅ Required | `driveit-cdn` | Cloudinary account name for vehicle asset hosting |
+| `CLOUDINARY_API_KEY` | ✅ Required | `483726194829104` | Cloudinary API Key |
+| `CLOUDINARY_API_SECRET` | ✅ Required | `XyZ9_aBcDeFgHi...` | Cloudinary API Secret |
+| `CLOUDINARY_FOLDER` | Optional | `driveit` | Folder inside Cloudinary media library |
+| `AUTH_GOOGLE_ID` | ⚠️ Recommended | `*.apps.googleusercontent.com` | Google OAuth Client ID for customer sign-in |
+| `AUTH_GOOGLE_SECRET` | ⚠️ Recommended | `GOCSPX-*` | Google OAuth Client Secret |
+| `BREVO_API_KEY` | ⚠️ Recommended | `xkeysib-*` | Brevo API key for 8 automated templates, reminders & contact sync |
+| `BREVO_SENDER_EMAIL` | ⚠️ Recommended | `concierge@yourdomain.com` | Verified sender email in Brevo |
+| `BREVO_SENDER_NAME` | Optional | `DriveIt Luxury Concierge` | Sender name for customer emails |
+| `BREVO_MARKETING_LIST_ID` | Optional | `2` | Brevo contact list ID for syncing new VIP leads |
+| `RESEND_API_KEY` | ⚠️ Optional | `re_*` | Resend API key (optional fallback) |
+| `EMAIL_FROM_ADDRESS` | ⚠️ Recommended | `concierge@yourdomain.com` | Outgoing verified email address |
+| `EMAIL_FROM_NAME` | Optional | `DriveIt Luxury Concierge` | Sender name shown in customer email inboxes |
+| `NEXT_PUBLIC_UPI_ID` | ⚠️ Recommended | `yourcompany@upi` | UPI VPA displayed on the QR checkout modal |
+| `NEXT_PUBLIC_UPI_NAME` | ⚠️ Recommended | `DRIVEIT Luxury` | Name displayed on customer UPI payment app |
+
+---
+
+## 19. Step 17: Fresher Troubleshooting & FAQ
+
+### 1. Error: `CRON_SECRET: Set CRON_SECRET in .env — the hold sweep endpoint requires it`
+- **Why it happened:** Docker Compose requires `CRON_SECRET` to authorize the internal hold sweeper.
+- **Fix:** Run `openssl rand -hex 32`, add `CRON_SECRET=generated_string` to `~/driveit/.env`, and run `docker compose up -d`.
+
+---
+
+### 2. Error: `502 Bad Gateway` when opening domain in browser
+- **Why it happened:** Nginx is running, but the Next.js container on port 3000 is still booting or has crashed.
+- **Fix:** Check app logs:
+  ```bash
+  docker compose logs --tail=50 app
+  ```
+  - If you see `Missing PAYLOAD_SECRET` or `Missing AUTH_SECRET`, fill them in `.env`.
+  - If you see `database connection refused`, wait 10 seconds and run `docker compose restart app`.
+
+---
+
+### 3. Error: Google Login gives `Error 400: redirect_uri_mismatch`
+- **Why it happened:** The Authorized Redirect URI in Google Cloud Console does not match your exact domain.
+- **Fix:** In Google Cloud Console, ensure Authorized Redirect URIs includes:
+  `https://yourdomain.com/api/auth/callback/google` (check for typos, `https` vs `http`, and trailing slashes).
+
+---
+
+### 4. Error: Cloudflare shows `Error 525: SSL Handshake Failed`
+- **Why it happened:** Cloudflare SSL mode is set to "Full (Strict)" but Nginx does not have the Cloudflare Origin CA certificate installed.
+- **Fix:** Follow Step 9 to generate the Origin Certificate in Cloudflare and save to `/etc/ssl/cloudflare/cert.pem` and `/etc/ssl/cloudflare/key.pem`, then reload Nginx (`sudo systemctl reload nginx`).
+
+---
+
+### 5. Error: `permission denied while trying to connect to the Docker daemon socket`
+- **Why it happened:** Current user session does not have Docker permissions refreshed.
+- **Fix:** Run `newgrp docker` or log out and SSH back in.
+
+---
+
+### 6. Error: Blank page or empty fleet on `/cars`
+- **Why it happened:** The database was created, but no seed data was inserted into Payload.
+- **Fix:** Run the seed command:
+  ```bash
+  cd ~/driveit
+  SEED_BASE_URL=http://localhost:3000 npm run seed
+  ```
+
+---
+
+## 🏁 Summary & Final Handoff
+
+| Asset | Production URL |
+|---|---|
+| 🌐 **Customer Website** | `https://yourdomain.com` |
+| 🔑 **Payload CMS Admin** | `https://yourdomain.com/admin` |
+| 🏎️ **Fleet Catalog** | `https://yourdomain.com/cars` |
+| 💼 **Customer Dashboard** | `https://yourdomain.com/dashboard` |
+| 📧 **Zoho Webmail** | `https://mail.zoho.in` (or `.com`) |
+| 📬 **Brevo Email Marketing** | `https://app.brevo.com` |
+| ☁️ **Cloudinary Media Console** | `https://console.cloudinary.com` |
+
+Keep your `.env` backed up securely on an encrypted password manager, keep Ubuntu packages updated regularly with `sudo apt update && sudo apt upgrade -y`, and monitor database backups in `~/driveit/backups`.

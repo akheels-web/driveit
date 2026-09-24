@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { adminOnly } from '@/lib/access'
 import { onBookingStatusChange, stampBookingTransitions } from '@/lib/loyalty'
 import { AWAITING_VERIFICATION, PAYMENT_STATUS_OPTIONS, stampPaymentVerification } from '@/lib/payments'
+import { onBookingEmailNotifications, stampBookingEmailGuards } from '@/lib/booking-email-hooks'
 
 export const Bookings: CollectionConfig = {
   slug: 'bookings',
@@ -31,8 +32,8 @@ export const Bookings: CollectionConfig = {
   hooks: {
     // Data-only stamping happens in the same write (see lib/loyalty.ts for why a
     // nested same-row update deadlocks on Postgres).
-    beforeChange: [stampBookingTransitions, stampPaymentVerification],
-    afterChange: [onBookingStatusChange],
+    beforeChange: [stampBookingTransitions, stampPaymentVerification, stampBookingEmailGuards],
+    afterChange: [onBookingStatusChange, onBookingEmailNotifications],
   },
   fields: [
     { name: 'customerName', type: 'text', required: true, label: 'Customer Full Name' },
@@ -147,6 +148,36 @@ export const Bookings: CollectionConfig = {
       type: 'date',
       label: 'Loyalty Reward Issued At',
       admin: { readOnly: true, description: 'Guards against issuing the same loyalty reward twice.' },
+    },
+    {
+      name: 'pickupReminderSentAt',
+      type: 'date',
+      label: 'Pickup Reminder Sent At',
+      admin: { readOnly: true, description: 'Stamped when 24h pickup reminder email is sent.' },
+    },
+    {
+      name: 'returnReminderSentAt',
+      type: 'date',
+      label: 'Return Reminder Sent At',
+      admin: { readOnly: true, description: 'Stamped when 2h return reminder email is sent.' },
+    },
+    {
+      name: 'paymentReceiptSentAt',
+      type: 'date',
+      label: 'Payment Receipt Sent At',
+      admin: { readOnly: true, description: 'Stamped when payment verified receipt email is sent.' },
+    },
+    {
+      name: 'cancellationNotifiedAt',
+      type: 'date',
+      label: 'Cancellation Notified At',
+      admin: { readOnly: true, description: 'Stamped when cancellation email is sent.' },
+    },
+    {
+      name: 'reviewRequestedAt',
+      type: 'date',
+      label: 'Review Requested At',
+      admin: { readOnly: true, description: 'Stamped when trip completed review email is sent.' },
     },
   ],
 }

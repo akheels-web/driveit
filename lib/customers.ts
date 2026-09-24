@@ -1,4 +1,5 @@
 import type { Payload, PayloadRequest } from 'payload'
+import { sendAccountWelcomeNotification } from '@/lib/brevo'
 
 /**
  * A request to run the query inside, when called from a hook or route handler.
@@ -51,7 +52,7 @@ export async function upsertCustomer(
   const existing = await findCustomerByEmail(payload, email, req)
 
   if (!existing) {
-    return payload.create({
+    const created = await payload.create({
       collection: 'customers',
       data: {
         email,
@@ -61,6 +62,13 @@ export async function upsertCustomer(
       overrideAccess: true,
       ...(req ? { req } : {}),
     })
+
+    // Dispatch welcome notification asynchronously via Brevo
+    sendAccountWelcomeNotification(input.name || 'Valued Member', email).catch((err) =>
+      payload.logger.error(`[brevo] Welcome email dispatch failed for ${email}: ${err}`),
+    )
+
+    return created
   }
 
   const patch: Record<string, unknown> = {}

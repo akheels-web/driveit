@@ -14,6 +14,7 @@ import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
 import { bookingAlertText, couponAlertText, sendTelegramAlert } from '@/lib/telegram'
 import { bookingReference } from '@/lib/invoice'
 import { AWAITING_VERIFICATION, paymentNeedsReview } from '@/lib/payments'
+import { sendBookingConfirmedNotification } from '@/lib/brevo'
 
 export const dynamic = 'force-dynamic'
 
@@ -186,8 +187,19 @@ async function sendConfirmationEmail(payload: Awaited<ReturnType<typeof getPaylo
 
   const reference = bookingReference(booking.id)
   const invoiceUrl = `${serverUrl()}/dashboard/invoices/${booking.id}`
-  // The customer is told the truth: the reference they typed has not been
-  // checked yet, so the money is not confirmed.
+
+  // 1. Attempt Brevo delivery first (luxury branded HTML template + attached PDF invoice)
+  try {
+    const sentViaBrevo = await sendBookingConfirmedNotification(booking, pdfBuffer)
+    if (sentViaBrevo) {
+      payload.logger.info(`[checkout/confirm] Sent booking confirmed email via Brevo to ${booking.customerEmail}`)
+      return
+    }
+  } catch (brevoError) {
+    console.warn('[checkout/confirm] Brevo attempt failed, falling back to payload.sendEmail:', brevoError)
+  }
+
+  // 2. Fallback to Payload sendEmail (Resend/local)
   const paymentNotice = paymentNeedsReview(booking)
     ? `<p style="padding:12px 16px;background:#fff8e1;border-left:3px solid #d4af37;">
          <strong>Payment under review.</strong> We have your UPI reference
