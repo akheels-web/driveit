@@ -1,24 +1,32 @@
 "use client"
+import Link from 'next/link'
 import { ArrowLeft, Shield, Lock, Eye, UserCheck } from 'lucide-react'
 
 export default function PrivacyPolicyPage() {
-  const handleGoBack = () => {
-    window.location.href = '/'
-  }
-
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
-      <div className="mx-auto max-w-4xl px-4 py-16">
+    <div className="min-h-screen bg-[var(--luxury-bg)] text-zinc-100 pb-16">
+      <div className="mx-auto max-w-4xl px-4 pt-12 pb-16">
+        {/* Top Navigation */}
+        <div className="mb-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-[var(--gold-400)] transition-colors py-2 px-3 rounded-lg hover:bg-white/5"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Home</span>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#b48811' }}>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-[var(--gold-400)] shadow-[0_0_30px_rgba(212,175,55,0.3)]">
             <Shield className="w-8 h-8 text-black" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Privacy <span style={{ color: '#b48811' }}>Policy</span>
+          <h1 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-playfair)] text-white mb-4">
+            Privacy <span className="text-gradient-gold">Policy</span>
           </h1>
-          <p className="text-zinc-400">
-            How we protect and handle your personal information
+          <p className="text-zinc-400 text-sm md:text-base max-w-lg mx-auto">
+            How we protect and handle your personal information at DRIVEIT Luxury
           </p>
         </div>
 
@@ -260,13 +268,13 @@ export default function PrivacyPolicyPage() {
 
         {/* Back Button */}
         <div className="text-center mt-12">
-          <button
-            onClick={handleGoBack}
-            className="flex items-center justify-center gap-2 text-zinc-500 hover:text-white transition-colors mx-auto"
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 text-zinc-500 hover:text-[var(--gold-400)] transition-colors mx-auto text-sm py-2 px-4 rounded-lg hover:bg-white/5"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
-          </button>
+          </Link>
         </div>
       </div>
     </div>

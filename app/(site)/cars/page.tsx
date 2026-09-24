@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { motion, useInView, AnimatePresence } from "motion/react"
-import { useRef } from "react"
 import { Search, Filter, Car, Users, ChevronDown, Check, X, ArrowRight } from "lucide-react"
 import { FaCarSide, FaBus } from "react-icons/fa"
 import { GiJeep } from "react-icons/gi"
@@ -12,6 +11,15 @@ import { SiteFooter } from "@/components/site-footer"
 import { CarCard } from "@/components/car-card"
 import { CompareModal } from "@/components/compare-modal"
 import { useFleet } from "@/hooks/use-fleet"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 type Category = 'all' | 'sedan' | 'suv' | 'sports' | 'mpv' | 'bus'
 type ServiceFilter = 'all' | 'chauffeur' | 'selfdrive'
@@ -33,18 +41,22 @@ const serviceFilters: { id: ServiceFilter; label: string; icon: React.ReactNode 
 
 type SortOption = 'name' | 'price-low' | 'price-high' | 'rating' | 'booked' | 'new'
 
+const CARS_PER_PAGE = 9
+
 export default function CarsPage() {
   const { cars, loading } = useFleet()
   const [category, setCategory] = useState<Category>('all')
   const [service, setService] = useState<ServiceFilter>('all')
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('name')
+  const [currentPage, setCurrentPage] = useState(1)
   
   // Compare State
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompareModal, setShowCompareModal] = useState(false)
 
   const ref = useRef<HTMLDivElement>(null)
+  const catalogRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true })
 
   useEffect(() => {
@@ -60,6 +72,11 @@ export default function CarsPage() {
       }
     } catch {}
   }, [])
+
+  // Reset page to 1 when filters or search change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [category, service, search, sortBy])
 
   const filtered = useMemo(() => cars
     .filter((car) => {
@@ -77,6 +94,21 @@ export default function CarsPage() {
       return a.name.localeCompare(b.name)
     }), [cars, category, service, search, sortBy])
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / CARS_PER_PAGE))
+
+  const paginatedCars = useMemo(() => {
+    const start = (currentPage - 1) * CARS_PER_PAGE
+    return filtered.slice(start, start + CARS_PER_PAGE)
+  }, [filtered, currentPage])
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return
+    setCurrentPage(page)
+    if (catalogRef.current) {
+      catalogRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   const handleToggleCompare = (id: string) => {
     setCompareIds(prev => {
       if (prev.includes(id)) return prev.filter(c => c !== id)
@@ -86,6 +118,19 @@ export default function CarsPage() {
   }
 
   const compareCarsList = useMemo(() => cars.filter(c => compareIds.includes(c.id)), [cars, compareIds])
+
+  const visiblePages = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1)
+    }
+    if (currentPage <= 3) {
+      return [1, 2, 3, 'ellipsis', totalPages]
+    }
+    if (currentPage >= totalPages - 2) {
+      return [1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages]
+    }
+    return [1, 'ellipsis', currentPage, 'ellipsis', totalPages]
+  }, [totalPages, currentPage])
 
   return (
     <>
@@ -132,14 +177,14 @@ export default function CarsPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 pr-9 text-white text-sm appearance-none cursor-pointer hover:border-[var(--gold-400)]/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors"
+                  className="bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 pr-9 text-white text-sm appearance-none cursor-pointer hover:border-[var(--gold-400)]/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors [color-scheme:dark]"
                 >
-                  <option value="name" className="bg-[#111]">Sort: Name A-Z</option>
-                  <option value="booked" className="bg-[#111]">Most Booked</option>
-                  <option value="rating" className="bg-[#111]">Best Rated</option>
-                  <option value="new" className="bg-[#111]">Newly Added</option>
-                  <option value="price-low" className="bg-[#111]">Price: Low → High</option>
-                  <option value="price-high" className="bg-[#111]">Price: High → Low</option>
+                  <option value="name" className="bg-[#121214] text-white">Sort: Name A-Z</option>
+                  <option value="booked" className="bg-[#121214] text-white">Most Booked</option>
+                  <option value="rating" className="bg-[#121214] text-white">Best Rated</option>
+                  <option value="new" className="bg-[#121214] text-white">Newly Added</option>
+                  <option value="price-low" className="bg-[#121214] text-white">Price: Low → High</option>
+                  <option value="price-high" className="bg-[#121214] text-white">Price: High → Low</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
               </div>
@@ -151,7 +196,7 @@ export default function CarsPage() {
                 <button
                   key={cat.id}
                   onClick={() => setCategory(cat.id)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-full text-xs font-medium transition-all duration-300 cursor-pointer ${
                     category === cat.id
                       ? 'bg-[var(--gold-400)] text-black shadow-[0_0_15px_rgba(212,175,55,0.3)]'
                       : 'bg-white/[0.03] text-white/50 border border-white/5 hover:border-[var(--gold-400)]/20 hover:text-white/70'
@@ -169,7 +214,7 @@ export default function CarsPage() {
                 <button
                   key={svc.id}
                   onClick={() => setService(svc.id)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-full text-xs font-medium transition-all duration-300 cursor-pointer ${
                     service === svc.id
                       ? 'bg-white/10 text-[var(--gold-400)] border border-[var(--gold-400)]/30'
                       : 'bg-white/[0.02] text-white/40 border border-white/5 hover:border-white/10 hover:text-white/60'
@@ -182,9 +227,11 @@ export default function CarsPage() {
             </div>
           </motion.div>
 
-          {/* Results count */}
-          <div className="flex justify-between items-end mb-6">
-             <p className="text-xs text-white/30">{filtered.length} vehicles found</p>
+          {/* Results count & scroll anchor */}
+          <div ref={catalogRef} className="scroll-mt-32 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2 mb-6">
+             <p className="text-xs text-white/40">
+               Showing <span className="text-white font-medium">{filtered.length > 0 ? (currentPage - 1) * CARS_PER_PAGE + 1 : 0}–{Math.min(currentPage * CARS_PER_PAGE, filtered.length)}</span> of <span className="text-white font-medium">{filtered.length}</span> vehicles
+             </p>
              {compareIds.length > 0 && (
                 <p className="text-xs text-[var(--gold-400)] font-medium bg-[var(--gold-400)]/10 px-3 py-1 rounded-full border border-[var(--gold-400)]/20">
                    {compareIds.length}/3 selected for comparison
@@ -195,7 +242,7 @@ export default function CarsPage() {
           {/* Car Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence mode="popLayout">
-              {filtered.map((car, i) => (
+              {paginatedCars.map((car, i) => (
                 <motion.div
                   key={car.id}
                   layout
@@ -213,6 +260,56 @@ export default function CarsPage() {
               ))}
             </AnimatePresence>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-12 pt-6 border-t border-white/5">
+              <Pagination>
+                <PaginationContent className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      aria-label="Go to previous page"
+                    />
+                  </PaginationItem>
+
+                  {visiblePages.map((page, idx) => {
+                    if (page === 'ellipsis') {
+                      return (
+                        <PaginationItem key={`ellipsis-${idx}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )
+                    }
+
+                    const pageNum = page as number
+                    const isActive = pageNum === currentPage
+
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          isActive={isActive}
+                          onClick={() => handlePageChange(pageNum)}
+                          aria-label={`Page ${pageNum}`}
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  })}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      aria-label="Go to next page"
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
 
           {!loading && filtered.length === 0 && (
             <div className="text-center py-16">

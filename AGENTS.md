@@ -91,3 +91,30 @@
   - Floating CTA buttons (`components/Sidectabtn.tsx`), booking modal, booking estimate forms, and car cards.
   - All public site pages, footer, service pages, and invoice preview.
 
+## 8. Dark Theme, Navigation, Pagination & Mobile UX Architecture
+- **Root Dark Tokens**:
+  - `app/globals.css` declares obsidian luxury tokens (`#050505` background, `#0d0d0d` cards/popovers, `#d4af37` gold accents) in both `:root` and `.dark`.
+  - `app/(site)/layout.tsx` enforces `className="dark"` on `<html>` so all Radix UI portals, sheets, and popovers inherit the dark theme.
+  - Form controls globally enforce `color-scheme: dark;` with custom `select option` dark styling (`#121214`), `-webkit-autofill` dark background preservation, and `calendar-picker-indicator` invert filter.
+- **Navigation & Mobile Drawer**:
+  - `components/site-header.tsx`:
+    - Auto-dismisses mobile drawer on route changes via `usePathname()`.
+    - Mobile service sub-links properly close both drawer and accordion on tap.
+    - Active link state highlighting on desktop and mobile.
+    - Mobile drawer constrained with `max-h-[calc(100dvh-5rem)] overflow-y-auto` to prevent offscreen clipping on small devices.
+    - All touch targets adhere to a minimum of 44px (`min-h-[44px]`).
+- **Fleet Catalog & Carousel Pagination**:
+  - `components/fleet-carousel.tsx`:
+    - Fixed negative padding calculation glitch with `pl-4 md:pl-[max(1rem,calc((100vw-80rem)/2+1rem))]`.
+    - Added scroll listener tracking `activeIndex` and rendered responsive gold pagination dots with slide index display.
+  - `app/(site)/cars/page.tsx`:
+    - Implemented client-side pagination (9 vehicles per page) with auto-scroll back to catalog top on page switch.
+    - Reset to page 1 automatically when category, service filter, search query, or sort order changes.
+    - Integrated `components/ui/pagination.tsx` with gold luxury active styling and accessible touch targets.
+- **Modal & Floating CTA Layering**:
+  - `components/compare-modal.tsx`: Backdrop and container elevated to `z-[100]` to avoid clipping beneath the `z-[60]` sticky header.
+  - `components/Sidectabtn.tsx`: Elevated with responsive positioning (`right-4 bottom-4 sm:right-6 sm:bottom-6`) and 48px touch targets.
+- **Luxury Custom Select Dropdowns**:
+  - Replaced browser-native `<select>` with [`components/luxury-select.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/luxury-select.tsx) in [`components/booking-section.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/booking-section.tsx).
+  - Eliminates the OS/Windows default blue highlight box (`#0066cc`) on options, replacing it with obsidian glass surfaces (`#0c0c0e`), 1px gold border (`var(--gold-400)`), rich gold hover background (`hover:bg-[var(--gold-400)]/15 hover:text-[var(--gold-400)]`), gold selected state with checkmark, and React Portal rendering.
+  - Global CSS updated in [`app/globals.css`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/globals.css) and [`components/ui/select.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/ui/select.tsx) to enforce gold accents across all dropdown implementations.

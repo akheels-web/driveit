@@ -367,12 +367,12 @@ export function CheckoutClient() {
                     const value = event.target.value
                     if (value) setForm((previous) => ({ ...previous, pickupLocation: value }))
                   }}
-                  className="bg-black border border-white/10 rounded-xl px-3 py-2 text-xs text-white/70"
+                  className="bg-[#121214] border border-white/10 rounded-xl px-3 py-2 text-xs text-white/80 [color-scheme:dark]"
                   defaultValue=""
                 >
-                  <option value="">Use a saved address…</option>
+                  <option value="" className="bg-[#121214] text-zinc-300">Use a saved address…</option>
                   {savedAddresses.map(([key, label]) => (
-                    <option key={key} value={profile?.[key] ?? ''}>
+                    <option key={key} value={profile?.[key] ?? ''} className="bg-[#121214] text-white">
                       {label}: {profile?.[key]}
                     </option>
                   ))}

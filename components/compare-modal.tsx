@@ -26,7 +26,7 @@ export function CompareModal({ isOpen, onClose, cars, onRemove }: CompareModalPr
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
           />
 
           {/* Modal Container */}
@@ -34,7 +34,7 @@ export function CompareModal({ isOpen, onClose, cars, onRemove }: CompareModalPr
             initial={{ opacity: 0, y: 100, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.95 }}
-            className="fixed inset-4 md:inset-10 z-50 flex flex-col bg-[#0a0a0a] rounded-2xl border border-white/10 overflow-hidden shadow-2xl"
+            className="fixed inset-3 md:inset-10 z-[100] flex flex-col bg-[#0a0a0a] rounded-2xl border border-white/10 overflow-hidden shadow-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02]">

@@ -36,11 +36,11 @@ function Sidectabtn() {
   if (!isVisible) return null
 
   return (
-    <div className="fixed right-6 bottom-6 z-50 flex flex-col gap-3">
+    <div className="fixed right-4 bottom-4 sm:right-6 sm:bottom-6 z-50 flex flex-col gap-3">
       {/* Call Button */}
       <button
         onClick={handleCall}
-        className="group relative text-black p-3.5 rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center"
+        className="group relative text-black p-3.5 min-w-[48px] min-h-[48px] rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center cursor-pointer"
         style={{ background: 'linear-gradient(135deg, var(--gold-300), var(--gold-400), var(--gold-500))' }}
         aria-label="Call for appointment"
       >
@@ -53,7 +53,7 @@ function Sidectabtn() {
       {/* WhatsApp Button */}
       <button
         onClick={handleWhatsApp}
-        className="group relative bg-[#25D366] hover:bg-[#128C7E] text-white p-3.5 rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center"
+        className="group relative bg-[#25D366] hover:bg-[#128C7E] text-white p-3.5 min-w-[48px] min-h-[48px] rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center cursor-pointer"
         aria-label="Contact via WhatsApp"
       >
         <div className="absolute inset-0 rounded-full animate-ping bg-[#25D366] opacity-30" />

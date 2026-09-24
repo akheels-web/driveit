@@ -1,5 +1,6 @@
 "use client";
 import { useState, FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Phone, Car, Plane, Anchor } from "lucide-react";
 
@@ -55,19 +56,27 @@ export default function ContactForm() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden bg-zinc-900">
+    <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center p-4 py-8">
+      <div className="w-full max-w-2xl rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden bg-zinc-900 relative">
+        {/* Navigation Back */}
+        <Link
+          href="/"
+          className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 backdrop-blur-sm transition-colors"
+        >
+          ← Return to site
+        </Link>
+
         {/* Header */}
-        <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 border-b border-zinc-800">
-          <div className="px-6 py-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#b48811' }}>
+        <div className="bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border-b border-zinc-800">
+          <div className="px-6 pt-12 pb-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: '#b48811' }}>
               <MessageSquare className="w-8 h-8 text-black" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 font-[family-name:var(--font-playfair)]">
               Contact <span style={{ color: '#b48811' }}>DRIVEIT</span>
             </h1>
-            <p className="text-zinc-400 text-sm">
-              Get in touch for luxury transportation services
+            <p className="text-zinc-400 text-sm max-w-md mx-auto">
+              Get in touch for luxury transportation services in Hyderabad
             </p>
           </div>
         </div>
@@ -86,23 +95,21 @@ export default function ContactForm() {
               </button>
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"
                   name="name"
-                  placeholder="Full Name*"
+                  placeholder="Full Name *"
                   required
-                  className="p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition"
-                  style={{ borderColor: '#b48811' }}
+                  className="p-3.5 rounded-xl bg-zinc-800/90 border border-zinc-700 text-white placeholder-zinc-500 focus:border-[var(--gold-400)] focus:ring-2 focus:ring-[var(--gold-400)]/20 outline-none transition text-sm"
                 />
                 <input
                   type="tel"
                   name="phone"
-                  placeholder="Phone Number*"
+                  placeholder="Phone Number *"
                   required
-                  className="p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition"
-                  style={{ borderColor: '#b48811' }}
+                  className="p-3.5 rounded-xl bg-zinc-800/90 border border-zinc-700 text-white placeholder-zinc-500 focus:border-[var(--gold-400)] focus:ring-2 focus:ring-[var(--gold-400)]/20 outline-none transition text-sm"
                 />
               </div>
 
@@ -110,50 +117,47 @@ export default function ContactForm() {
                 <select
                   name="service"
                   required
-                  className="p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition"
-                  style={{ borderColor: '#b48811' }}
+                  className="p-3.5 rounded-xl bg-zinc-800/90 border border-zinc-700 text-white focus:border-[var(--gold-400)] focus:ring-2 focus:ring-[var(--gold-400)]/20 outline-none transition text-sm cursor-pointer"
                 >
-                  <option value="">Select Service</option>
-                  <option value="Luxury Car Rental">Luxury Car Rental</option>
-                  <option value="Private Jet Services">Private Jet Services</option>
-                  <option value="Yacht Services">Yacht Services</option>
-                  <option value="Wedding Cars">Wedding Cars</option>
-                  <option value="Corporate Events">Corporate Events</option>
-                  <option value="Airport Transfer">Airport Transfer</option>
-                  <option value="Chauffeur Service">Chauffeur Service</option>
+                  <option value="" className="bg-[#18181b] text-white">Select Service</option>
+                  <option value="Luxury Car Rental" className="bg-[#18181b] text-white">Luxury Car Rental</option>
+                  <option value="Private Jet Services" className="bg-[#18181b] text-white">Private Jet Services</option>
+                  <option value="Yacht Services" className="bg-[#18181b] text-white">Yacht Services</option>
+                  <option value="Wedding Cars" className="bg-[#18181b] text-white">Wedding Cars</option>
+                  <option value="Corporate Events" className="bg-[#18181b] text-white">Corporate Events</option>
+                  <option value="Airport Transfer" className="bg-[#18181b] text-white">Airport Transfer</option>
+                  <option value="Chauffeur Service" className="bg-[#18181b] text-white">Chauffeur Service</option>
                 </select>
                 <select
                   name="location"
                   required
-                  className="p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition"
-                  style={{ borderColor: '#b48811' }}
+                  className="p-3.5 rounded-xl bg-zinc-800/90 border border-zinc-700 text-white focus:border-[var(--gold-400)] focus:ring-2 focus:ring-[var(--gold-400)]/20 outline-none transition text-sm cursor-pointer"
                 >
-                  <option value="">Pickup Location</option>
-                  <option>Gachibowli</option>
-                  <option>Madhapur</option>
-                  <option>Hitech City</option>
-                  <option>Kokapet</option>
-                  <option>Jubilee Hills</option>
-                  <option>Kondapur</option>
-                  <option>Nanakramguda</option>
-                  <option>Hyderabad Airport</option>
-                  <option>Secunderabad</option>
-                  <option>Others</option>
+                  <option value="" className="bg-[#18181b] text-white">Pickup Location</option>
+                  <option className="bg-[#18181b] text-white">Gachibowli</option>
+                  <option className="bg-[#18181b] text-white">Madhapur</option>
+                  <option className="bg-[#18181b] text-white">Hitech City</option>
+                  <option className="bg-[#18181b] text-white">Kokapet</option>
+                  <option className="bg-[#18181b] text-white">Jubilee Hills</option>
+                  <option className="bg-[#18181b] text-white">Kondapur</option>
+                  <option className="bg-[#18181b] text-white">Nanakramguda</option>
+                  <option className="bg-[#18181b] text-white">Hyderabad Airport</option>
+                  <option className="bg-[#18181b] text-white">Secunderabad</option>
+                  <option className="bg-[#18181b] text-white">Others</option>
                 </select>
               </div>
 
               {error && (
-                <p className="text-sm text-red-400 text-center" role="alert">
+                <p className="text-sm text-red-400 text-center bg-red-500/10 border border-red-500/20 py-2 rounded-lg" role="alert">
                   {error}
                 </p>
               )}
 
               <textarea
                 name="message"
-                placeholder="Tell us about your requirements*"
+                placeholder="Tell us about your requirements *"
                 required
-                className="p-3 rounded-lg w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition min-h-[110px]"
-                style={{ borderColor: '#b48811' }}
+                className="p-3.5 rounded-xl w-full bg-zinc-800/90 border border-zinc-700 text-white placeholder-zinc-500 focus:border-[var(--gold-400)] focus:ring-2 focus:ring-[var(--gold-400)]/20 outline-none transition text-sm min-h-[110px]"
               ></textarea>
 
               <button

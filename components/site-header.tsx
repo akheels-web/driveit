@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 import { Car, Plane, Anchor, Phone, Crown } from "lucide-react"
@@ -27,6 +28,7 @@ const nav = [
 ]
 
 export function SiteHeader() {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [servicesOpen, setServicesOpen] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
@@ -45,6 +47,12 @@ export function SiteHeader() {
     }
     return () => { document.body.style.overflow = '' }
   }, [open])
+
+  // Automatically close mobile menu on route change
+  useEffect(() => {
+    setOpen(false)
+    setServicesOpen(false)
+  }, [pathname])
 
   return (
     <motion.header
@@ -74,7 +82,14 @@ export function SiteHeader() {
           {nav.map((item) =>
             item.children ? (
               <div key={item.href} className="relative group">
-                <div className="flex items-center gap-1 text-sm text-zinc-300 hover:text-[var(--gold-400)] cursor-pointer py-2 transition-colors duration-300">
+                <div 
+                  className={cn(
+                    "flex items-center gap-1 text-sm cursor-pointer py-2 transition-colors duration-300",
+                    item.children.some(c => c.href === pathname)
+                      ? "text-[var(--gold-400)] font-medium"
+                      : "text-zinc-300 hover:text-[var(--gold-400)]"
+                  )}
+                >
                   <span>{item.label}</span>
                   <svg className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -85,16 +100,24 @@ export function SiteHeader() {
                 <div className="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
                   <div className="bg-[#0a0a0a]/98 backdrop-blur-xl border border-[var(--gold-400)]/30 rounded-xl shadow-2xl p-3 min-w-[220px]">
                     <ul className="grid gap-1">
-                      {item.children.map((c) => (
-                        <li key={c.href}>
-                          <Link
-                            href={c.href}
-                            className="block px-4 py-2.5 text-sm text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 rounded-lg transition-all duration-300"
-                          >
-                            {c.label}
-                          </Link>
-                        </li>
-                      ))}
+                      {item.children.map((c) => {
+                        const isChildActive = pathname === c.href
+                        return (
+                          <li key={c.href}>
+                            <Link
+                              href={c.href}
+                              className={cn(
+                                "block px-4 py-2.5 text-sm rounded-lg transition-all duration-300",
+                                isChildActive 
+                                  ? "text-[var(--gold-400)] bg-[var(--gold-400)]/10 font-medium" 
+                                  : "text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5"
+                              )}
+                            >
+                              {c.label}
+                            </Link>
+                          </li>
+                        )
+                      })}
                     </ul>
                   </div>
                 </div>
@@ -103,7 +126,12 @@ export function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm text-zinc-300 hover:text-[var(--gold-400)] flex items-center gap-1.5 py-2 transition-colors duration-300"
+                className={cn(
+                  "text-sm flex items-center gap-1.5 py-2 transition-colors duration-300",
+                  pathname === item.href
+                    ? "text-[var(--gold-400)] font-medium"
+                    : "text-zinc-300 hover:text-[var(--gold-400)]"
+                )}
               >
                 {item.icon && <item.icon className="w-4 h-4" />}
                 {item.label}
@@ -132,7 +160,7 @@ export function SiteHeader() {
         {/* Mobile menu button */}
         <button
           aria-label="Toggle Menu"
-          className="md:hidden inline-flex items-center justify-center rounded-lg border border-white/10 p-2 text-zinc-300 hover:text-[var(--gold-400)] transition-colors duration-300"
+          className="md:hidden inline-flex items-center justify-center rounded-lg border border-white/10 p-2.5 min-w-[44px] min-h-[44px] text-zinc-300 hover:text-[var(--gold-400)] transition-colors duration-300"
           onClick={() => setOpen((v) => !v)}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -155,16 +183,21 @@ export function SiteHeader() {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <div className="mx-auto max-w-6xl px-4 py-4 grid gap-3">
+            <div className="mx-auto max-w-6xl px-4 py-4 grid gap-3 max-h-[calc(100dvh-5rem)] overflow-y-auto">
               {nav.map((item) =>
                 item.children ? (
                   <div key={item.href}>
                     <button
-                      className="w-full text-left text-zinc-300 hover:text-[var(--gold-400)] flex items-center justify-between py-2 transition-colors duration-300"
+                      className={cn(
+                        "w-full text-left flex items-center justify-between py-2.5 min-h-[44px] transition-colors duration-300",
+                        item.children.some(c => c.href === pathname)
+                          ? "text-[var(--gold-400)] font-medium"
+                          : "text-zinc-300 hover:text-[var(--gold-400)]"
+                      )}
                       onClick={() => setServicesOpen((v) => !v)}
                       aria-expanded={servicesOpen}
                     >
-                      {item.label}
+                      <span>{item.label}</span>
                       <motion.span
                         animate={{ rotate: servicesOpen ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
@@ -183,7 +216,19 @@ export function SiteHeader() {
                         >
                           {item.children.map((c) => (
                             <li key={c.href}>
-                              <Link href={c.href} className="block text-sm text-zinc-300 hover:text-[var(--gold-400)] py-1 transition-colors duration-300">
+                              <Link 
+                                href={c.href} 
+                                className={cn(
+                                  "block text-sm py-2 min-h-[44px] flex items-center transition-colors duration-300",
+                                  pathname === c.href 
+                                    ? "text-[var(--gold-400)] font-medium" 
+                                    : "text-zinc-300 hover:text-[var(--gold-400)]"
+                                )}
+                                onClick={() => {
+                                  setOpen(false)
+                                  setServicesOpen(false)
+                                }}
+                              >
                                 {c.label}
                               </Link>
                             </li>
@@ -196,7 +241,12 @@ export function SiteHeader() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="text-zinc-300 hover:text-[var(--gold-400)] flex items-center gap-2 py-2 transition-colors duration-300"
+                    className={cn(
+                      "flex items-center gap-2 py-2.5 min-h-[44px] transition-colors duration-300 text-sm",
+                      pathname === item.href
+                        ? "text-[var(--gold-400)] font-medium"
+                        : "text-zinc-300 hover:text-[var(--gold-400)]"
+                    )}
                     onClick={() => setOpen(false)}
                   >
                     {item.icon && <item.icon className="w-4 h-4" />}
@@ -209,14 +259,14 @@ export function SiteHeader() {
               <div className="pt-2 border-t border-white/5 flex flex-col gap-2">
                 <Link
                   href="/login"
-                  className="text-zinc-300 hover:text-[var(--gold-400)] py-2 text-center text-sm font-medium transition-colors duration-300"
+                  className="text-zinc-300 hover:text-[var(--gold-400)] py-2.5 min-h-[44px] flex items-center justify-center text-sm font-medium transition-colors duration-300"
                   onClick={() => setOpen(false)}
                 >
                   Login
                 </Link>
                 <Link
                   href="/cars"
-                  className="flex items-center gap-2 text-black px-4 py-2.5 rounded-full text-sm font-medium bg-[var(--gold-400)] hover:bg-[var(--gold-300)] transition-all duration-300 justify-center"
+                  className="flex items-center gap-2 text-black px-4 py-3 min-h-[44px] rounded-full text-sm font-medium bg-[var(--gold-400)] hover:bg-[var(--gold-300)] transition-all duration-300 justify-center"
                   onClick={() => setOpen(false)}
                 >
                   <Car className="w-4 h-4" />

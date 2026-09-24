@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import { motion, useInView } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
@@ -26,12 +26,31 @@ export function FleetCarousel() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
 
   const scrollByAmount = (dir: number) => {
     const el = scrollRef.current
     if (!el) return
     const amt = Math.max(el.clientWidth * 0.6, 300)
     el.scrollBy({ left: dir * amt, behavior: "smooth" })
+  }
+
+  const handleScroll = () => {
+    const el = scrollRef.current
+    if (!el) return
+    const card = el.querySelector('.fleet-card') as HTMLElement | null
+    const cardWidth = card ? card.offsetWidth + 20 : 340
+    const index = Math.round(el.scrollLeft / cardWidth)
+    setActiveIndex(Math.min(fleet.length - 1, Math.max(0, index)))
+  }
+
+  const scrollToIndex = (index: number) => {
+    const el = scrollRef.current
+    if (!el) return
+    const card = el.querySelector('.fleet-card') as HTMLElement | null
+    const cardWidth = card ? card.offsetWidth + 20 : 340
+    el.scrollTo({ left: index * cardWidth, behavior: 'smooth' })
+    setActiveIndex(index)
   }
 
   return (
@@ -54,7 +73,7 @@ export function FleetCarousel() {
             {/* Navigation arrows */}
             <button
               onClick={() => scrollByAmount(-1)}
-              className="w-10 h-10 rounded-full glass-gold flex items-center justify-center text-[var(--gold-400)] hover:bg-[var(--gold-400)]/10 transition-all duration-300 cursor-pointer"
+              className="w-10 h-10 rounded-full glass-gold flex items-center justify-center text-[var(--gold-400)] hover:bg-[var(--gold-400)]/10 transition-all duration-300 cursor-pointer min-h-[44px] min-w-[44px]"
               aria-label="Scroll left"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -63,7 +82,7 @@ export function FleetCarousel() {
             </button>
             <button
               onClick={() => scrollByAmount(1)}
-              className="w-10 h-10 rounded-full glass-gold flex items-center justify-center text-[var(--gold-400)] hover:bg-[var(--gold-400)]/10 transition-all duration-300 cursor-pointer"
+              className="w-10 h-10 rounded-full glass-gold flex items-center justify-center text-[var(--gold-400)] hover:bg-[var(--gold-400)]/10 transition-all duration-300 cursor-pointer min-h-[44px] min-w-[44px]"
               aria-label="Scroll right"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -72,7 +91,7 @@ export function FleetCarousel() {
             </button>
             <Link
               href="/cars"
-              className="ml-2 inline-flex items-center gap-2 px-5 py-2.5 glass-gold rounded-full text-sm font-medium text-white transition-all duration-300 hover:bg-[var(--gold-400)]/10 group"
+              className="ml-2 inline-flex items-center gap-2 px-5 py-2.5 glass-gold rounded-full text-sm font-medium text-white transition-all duration-300 hover:bg-[var(--gold-400)]/10 group min-h-[44px]"
             >
               View All
               <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -89,7 +108,8 @@ export function FleetCarousel() {
       >
         <div
           ref={scrollRef}
-          className="overflow-x-auto snap-x snap-mandatory pl-4 md:pl-[calc((100vw-80rem)/2+1rem)] pr-4 pb-4"
+          onScroll={handleScroll}
+          className="overflow-x-auto snap-x snap-mandatory pl-4 md:pl-[max(1rem,calc((100vw-80rem)/2+1rem))] pr-4 pb-4"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -100,7 +120,7 @@ export function FleetCarousel() {
             {fleet.map((car, i) => (
               <motion.div
                 key={car.name}
-                className="group flex-shrink-0 w-[280px] md:w-[320px] snap-start"
+                className="fleet-card group flex-shrink-0 w-[280px] md:w-[320px] snap-start"
                 initial={{ opacity: 0, x: 40 }}
                 animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.3 + i * 0.06 }}
@@ -134,6 +154,27 @@ export function FleetCarousel() {
               </motion.div>
             ))}
           </div>
+        </div>
+
+        {/* Carousel pagination indicators */}
+        <div className="mx-auto max-w-7xl px-4 mt-6 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-[200px] sm:max-w-none">
+            {fleet.map((car, idx) => (
+              <button
+                key={car.name}
+                onClick={() => scrollToIndex(idx)}
+                aria-label={`Scroll to ${car.name}`}
+                className={`h-1.5 transition-all duration-300 rounded-full cursor-pointer ${
+                  activeIndex === idx 
+                    ? "w-8 bg-[var(--gold-400)] shadow-[0_0_10px_rgba(212,175,55,0.5)]" 
+                    : "w-2 bg-white/20 hover:bg-white/40"
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-xs text-white/40 font-mono">
+            <span className="text-[var(--gold-400)] font-semibold">{activeIndex + 1}</span> / {fleet.length}
+          </span>
         </div>
       </motion.div>
     </section>

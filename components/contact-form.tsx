@@ -91,14 +91,14 @@ export function ContactForm() {
           <select
             name="service"
             defaultValue=""
-            className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white/70 focus:border-[var(--gold-400)]/40 focus:outline-none"
+            className="w-full bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white/80 focus:border-[var(--gold-400)]/40 focus:outline-none [color-scheme:dark]"
           >
-            <option value="">Service of interest</option>
-            <option value="Luxury car rental">Luxury car rental</option>
-            <option value="Airport transfer">Airport transfer</option>
-            <option value="Wedding cars">Wedding cars</option>
-            <option value="Corporate travel">Corporate travel</option>
-            <option value="Private jet / yacht">Private jet / yacht</option>
+            <option value="" className="bg-[#121214] text-zinc-300">Service of interest</option>
+            <option value="Luxury car rental" className="bg-[#121214] text-white">Luxury car rental</option>
+            <option value="Airport transfer" className="bg-[#121214] text-white">Airport transfer</option>
+            <option value="Wedding cars" className="bg-[#121214] text-white">Wedding cars</option>
+            <option value="Corporate travel" className="bg-[#121214] text-white">Corporate travel</option>
+            <option value="Private jet / yacht" className="bg-[#121214] text-white">Private jet / yacht</option>
           </select>
           <textarea
             name="message"

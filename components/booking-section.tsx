@@ -4,6 +4,7 @@ import { useRef, useState, useMemo } from 'react'
 import { motion, useInView } from 'motion/react'
 import { Car, MapPin, CalendarDays, Clock, User, Phone, Mail, ArrowRight, CheckCircle, ChevronDown, Info, ShieldCheck, Users, PartyPopper } from 'lucide-react'
 import { useFleet } from '@/hooks/use-fleet'
+import { LuxurySelect } from '@/components/luxury-select'
 
 const popularLocations = [
   "RGIA Airport (Shamshabad)",
@@ -205,23 +206,21 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Pickup Location *</label>
-                    <div className="relative">
-                      <select value={form.pickup} onChange={(e) => updateField("pickup", e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm appearance-none cursor-pointer hover:border-white/20 focus:outline-none focus:border-[var(--gold-400)]/50 transition">
-                        <option value="">Select pickup area...</option>
-                        {popularLocations.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
-                      </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                    </div>
+                    <LuxurySelect
+                      value={form.pickup}
+                      onChange={(val) => updateField("pickup", val)}
+                      placeholder="Select pickup area..."
+                      options={popularLocations.map((loc) => ({ value: loc, label: loc }))}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Drop-off Location {form.tripType === "Round-Trip" ? "" : "*"}</label>
-                    <div className="relative">
-                      <select value={form.dropoff} onChange={(e) => updateField("dropoff", e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm appearance-none cursor-pointer hover:border-white/20 focus:outline-none focus:border-[var(--gold-400)]/50 transition">
-                        <option value="">{form.tripType === "Round-Trip" ? "Same as pickup" : "Select drop-off area..."}</option>
-                        {popularLocations.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
-                      </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                    </div>
+                    <LuxurySelect
+                      value={form.dropoff}
+                      onChange={(val) => updateField("dropoff", val)}
+                      placeholder={form.tripType === "Round-Trip" ? "Same as pickup" : "Select drop-off area..."}
+                      options={popularLocations.map((loc) => ({ value: loc, label: loc }))}
+                    />
                   </div>
                 </div>
 
@@ -233,14 +232,13 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
                         <input type="date" value={form.pickupDate} onChange={(e) => updateField("pickupDate", e.target.value)} min={new Date().toISOString().split("T")[0]} className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm focus:outline-none focus:border-[var(--gold-400)]/50 transition [color-scheme:dark]" />
                         <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--gold-400)]/50" />
                       </div>
-                      <div className="relative">
-                        <select value={form.pickupTime} onChange={(e) => updateField("pickupTime", e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm appearance-none focus:outline-none focus:border-[var(--gold-400)]/50 transition">
-                          <option value="">Time...</option>
-                          {timeSlots.map((t) => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--gold-400)]/50" />
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30 pointer-events-none" />
-                      </div>
+                      <LuxurySelect
+                        value={form.pickupTime}
+                        onChange={(val) => updateField("pickupTime", val)}
+                        placeholder="Time..."
+                        icon={<Clock className="w-4 h-4 text-[var(--gold-400)]/50" />}
+                        options={timeSlots.map((t) => ({ value: t, label: t }))}
+                      />
                     </div>
                   </div>
 
@@ -252,14 +250,13 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
                           <input type="date" value={form.returnDate} onChange={(e) => updateField("returnDate", e.target.value)} min={form.pickupDate || new Date().toISOString().split("T")[0]} className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm focus:outline-none focus:border-[var(--gold-400)]/50 transition [color-scheme:dark]" />
                           <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--gold-400)]/50" />
                         </div>
-                        <div className="relative">
-                          <select value={form.returnTime} onChange={(e) => updateField("returnTime", e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm appearance-none focus:outline-none focus:border-[var(--gold-400)]/50 transition">
-                            <option value="">Time...</option>
-                            {timeSlots.map((t) => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                          <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--gold-400)]/50" />
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30 pointer-events-none" />
-                        </div>
+                        <LuxurySelect
+                          value={form.returnTime}
+                          onChange={(val) => updateField("returnTime", val)}
+                          placeholder="Time..."
+                          icon={<Clock className="w-4 h-4 text-[var(--gold-400)]/50" />}
+                          options={timeSlots.map((t) => ({ value: t, label: t }))}
+                        />
                       </div>
                     </div>
                   )}
@@ -278,65 +275,67 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Select Vehicle *</label>
-                  <div className="relative">
-                    <select value={form.carId} onChange={(e) => updateField("carId", e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm appearance-none cursor-pointer hover:border-white/20 focus:outline-none focus:border-[var(--gold-400)]/50 transition">
-                      <option value="">Choose a specific vehicle...</option>
-                      {carsData.filter(car => car.seats >= parseInt(form.passengers || "1", 10)).map((car) => (
-                        <option key={car.id} value={car.id}>{car.name} ({car.seats} Seats) - {car.priceDisplay}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                  </div>
-                  {carsData.filter(car => car.seats >= parseInt(form.passengers || "1", 10)).length === 0 && (
+                  <LuxurySelect
+                    value={form.carId}
+                    onChange={(val) => updateField("carId", val)}
+                    placeholder="Choose a specific vehicle..."
+                    options={carsData
+                      .filter((car) => car.seats >= parseInt(form.passengers || "1", 10))
+                      .map((car) => ({
+                        value: car.id,
+                        label: `${car.name} (${car.seats} Seats) - ${car.priceDisplay}`,
+                      }))}
+                  />
+                  {carsData.filter((car) => car.seats >= parseInt(form.passengers || "1", 10)).length === 0 && (
                     <p className="text-xs text-red-400 mt-2">No single vehicle can fit {form.passengers} passengers.</p>
                   )}
                 </div>
                 <div>
                   <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Service Type *</label>
-                  <div className="relative">
-                    <select value={form.driverOption} onChange={(e) => updateField("driverOption", e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm appearance-none cursor-pointer hover:border-white/20 focus:outline-none focus:border-[var(--gold-400)]/50 transition">
-                      <option value="Chauffeur Driven">With Driver (Chauffeur Driven)</option>
-                      <option value="Self Drive">Without Driver (Self Drive)</option>
-                    </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                  </div>
+                  <LuxurySelect
+                    value={form.driverOption}
+                    onChange={(val) => updateField("driverOption", val)}
+                    options={[
+                      { value: "Chauffeur Driven", label: "With Driver (Chauffeur Driven)" },
+                      { value: "Self Drive", label: "Without Driver (Self Drive)" },
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Passengers</label>
-                  <div className="relative">
-                    <select value={form.passengers} onChange={(e) => {
-                        const newPassengers = e.target.value;
-                        setForm(prev => {
-                          const selectedCarData = carsData.find(c => c.id === prev.carId);
-                          let newCarId = prev.carId;
-                          if (selectedCarData && selectedCarData.seats < parseInt(newPassengers, 10)) {
-                            newCarId = "";
-                          }
-                          return { ...prev, passengers: newPassengers, carId: newCarId };
-                        });
-                      }} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 pl-10 text-white text-sm appearance-none cursor-pointer hover:border-white/20 focus:outline-none focus:border-[var(--gold-400)]/50 transition">
-                      {[1,2,3,4,5,6,7,8,9,10,11,12,13,14].map((num) => (
-                        <option key={num} value={num}>{num} {num === 1 ? 'Passenger' : 'Passengers'}</option>
-                      ))}
-                    </select>
-                    <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                  </div>
+                  <LuxurySelect
+                    value={form.passengers}
+                    onChange={(newPassengers) => {
+                      setForm((prev) => {
+                        const selectedCarData = carsData.find((c) => c.id === prev.carId);
+                        let newCarId = prev.carId;
+                        if (selectedCarData && selectedCarData.seats < parseInt(newPassengers, 10)) {
+                          newCarId = "";
+                        }
+                        return { ...prev, passengers: newPassengers, carId: newCarId };
+                      });
+                    }}
+                    icon={<Users className="w-4 h-4 text-white/40" />}
+                    options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((num) => ({
+                      value: String(num),
+                      label: `${num} ${num === 1 ? "Passenger" : "Passengers"}`,
+                    }))}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Occasion (Optional)</label>
-                  <div className="relative">
-                    <select value={form.occasion} onChange={(e) => updateField("occasion", e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 pl-10 text-white text-sm appearance-none cursor-pointer hover:border-white/20 focus:outline-none focus:border-[var(--gold-400)]/50 transition">
-                      <option value="">Select occasion...</option>
-                      {occasions.map((occ) => (
-                        <option key={occ} value={occ}>{occ}</option>
-                      ))}
-                    </select>
-                    <PartyPopper className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                  </div>
+                  <LuxurySelect
+                    value={form.occasion}
+                    onChange={(val) => updateField("occasion", val)}
+                    placeholder="Select occasion..."
+                    icon={<PartyPopper className="w-4 h-4 text-white/40" />}
+                    options={[
+                      { value: "", label: "Select occasion..." },
+                      ...occasions.map((occ) => ({ value: occ, label: occ })),
+                    ]}
+                  />
                 </div>
               </div>
             </div>
