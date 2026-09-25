@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { PartnerConsignmentForm } from './partner-form'
-import { ShieldCheck, DollarSign, Users, Award, Lock, Sparkles } from 'lucide-react'
+import { ShieldCheck, IndianRupee, Users, Award, Lock, Sparkles } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Consign Your Luxury Fleet | DRIVEIT Partner Program',
@@ -56,7 +56,7 @@ export default function ListFleetPartnerPage() {
 
             <div className="rounded-2xl p-6 bg-white/[0.02] border border-white/5 space-y-3">
               <div className="w-10 h-10 rounded-xl bg-[var(--gold-400)]/10 flex items-center justify-center text-[var(--gold-400)]">
-                <DollarSign className="w-5 h-5" />
+                <IndianRupee className="w-5 h-5" />
               </div>
               <h3 className="text-base font-semibold text-white">High-Yield Monthly Returns</h3>
               <p className="text-xs text-white/50 leading-relaxed">

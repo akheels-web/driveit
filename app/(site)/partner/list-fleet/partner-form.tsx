@@ -5,7 +5,6 @@ import {
   Car,
   ShieldCheck,
   CheckCircle2,
-  DollarSign,
   Send,
   Building,
   Calendar,

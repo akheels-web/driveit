@@ -4,7 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, MessageCircle, ArrowRight, Sparkles, Clock, Users, CheckCircle, DollarSign, Route, Calendar, UserCheck, ChevronLeft, ChevronRight } from "lucide-react"
+import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, MessageCircle, ArrowRight, Sparkles, Clock, Users, CheckCircle, IndianRupee, Route, Calendar, UserCheck, ChevronLeft, ChevronRight } from "lucide-react"
 
 const GOLD = '#b48811'
 
@@ -105,7 +105,7 @@ export default function IntercityCabsPage() {
             </div>
             <div className="text-center group">
               <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <DollarSign className="w-10 h-10" style={{ color: GOLD }} />
+                <IndianRupee className="w-10 h-10" style={{ color: GOLD }} />
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">Transparent Pricing</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">

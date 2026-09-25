@@ -256,3 +256,11 @@
   - **WhatsApp CRM / Twenty CRM**: Dedicated subdomain (`https://crm.yourdomain.com` or `https://wa.yourdomain.com`) proxying to the CRM container port (`127.0.0.1:3001`), keeping sales pipeline operations isolated from public traffic.
   - **Optional Admin Subdomain**: Nginx server block provided for `admin.yourdomain.com` cleanly redirecting to `/admin`.
   - Added full Nginx reverse proxy blocks and Cloudflare DNS records to [`deployment_guide.md`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/deployment_guide.md).
+
+## 15. INR Currency & Symbol Standardization (Domestic India Operation)
+- **Currency Rule**: The business operates strictly within India. All pricing, estimates, discounts, deposits, and UI icons must use Indian Rupee standards:
+  - **Currency Symbol**: `₹` (Unicode U+20B9) in public pages, booking widgets, checkout, invoices, and email templates.
+  - **Currency Code**: `INR` in JSON-LD Schema.org, UPI URLs (`cu=INR`), and API responses.
+  - **Lucide Icons**: Use `<IndianRupee />` from `lucide-react` across feature cards, consignment pages, and service sections. Never use `<DollarSign />`.
+  - **Number Formatting**: Format all numeric currencies using Indian locale: `.toLocaleString('en-IN')` (e.g. `₹1,50,000`, `₹75,000`).
+  - **Deployment & Server Estimates**: All VPS and infrastructure cost projections in documentation must be quoted in Indian Rupees (e.g. `~₹650 - ₹1,100 / month`).

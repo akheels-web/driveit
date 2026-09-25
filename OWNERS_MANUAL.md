@@ -156,7 +156,7 @@ Your platform comes fully loaded with enterprise-grade features out of the box:
 
 ### ❓ Question 1: "Should I buy a Wildcard SSL certificate?"
 > **Answer: NO! Absolutely not.**  
-> You do **NOT** need to spend a single rupee or dollar on SSL certificates.  
+> You do **NOT** need to spend a single rupee (₹0) on SSL certificates.  
 > 1. **Public Traffic (Browsers to Cloudflare):** When you use Cloudflare's free DNS, Cloudflare automatically provisions and auto-renews a free SSL certificate covering BOTH `yourdomain.com` and all first-level subdomains (`*.yourdomain.com`).
 > 2. **Origin Traffic (Cloudflare to your Contabo VPS):** Cloudflare provides a free **15-year Origin CA certificate** for `yourdomain.com` and `*.yourdomain.com`. You install this single certificate once on Nginx, and it automatically secures your main domain and all present or future subdomains for 15 years with zero maintenance.
 

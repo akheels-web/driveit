@@ -115,9 +115,9 @@ Have these free accounts ready before you begin:
 
 | Resource | Purpose | Provider | Free Tier Available? |
 |---|---|---|---|
-| **Domain Name** | Your brand web address (e.g. `driveitluxury.com`) | Any registrar | Must purchase domain (~$10/yr) |
+| **Domain Name** | Your brand web address (e.g. `driveitluxury.com`) | Any registrar | Must purchase domain (~₹800 - ₹1,000/yr) |
 | **DNS Manager** | DNS, proxy, DDoS protection & free SSL | [Cloudflare](https://dash.cloudflare.com) | ✅ 100% Free Plan |
-| **Linux VPS** | High-performance server (6 vCPU / 12 GB RAM) | [Contabo](https://contabo.com) / Hetzner | ~$7 - $13 / month |
+| **Linux VPS** | High-performance server (6 vCPU / 12 GB RAM) | [Contabo](https://contabo.com) / Hetzner | ~₹650 - ₹1,100 / month |
 | **Cloudinary** | Fast global image CDN for vehicle fleet & CMS uploads | [Cloudinary](https://cloudinary.com) | ✅ Free (25 credits/mo) |
 | **Zoho Mail** | 5 free custom email inboxes (`concierge@...`) | [Zoho Mail](https://www.zoho.com/mail) | ✅ Forever Free Plan (5 users) |
 | **Brevo** | Outgoing booking receipts, PDF invoices & email marketing | [Brevo](https://www.brevo.com) | ✅ Free (300 emails/day) |
