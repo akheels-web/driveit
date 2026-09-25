@@ -60,7 +60,7 @@ export default function ListFleetPartnerPage() {
               </div>
               <h3 className="text-base font-semibold text-white">High-Yield Monthly Returns</h3>
               <p className="text-xs text-white/50 leading-relaxed">
-                Earn ₹1,50,000 to ₹4,00,000+ monthly with guaranteed bi-weekly payouts and transparent transaction logs in your partner dashboard.
+                Earn ₹1,50,000 to ₹4,00,000+ monthly with guaranteed scheduled corporate settlements and transparent rental reporting.
               </p>
             </div>
           </div>

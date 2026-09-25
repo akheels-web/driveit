@@ -142,8 +142,7 @@
   - `flightNumber` and `airportTerminal` inputs integrated into booking section and checkout flow with complimentary 60-minute wait policy from flight touchdown.
   - `chauffeurDetails` group in `Bookings.ts` renders a dedicated Chauffeur Dossier card (Driver Name, Phone with 1-tap call, Vehicle plate, Car color) in the customer dashboard.
 - **Luxury Fleet Consignment & Partner Program**:
-  - Avoids P2P quality degradation by offering a curated vehicle consignment onboarding workflow.
-  - New collections: [`collections/PartnerApplications.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/PartnerApplications.ts) and [`collections/PayoutRequests.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/PayoutRequests.ts).
+  - New collection: [`collections/PartnerApplications.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/PartnerApplications.ts).
   - Public submission endpoint: [`app/api/partners/apply/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/partners/apply/route.ts).
   - Landing and onboarding form: [`app/(site)/partner/list-fleet/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/partner/list-fleet/page.tsx) and [`partner-form.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/partner/list-fleet/partner-form.tsx).
 

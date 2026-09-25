@@ -17,7 +17,6 @@ import { Bookings } from './collections/Bookings'
 import { Wishlists } from './collections/Wishlists'
 import { Coupons } from './collections/Coupons'
 import { PartnerApplications } from './collections/PartnerApplications'
-import { PayoutRequests } from './collections/PayoutRequests'
 import { SiteSettings } from './globals/SiteSettings'
 import { withRevalidation } from './lib/revalidate'
 import { requiredSecret } from './lib/env'
@@ -76,7 +75,6 @@ export default buildConfig({
     withRevalidation(Wishlists),
     withRevalidation(Coupons),
     withRevalidation(PartnerApplications),
-    withRevalidation(PayoutRequests),
   ],
   globals: [SiteSettings],
   plugins: [
