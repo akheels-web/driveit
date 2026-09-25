@@ -550,9 +550,72 @@ server {
         proxy_read_timeout 120s;
     }
 }
+
+# 3. Optional Subdomain: admin.yourdomain.com (Dedicated CMS Admin Access)
+# NOTE: Payload CMS is already built directly into the app at yourdomain.com/admin!
+# This block is optional if you prefer a separate admin subdomain.
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name admin.yourdomain.com;
+
+    # Reuses the exact same 15-year Cloudflare Wildcard Origin CA certificate!
+    ssl_certificate     /etc/ssl/cloudflare/cert.pem;
+    ssl_certificate_key /etc/ssl/cloudflare/key.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    # Clean 1-tap redirect to the integrated Next.js Payload admin
+    return 301 https://yourdomain.com/admin$request_uri;
+}
+
+# 4. Dedicated Subdomain: crm.yourdomain.com (WhatsApp CRM / Twenty CRM)
+# Use this when running Twenty CRM or WhatsApp CRM in a separate Docker container
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name crm.yourdomain.com wa.yourdomain.com;
+
+    # Reuses the exact same 15-year Cloudflare Wildcard Origin CA certificate!
+    ssl_certificate     /etc/ssl/cloudflare/cert.pem;
+    ssl_certificate_key /etc/ssl/cloudflare/key.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    client_max_body_size 100M;
+
+    location / {
+        # Port for Twenty CRM or WhatsApp CRM microservice (e.g. 3001)
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 180s;
+    }
+}
 ```
 
 Save and exit: `Ctrl + O` → `Enter` → `Ctrl + X`.
+
+---
+
+### 10.3 Understanding Subdomains & Wildcard SSL: Do You Need to Buy Anything?
+
+> 💡 **Executive Summary for the Owner / DevOps Engineer:**
+> - **Do I need to buy a Wildcard SSL certificate?**  
+>   **NO.** You do **NOT** need to pay for any SSL certificate.
+>   - **Public Browser Traffic (Cloudflare Edge):** Cloudflare's Universal SSL automatically issues and auto-renews a free SSL certificate for `yourdomain.com` AND all first-level subdomains (`*.yourdomain.com`).
+>   - **Server Traffic (Origin to VPS):** When you generate a Cloudflare Origin CA certificate in Step 9, Cloudflare automatically covers `yourdomain.com` and `*.yourdomain.com` with a free **15-year certificate**. It will never expire, never costs a dime, and protects unlimited subdomains.
+> - **Does Payload CMS need its own subdomain?**  
+>   **No.** Payload 3.0 is compiled directly inside Next.js 16 as an App Router route at `https://yourdomain.com/admin`. The website and CMS share the same database connection pool, session engine, and cache.
+> - **Does WACRM (WhatsApp CRM) or Twenty CRM need a subdomain?**  
+>   **YES (Recommended).** A CRM is an independent microservice where your sales team manages leads, WhatsApp conversations, and deal pipelines. Hosting it on `crm.yourdomain.com` keeps the sales operations cleanly separated from public customer traffic while running on the exact same Contabo VPS server.
 
 ---
 
@@ -805,8 +868,10 @@ Here is the single reference table of all DNS records to enter into your Cloudfl
 
 | Record Type | Name / Host | Target / Content / Mail Server | Priority | Proxy Status | Notes |
 |---|---|---|---|---|---|
-| **A** | `@` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | Main website address |
+| **A** | `@` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | Main website address (driveitluxury.com) |
 | **A** | `www` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | WWW subdomain |
+| **A** | `crm` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | WhatsApp CRM / Twenty CRM Concierge Portal |
+| **A** | `admin` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | Optional Dedicated Admin Portal Subdomain |
 | **MX** | `@` | `mx.zoho.in` (or `mx.zoho.com`) | `10` | ⚪ DNS Only | Zoho Mail Primary Server |
 | **MX** | `@` | `mx2.zoho.in` (or `mx2.zoho.com`) | `20` | ⚪ DNS Only | Zoho Mail Backup 1 |
 | **MX** | `@` | `mx3.zoho.in` (or `mx3.zoho.com`) | `50` | ⚪ DNS Only | Zoho Mail Backup 2 |

@@ -243,5 +243,16 @@
 - **Homepage & Vehicle Booking Widgets ([`components/booking-section.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/booking-section.tsx), [`app/(site)/cars/[slug]/booking-widget.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/cars/[slug]/booking-widget.tsx))**:
   - Informative missing field indicators showing exactly what dates, times, vehicle or contacts are required before checkout can proceed.
 
-
-
+## 14. Owner's Operating Manual & Subdomain / Wildcard SSL Architecture
+- **Dedicated Business Owner Manual ([`OWNERS_MANUAL.md`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/OWNERS_MANUAL.md))**:
+  - Complete executive guide for the business owner, managing director, and operations team.
+  - Documents the entire customer reservation lifecycle, fleet pricing management, booking verification, self-drive KYC approvals, security deposit refunding with bank UTRs, content editing, and consignment lead processing.
+- **Wildcard SSL Architecture**:
+  - **Zero Cost ($0)**: Clarified that purchasing Wildcard SSL is completely unnecessary.
+  - **Cloudflare Edge SSL**: Automatically secures `yourdomain.com` and all first-level subdomains (`*.yourdomain.com`) for free.
+  - **Cloudflare Origin CA**: Provides a free 15-year origin certificate for `yourdomain.com` and `*.yourdomain.com`, installed in `/etc/ssl/cloudflare/` to secure Nginx with zero renewals.
+- **Subdomain Strategy**:
+  - **Payload CMS**: Unified natively inside Next.js at `/admin` (`https://yourdomain.com/admin`), eliminating the need for a separate subdomain or server.
+  - **WhatsApp CRM / Twenty CRM**: Dedicated subdomain (`https://crm.yourdomain.com` or `https://wa.yourdomain.com`) proxying to the CRM container port (`127.0.0.1:3001`), keeping sales pipeline operations isolated from public traffic.
+  - **Optional Admin Subdomain**: Nginx server block provided for `admin.yourdomain.com` cleanly redirecting to `/admin`.
+  - Added full Nginx reverse proxy blocks and Cloudflare DNS records to [`deployment_guide.md`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/deployment_guide.md).
