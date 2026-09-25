@@ -53,7 +53,16 @@ export function CheckoutClient() {
   )
 
   const [step, setStep] = useState<Step>('details')
-  const [form, setForm] = useState({ name: '', phone: '', email: '', pickupLocation: '', dropoffLocation: '' })
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    pickupLocation: '',
+    dropoffLocation: '',
+    flightNumber: '',
+    companyName: '',
+    gstin: '',
+  })
   const [promoCode, setPromoCode] = useState('')
   const [promoMessage, setPromoMessage] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
@@ -83,6 +92,9 @@ export function CheckoutClient() {
       email: previous.email,
       pickupLocation: previous.pickupLocation,
       dropoffLocation: previous.dropoffLocation,
+      flightNumber: previous.flightNumber,
+      companyName: previous.companyName || (profile as any).companyName || '',
+      gstin: previous.gstin || (profile as any).gstin || '',
     }))
   }
 
@@ -174,6 +186,9 @@ export function CheckoutClient() {
           serviceType: service,
           addons: addons.join(','),
           couponCode: appliedCoupon || undefined,
+          flightNumber: form.flightNumber || undefined,
+          companyName: form.companyName || undefined,
+          gstin: form.gstin || undefined,
         }),
       })
 
@@ -398,10 +413,65 @@ export function CheckoutClient() {
                 className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[var(--gold-400)]/50 focus:outline-none"
               />
 
+              {/* Airport flight number */}
+              {service === 'airport' && (
+                <div className="p-3.5 rounded-xl bg-[var(--gold-400)]/5 border border-[var(--gold-400)]/20 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-[var(--gold-400)]">✈️ Airport Flight Monitoring</span>
+                    <span className="text-[10px] text-emerald-400 font-medium">✓ 60-min wait included</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Flight number (e.g. 6E 521 / AI 840 / EK 526)"
+                    value={form.flightNumber}
+                    onChange={(e) => setForm({ ...form, flightNumber: e.target.value.toUpperCase() })}
+                    className="w-full bg-black border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white uppercase focus:border-[var(--gold-400)]/50 focus:outline-none"
+                  />
+                </div>
+              )}
+
+              {/* Self-Drive notice */}
+              {service === 'selfdrive' && (
+                <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-white/90">🛡️ Self-Drive Express Handover</span>
+                    <span className="text-[10px] text-[var(--gold-400)] font-medium">Full-to-Full Fuel & FASTag</span>
+                  </div>
+                  <p className="text-[11px] text-white/50 leading-relaxed">
+                    A refundable security deposit of ₹{Number(car.securityDepositAmount ?? 25000).toLocaleString('en-IN')} is held and returned via UPI within 24–48 hours after vehicle inspection.
+                  </p>
+                </div>
+              )}
+
+              {/* Corporate GSTIN billing */}
+              <div className="pt-2 border-t border-white/5 space-y-3">
+                <details className="text-xs group">
+                  <summary className="text-white/60 hover:text-white cursor-pointer font-medium select-none">
+                    + Add Corporate GSTIN (Tax Invoice for Business Claim)
+                  </summary>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-2">
+                    <input
+                      type="text"
+                      placeholder="Company Name"
+                      value={form.companyName}
+                      onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+                      className="w-full bg-black border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-[var(--gold-400)]/50 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="GSTIN (e.g. 36AABCU9603R1ZM)"
+                      value={form.gstin}
+                      onChange={(e) => setForm({ ...form, gstin: e.target.value.toUpperCase() })}
+                      className="w-full bg-black border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white uppercase focus:border-[var(--gold-400)]/50 focus:outline-none"
+                    />
+                  </div>
+                </details>
+              </div>
+
               <button
                 onClick={startHold}
                 disabled={!canContinue || busy}
-                className="w-full py-4 rounded-xl font-bold bg-[var(--gold-400)] text-black disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full py-4 rounded-xl font-bold bg-[var(--gold-400)] text-black disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition hover:scale-[1.01]"
               >
                 {busy ? 'Reserving vehicle…' : 'Continue to Payment'}
               </button>
@@ -527,6 +597,12 @@ export function CheckoutClient() {
                 <div className="flex justify-between text-green-400">
                   <span>Discount</span>
                   <span>-₹{quote.discount.toLocaleString('en-IN')}</span>
+                </div>
+              )}
+              {service === 'selfdrive' && (
+                <div className="flex justify-between text-xs pt-2 text-[var(--gold-400)]/80">
+                  <span>Refundable Deposit (100% back)</span>
+                  <span>₹{Number(car.securityDepositAmount ?? 25000).toLocaleString('en-IN')}</span>
                 </div>
               )}
               <div className="flex justify-between pt-3 border-t border-white/10 font-semibold">

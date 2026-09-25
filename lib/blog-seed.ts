@@ -94,7 +94,10 @@ export const getBlogPosts = cache(async (): Promise<BlogPostView[]> => {
               year: 'numeric',
             })
           : '—',
-        image: doc.coverImageSrc || (doc.coverImage?.url ?? '/sadan/4.jpg'),
+        image:
+          typeof doc.coverImage === 'object' && doc.coverImage?.url
+            ? doc.coverImage.url
+            : doc.coverImageSrc || '/sadan/4.jpg',
         readTimeMinutes: Number(doc.readTimeMinutes) || 5,
         fromCms: true,
       }))

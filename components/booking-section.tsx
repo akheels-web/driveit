@@ -2,7 +2,7 @@
 
 import { useRef, useState, useMemo } from 'react'
 import { motion, useInView } from 'motion/react'
-import { Car, MapPin, CalendarDays, Clock, User, Phone, Mail, ArrowRight, CheckCircle, ChevronDown, Info, ShieldCheck, Users, PartyPopper } from 'lucide-react'
+import { Car, MapPin, CalendarDays, Clock, User, Phone, Mail, ArrowRight, CheckCircle, ChevronDown, Info, ShieldCheck, Users, PartyPopper, Plane, Fuel } from 'lucide-react'
 import { useFleet } from '@/hooks/use-fleet'
 import { LuxurySelect } from '@/components/luxury-select'
 
@@ -55,6 +55,8 @@ export function BookingSection() {
     returnTime: "",
     passengers: "1",
     occasion: "",
+    flightNumber: "",
+    airportTerminal: "RGIA Shamshabad — Domestic Arrival",
     name: "",
     phone: "",
     email: "",
@@ -103,7 +105,7 @@ export function BookingSection() {
 ${form.tripType === "Round-Trip" ? `• Return Date/Time: ${form.returnDate} at ${form.returnTime}\n` : ""}
 • Passengers: ${form.passengers}
 • Occasion: ${form.occasion || "Not specified"}
-
+${form.flightNumber ? `• Flight No: ${form.flightNumber} (${form.airportTerminal})\n` : ""}${form.driverOption === "Without Driver (Self Drive)" ? `• Self-Drive: Yes (Full-to-Full Fuel & FASTag equipped)\n` : ""}
 👤 *Customer Details:*
 • Name: ${form.name}
 • Phone: ${form.phone}
@@ -338,6 +340,55 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
                   />
                 </div>
               </div>
+
+              {/* VIP Airport Transfer Details (Conditional) */}
+              {(form.occasion === "Airport Transfer" || form.pickup.includes("Airport") || form.dropoff.includes("Airport")) && (
+                <div className="mt-5 p-4 rounded-xl border border-[var(--gold-400)]/20 bg-[var(--gold-400)]/5 space-y-4 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-[var(--gold-400)]">
+                    <Plane className="w-4 h-4" /> VIP Airport Flight Monitoring
+                  </div>
+                  <p className="text-[11px] text-white/60">
+                    Complimentary <strong>60-minute wait guarantee</strong> from flight touchdown. Our chauffeur tracks your flight automatically.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Flight Number (Optional)</label>
+                      <input
+                        type="text"
+                        value={form.flightNumber}
+                        onChange={(e) => updateField("flightNumber", e.target.value.toUpperCase())}
+                        placeholder="e.g. 6E 521 / AI 840 / EK 526"
+                        className="w-full bg-[#111] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white uppercase focus:outline-none focus:border-[var(--gold-400)]/50 transition"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Terminal Selection</label>
+                      <LuxurySelect
+                        value={form.airportTerminal}
+                        onChange={(val) => updateField("airportTerminal", val)}
+                        options={[
+                          { value: "RGIA Shamshabad — Domestic Arrival", label: "Domestic Arrival (RGIA)" },
+                          { value: "RGIA Shamshabad — International Arrival", label: "International Arrival (RGIA)" },
+                          { value: "Begumpet Airport (Private Charter)", label: "Begumpet (Private Charter)" },
+                        ]}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Self-Drive Transparent Policies */}
+              {form.driverOption === "Without Driver (Self Drive)" && (
+                <div className="mt-5 p-4 rounded-xl border border-white/10 bg-white/[0.02] flex items-start gap-3">
+                  <Fuel className="w-5 h-5 text-[var(--gold-400)] shrink-0 mt-0.5" />
+                  <div className="text-xs text-white/70 space-y-1">
+                    <p className="font-semibold text-white">Full-to-Full Fuel & Electronic FASTag</p>
+                    <p className="text-[11px] text-white/50">
+                      Vehicle delivered with full tank — return with same level for zero fuel surcharge. Highway tolls auto-reconciled via electronic windshield FASTag.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 3. Your Details */}
@@ -434,17 +485,36 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
             {/* Transparency disclosures */}
             <div className="rounded-2xl p-5 border border-white/5 bg-white/[0.01] space-y-4">
               <div className="flex gap-3">
-                <ShieldCheck className="w-5 h-5 text-white/40 shrink-0" />
+                <ShieldCheck className="w-5 h-5 text-[var(--gold-400)]/70 shrink-0" />
                 <div>
-                  <h4 className="text-sm font-medium text-white/80">Security Deposit</h4>
-                  <p className="text-xs text-white/40 mt-1">A fully refundable deposit (₹10,000 - ₹50,000 based on vehicle) is required before handover.</p>
+                  <h4 className="text-sm font-medium text-white/90">
+                    {form.driverOption === "Without Driver (Self Drive)" ? "Refundable Security Deposit" : "Zero Security Deposit"}
+                  </h4>
+                  <p className="text-xs text-white/40 mt-1">
+                    {form.driverOption === "Without Driver (Self Drive)"
+                      ? `Refundable deposit of ${selectedCar?.securityDeposit || "₹25,000"} is held and released within 24–48h via UPI after vehicle return inspection.`
+                      : "No security deposit required for our chauffeur-driven luxury trips."}
+                  </p>
                 </div>
               </div>
+
+              <div className="flex gap-3">
+                <Fuel className="w-5 h-5 text-white/40 shrink-0" />
+                <div>
+                  <h4 className="text-sm font-medium text-white/80">Fuel & Tolls Policy</h4>
+                  <p className="text-xs text-white/40 mt-1">
+                    {form.driverOption === "Without Driver (Self Drive)"
+                      ? "Full-to-Full fuel policy. Equipped with electronic FASTag for automatic expressway & airport toll lanes (actual tolls reconciled from deposit)."
+                      : "Chauffeur trips include fuel and chauffeur allowances; intercity tolls and state border taxes are billed at actuals."}
+                  </p>
+                </div>
+              </div>
+
               <div className="flex gap-3">
                 <Info className="w-5 h-5 text-white/40 shrink-0" />
                 <div>
                   <h4 className="text-sm font-medium text-white/80">Kilometer Allowance</h4>
-                  <p className="text-xs text-white/40 mt-1">100 km included per day. Extra km charges apply based on the vehicle category.</p>
+                  <p className="text-xs text-white/40 mt-1">100 km included per day. Extra km charges apply based on vehicle class.</p>
                 </div>
               </div>
             </div>

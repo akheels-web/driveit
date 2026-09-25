@@ -1,15 +1,34 @@
+import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { Award, Users, Clock, Shield, Star, Heart, Car, Plane, MapPin, Phone, Mail, Crown, Sparkles, CheckCircle, MessageCircle } from "lucide-react"
 
+import { getSiteSettings, resolveMediaUrl, SITE_DEFAULTS } from "@/lib/cms"
+
+export const metadata: Metadata = {
+  title: "About Us | Redefining Luxury Travel in Hyderabad - DRIVEIT Luxury",
+  description: "Learn about DRIVEIT Luxury — Hyderabad's premier luxury car rental and chauffeur service. Explore our fleet of Rolls Royce, Bentley, and Mercedes with 24/7 VIP concierge.",
+  alternates: {
+    canonical: "/about",
+  },
+}
+
 const GOLD = '#b48811'
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const settings = await getSiteSettings()
+  const phone = settings.contactPhone || SITE_DEFAULTS.contactPhone
+  const email = settings.contactEmail || SITE_DEFAULTS.contactEmail
+  const address = settings.address || SITE_DEFAULTS.address
+  const siteName = settings.siteName || SITE_DEFAULTS.siteName
+  const headerLogo = resolveMediaUrl(settings.headerLogo, '/logo.png')
+  const footerLogo = resolveMediaUrl(settings.footerLogo, headerLogo)
+
   return (
     <>
-      <SiteHeader />
+      <SiteHeader logoSrc={headerLogo} siteName={siteName} />
       <main className="bg-black text-zinc-100">
         {/* HERO SECTION */}
         <section className="relative min-h-[92vh] flex items-center">
@@ -288,15 +307,16 @@ export default function AboutPage() {
                 Book Now
               </Link>
               <a
-                href="https://wa.me/916300041186?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20DRIVEIT%20services."
+                href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20${encodeURIComponent(siteName)}%20services.`}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/30 text-zinc-200 hover:border-gold hover:text-gold transition text-lg"
               >
                 <MessageCircle className="w-5 h-5" />
                 WhatsApp Us
               </a>
               <a
-                href="tel:+916300041186"
+                href={`tel:${phone.replace(/\s+/g, '')}`}
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/30 text-zinc-200 hover:border-gold hover:text-gold transition text-lg"
               >
                 <Phone className="w-5 h-5" />
@@ -309,22 +329,32 @@ export default function AboutPage() {
               <div className="space-y-2 text-sm text-zinc-300">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" style={{ color: GOLD }} />
-                  <span>Banjara Hills, Hyderabad - 500034</span>
+                  <span>{address}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4" style={{ color: GOLD }} />
-                  <span>+91 63000 41186</span>
+                  <span>{phone}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" style={{ color: GOLD }} />
-                  <span>contact@driveitluxury.com</span>
+                  <span>{email}</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
       </main>
-      <SiteFooter />
+      <SiteFooter
+        logoSrc={footerLogo}
+        description={settings.footerDescription}
+        phone={phone}
+        email={email}
+        address={address}
+        instagramUrl={settings.instagramUrl}
+        facebookUrl={settings.facebookUrl}
+        linkedinUrl={settings.linkedinUrl}
+        twitterUrl={settings.twitterUrl}
+      />
     </>
   )
 }

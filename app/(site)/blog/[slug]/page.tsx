@@ -62,8 +62,73 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const related = allPosts.filter((post) => post.slug !== slug).slice(0, 3)
 
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com').replace(/\/$/, '')
+  const postUrl = `${baseUrl}/blog/${slug}`
+  const imageUrl = coverImage.startsWith('http') ? coverImage : `${baseUrl}${coverImage}`
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: title,
+    description: cmsPost?.excerpt ?? seedPost?.excerpt ?? title,
+    image: [imageUrl],
+    datePublished: cmsPost?.publishedDate || new Date().toISOString(),
+    dateModified: cmsPost?.updatedAt || cmsPost?.publishedDate || new Date().toISOString(),
+    author: {
+      '@type': 'Person',
+      name: author,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'DRIVEIT Luxury',
+      url: baseUrl,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${baseUrl}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': postUrl,
+    },
+    articleSection: category,
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: baseUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Luxury Journal',
+        item: `${baseUrl}/blog`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: title,
+        item: postUrl,
+      },
+    ],
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <SiteHeader />
       <main className="bg-[#0a0a0a] min-h-screen text-white pt-24 pb-24">
 
@@ -99,6 +164,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               sizes="(min-width: 1024px) 896px, 100vw"
               priority
               className="object-cover"
+              unoptimized={coverImage.startsWith('http')}
             />
           </div>
 

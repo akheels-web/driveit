@@ -1,20 +1,55 @@
 'use client'
 
-import { useState, FormEvent, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
 import { motion, useInView } from 'motion/react'
-import { MessageSquare, Phone, Mail, MapPin, Clock, Send, ExternalLink } from 'lucide-react'
+import { MessageSquare, Phone, Mail, MapPin, Clock, ExternalLink } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { ContactForm } from '@/components/contact-form'
+import { SITE_DEFAULTS } from '@/lib/content-seed'
 
 export default function ContactPage() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true })
 
+  const [settings, setSettings] = useState({
+    siteName: SITE_DEFAULTS.siteName,
+    phone: SITE_DEFAULTS.contactPhone,
+    email: SITE_DEFAULTS.contactEmail,
+    whatsappNumber: SITE_DEFAULTS.whatsappNumber,
+    address: SITE_DEFAULTS.address,
+    mapEmbedUrl: SITE_DEFAULTS.mapEmbedUrl,
+    mapLink: SITE_DEFAULTS.mapLink,
+    headerLogo: '/logo.png',
+    footerLogo: '/logo.png',
+  })
+
+  useEffect(() => {
+    fetch('/api/site-settings')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setSettings({
+            siteName: data.siteName || SITE_DEFAULTS.siteName,
+            phone: data.contactPhone || SITE_DEFAULTS.contactPhone,
+            email: data.contactEmail || SITE_DEFAULTS.contactEmail,
+            whatsappNumber: data.whatsappNumber || SITE_DEFAULTS.whatsappNumber,
+            address: data.address || SITE_DEFAULTS.address,
+            mapEmbedUrl: data.mapEmbedUrl || SITE_DEFAULTS.mapEmbedUrl,
+            mapLink: data.mapLink || SITE_DEFAULTS.mapLink,
+            headerLogo: data.headerLogo || '/logo.png',
+            footerLogo: data.footerLogo || '/logo.png',
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const cleanPhone = settings.phone.replace(/[^0-9]/g, '')
+
   return (
     <>
-      <SiteHeader />
+      <SiteHeader logoSrc={settings.headerLogo} siteName={settings.siteName} />
       <section ref={ref} className="bg-[var(--luxury-bg)] text-white min-h-screen pt-28 pb-16">
         <div className="mx-auto max-w-7xl px-4">
 
@@ -46,9 +81,9 @@ export default function ContactPage() {
               {/* Info Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { icon: Phone, label: 'Call Us', value: '+91 63000 41186', href: 'tel:+916300041186', sub: 'Available 24/7' },
-                  { icon: Mail, label: 'Email', value: 'info@driveit.in', href: 'mailto:info@driveit.in', sub: 'Quick response' },
-                  { icon: MessageSquare, label: 'WhatsApp', value: 'Chat with us', href: 'https://wa.me/916300041186', sub: 'Instant reply' },
+                  { icon: Phone, label: 'Call Us', value: settings.phone, href: `tel:${settings.phone.replace(/\s+/g, '')}`, sub: 'Available 24/7' },
+                  { icon: Mail, label: 'Email', value: settings.email, href: `mailto:${settings.email}`, sub: 'Quick response' },
+                  { icon: MessageSquare, label: 'WhatsApp', value: 'Chat with us', href: `https://wa.me/${cleanPhone}`, sub: 'Instant reply' },
                   { icon: Clock, label: 'Business Hours', value: '24 / 7', href: null, sub: 'Always available' },
                 ].map((item, i) => (
                   <motion.div
@@ -68,6 +103,7 @@ export default function ContactPage() {
                     <p className="text-xs text-white/40 uppercase tracking-wider mb-1">{item.label}</p>
                     {item.href ? (
                       <a href={item.href} target={item.href.startsWith('http') ? '_blank' : undefined}
+                        rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                         className="text-sm font-medium text-white hover:text-[var(--gold-400)] transition-colors">
                         {item.value}
                       </a>
@@ -93,36 +129,39 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Office Address</p>
-                    <p className="text-sm text-white font-medium">DRIVEIT — Luxury Transportation Services</p>
-                    <p className="text-xs text-white/50 mt-1 leading-relaxed">
-                      Mother Mansion, 10-2-289/83, Rd Number 3,<br />
-                      Shantinagar Colony, Masab Tank,<br />
-                      Hyderabad, Telangana 500028
+                    <p className="text-sm text-white font-medium">{settings.siteName} — Luxury Transportation</p>
+                    <p className="text-xs text-white/50 mt-1 leading-relaxed whitespace-pre-line">
+                      {settings.address}
                     </p>
-                    <a
-                      href="https://maps.app.goo.gl/z6g9rBdGoT1gzxku8"
-                      target="_blank"
-                      className="inline-flex items-center gap-1.5 mt-2 text-xs text-[var(--gold-400)] hover:text-[var(--gold-200)] transition-colors"
-                    >
-                      <ExternalLink className="w-3 h-3" /> Open in Google Maps
-                    </a>
+                    {settings.mapLink && (
+                      <a
+                        href={settings.mapLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 mt-2 text-xs text-[var(--gold-400)] hover:text-[var(--gold-200)] transition-colors"
+                      >
+                        <ExternalLink className="w-3 h-3" /> Open in Google Maps
+                      </a>
+                    )}
                   </div>
                 </div>
               </motion.div>
 
               {/* Map */}
-              <motion.div
-                className="rounded-xl overflow-hidden border-glow-gold h-[250px]"
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.7, delay: 0.7 }}
-              >
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3807.2137599390176!2d78.4565279!3d17.4015263!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb97844e874967%3A0xec0fefe2fefa1e15!2sDriveit%20-%20Selfdrive%20Cars%20-%20Luxury%20Wedding%20Cars%20-%20Cabs%20for%20outstation%20-%20Luxury%20Buses!5e0!3m2!1sen!2sin!4v1756574982222!5m2!1sen!2sin"
-                  width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade" title="DRIVEIT Location"
-                />
-              </motion.div>
+              {settings.mapEmbedUrl && (
+                <motion.div
+                  className="rounded-xl overflow-hidden border-glow-gold h-[250px]"
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                  transition={{ duration: 0.7, delay: 0.7 }}
+                >
+                  <iframe
+                    src={settings.mapEmbedUrl}
+                    width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade" title={`${settings.siteName} Location`}
+                  />
+                </motion.div>
+              )}
             </motion.div>
 
             {/* Right: Contact Form */}
@@ -138,7 +177,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-      <SiteFooter />
+      <SiteFooter logoSrc={settings.footerLogo} phone={settings.phone} email={settings.email} address={settings.address} />
     </>
   )
 }

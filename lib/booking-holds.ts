@@ -54,6 +54,12 @@ export type HoldInput = {
   couponCode?: string | null
   discountApplied?: number
   whatsappNumber?: string | null
+  securityDepositAmount?: number
+  securityDepositStatus?: 'na' | 'held' | 'inspection_passed' | 'refunded' | 'deducted'
+  flightNumber?: string | null
+  airportTerminal?: string | null
+  gstin?: string | null
+  companyName?: string | null
 }
 
 export type HoldResult = {

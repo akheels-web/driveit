@@ -58,7 +58,10 @@ export const Cars: CollectionConfig = {
       name: 'gallery',
       type: 'array',
       label: 'Gallery Images',
-      fields: [{ name: 'src', type: 'text', required: true, label: 'Image URL' }],
+      fields: [
+        { name: 'image', type: 'relationship', relationTo: 'media', label: 'Gallery Image Asset' },
+        { name: 'src', type: 'text', label: 'Image URL Fallback' },
+      ],
     },
     {
       name: 'transmission',
@@ -123,7 +126,28 @@ export const Cars: CollectionConfig = {
       name: 'securityDeposit',
       type: 'text',
       defaultValue: '₹25,000',
-      label: 'Refundable Security Deposit',
+      label: 'Refundable Security Deposit (Display text)',
+    },
+    {
+      name: 'securityDepositAmount',
+      type: 'number',
+      defaultValue: 25000,
+      min: 0,
+      label: 'Security Deposit Amount (₹)',
+      admin: { description: 'Exact numeric deposit value used at checkout. Set to 0 if none.' },
+    },
+    {
+      name: 'fuelPolicy',
+      type: 'text',
+      defaultValue: 'Full-to-Full (Return full tank, pay ₹0 fuel fee)',
+      label: 'Fuel Policy',
+    },
+    {
+      name: 'fastTagEquipped',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Electronic FASTag Equipped',
+      admin: { description: 'Vehicle has an active electronic FASTag for automatic toll crossing.' },
     },
     {
       name: 'cancellationPolicy',

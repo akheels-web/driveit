@@ -2,10 +2,11 @@
 
 import { useRef, useState } from 'react'
 import Link from "next/link"
-import { ArrowRight, Car, Plane, MapPin, Bus, Heart, Building } from "lucide-react"
+import { ArrowRight, Car, Plane, MapPin, Bus, Heart, Building, Anchor } from "lucide-react"
 import { motion, useInView } from "motion/react"
+import type { ServiceView } from '@/lib/content-seed'
 
-const services = [
+const defaultServices = [
   {
     title: "LUXURY CHAUFFEUR",
     href: "/services/airport-taxi",
@@ -64,12 +65,30 @@ const services = [
   },
 ]
 
+function getServiceIcon(slug: string) {
+  if (slug.includes('jet')) return Plane
+  if (slug.includes('yacht')) return Anchor
+  if (slug.includes('bus')) return Bus
+  if (slug.includes('wedding')) return Heart
+  if (slug.includes('corporate')) return Building
+  if (slug.includes('dropoff') || slug.includes('pickup')) return MapPin
+  return Car
+}
+
+type ServiceCardItem = {
+  title: string
+  href: string
+  img: string
+  desc: string
+  icon: any
+}
+
 function ServiceCard({
   service,
   index,
   isInView,
 }: {
-  service: (typeof services)[0]
+  service: ServiceCardItem
   index: number
   isInView: boolean
 }) {
@@ -141,9 +160,20 @@ function ServiceCard({
   )
 }
 
-export function TrendingGrid() {
+export function TrendingGrid({ services: propServices }: { services?: ServiceView[] } = {}) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
+
+  const displayServices: ServiceCardItem[] =
+    propServices && propServices.length > 0
+      ? propServices.map((s, idx) => ({
+          title: s.title.toUpperCase(),
+          href: s.href,
+          img: s.image || defaultServices[idx % defaultServices.length].img,
+          desc: s.summary,
+          icon: getServiceIcon(s.slug),
+        }))
+      : defaultServices
 
   return (
     <section className="bg-[var(--luxury-bg)] text-white">
@@ -172,7 +202,7 @@ export function TrendingGrid() {
 
         {/* Grid */}
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {services.map((service, i) => (
+          {displayServices.map((service, i) => (
             <ServiceCard
               key={service.title + i}
               service={service}

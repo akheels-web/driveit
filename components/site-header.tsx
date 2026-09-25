@@ -27,11 +27,35 @@ const nav = [
   { href: "/contact", label: "Contact" },
 ]
 
-export function SiteHeader() {
+export function SiteHeader({
+  logoSrc: propLogoSrc,
+  siteName: propSiteName,
+}: {
+  logoSrc?: string
+  siteName?: string
+} = {}) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [servicesOpen, setServicesOpen] = useState(false)
+  const [logoSrc, setLogoSrc] = useState(propLogoSrc || '/logo.png')
+  const [siteName, setSiteName] = useState(propSiteName || 'DRIVEIT')
   const headerRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (propLogoSrc) setLogoSrc(propLogoSrc)
+    if (propSiteName) setSiteName(propSiteName)
+    if (!propLogoSrc || !propSiteName) {
+      fetch('/api/site-settings')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) {
+            if (!propLogoSrc && data.headerLogo) setLogoSrc(data.headerLogo)
+            if (!propSiteName && data.siteName) setSiteName(data.siteName)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [propLogoSrc, propSiteName])
 
   const { scrollY } = useScroll()
   const headerBg = useTransform(scrollY, [0, 100], [0, 0.95])
@@ -68,13 +92,14 @@ export function SiteHeader() {
       <div className="mx-auto max-w-6xl w-full px-4 py-3 flex items-center justify-between text-zinc-100">
         <Link href="/" className="flex items-center">
           <Image
-            src="/logo.png"
-            alt="DRIVEIT Logo"
+            src={logoSrc}
+            alt={`${siteName} Logo`}
             width={200}
             height={80}
             className="h-12 w-auto md:h-14"
             priority
             loading="eager"
+            unoptimized={logoSrc.startsWith('http')}
           />
         </Link>
 

@@ -5,7 +5,64 @@ import Image from "next/image"
 import { useRef } from "react"
 import { motion, useInView } from "motion/react"
 
-export function SiteFooter() {
+import { useState, useEffect } from 'react'
+
+export function SiteFooter({
+  logoSrc: propLogoSrc,
+  description: propDescription,
+  phone: propPhone,
+  email: propEmail,
+  address: propAddress,
+  instagramUrl: propInstagramUrl,
+  facebookUrl: propFacebookUrl,
+  linkedinUrl: propLinkedinUrl,
+  twitterUrl: propTwitterUrl,
+}: {
+  logoSrc?: string
+  description?: string
+  phone?: string
+  email?: string
+  address?: string
+  instagramUrl?: string
+  facebookUrl?: string
+  linkedinUrl?: string
+  twitterUrl?: string
+} = {}) {
+  const [logoSrc, setLogoSrc] = useState(propLogoSrc || '/logo.png')
+  const [description, setDescription] = useState(
+    propDescription ||
+      'Luxury mobility & aviation experiences—anytime, anywhere. Premium transportation services proudly serving Jubilee Hills, Banjara Hills, HITEC City, Gachibowli, Kokapet, Madhapur, and all of Hyderabad.',
+  )
+  const [instagramUrl, setInstagramUrl] = useState(propInstagramUrl || 'https://instagram.com/driveitluxury')
+  const [facebookUrl, setFacebookUrl] = useState(propFacebookUrl || 'https://facebook.com/driveitluxury')
+  const [linkedinUrl, setLinkedinUrl] = useState(propLinkedinUrl || 'https://linkedin.com/company/driveitluxury')
+  const [twitterUrl, setTwitterUrl] = useState(propTwitterUrl || 'https://twitter.com/driveitluxury')
+
+  useEffect(() => {
+    if (propLogoSrc) setLogoSrc(propLogoSrc)
+    if (propDescription) setDescription(propDescription)
+    if (propInstagramUrl) setInstagramUrl(propInstagramUrl)
+    if (propFacebookUrl) setFacebookUrl(propFacebookUrl)
+    if (propLinkedinUrl) setLinkedinUrl(propLinkedinUrl)
+    if (propTwitterUrl) setTwitterUrl(propTwitterUrl)
+
+    if (!propLogoSrc || !propDescription) {
+      fetch('/api/site-settings')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) {
+            if (!propLogoSrc && data.footerLogo) setLogoSrc(data.footerLogo)
+            if (!propDescription && data.footerDescription) setDescription(data.footerDescription)
+            if (!propInstagramUrl && data.instagramUrl) setInstagramUrl(data.instagramUrl)
+            if (!propFacebookUrl && data.facebookUrl) setFacebookUrl(data.facebookUrl)
+            if (!propLinkedinUrl && data.linkedinUrl) setLinkedinUrl(data.linkedinUrl)
+            if (!propTwitterUrl && data.twitterUrl) setTwitterUrl(data.twitterUrl)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [propLogoSrc, propDescription, propInstagramUrl, propFacebookUrl, propLinkedinUrl, propTwitterUrl])
+
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: "0px 0px -50px 0px" })
 
@@ -21,16 +78,17 @@ export function SiteFooter() {
         >
           <Link href="/" className="flex items-center">
             <Image
-              src="/logo.png"
+              src={logoSrc}
               alt="DRIVEIT Logo"
               width={200}
               height={80}
               className="h-12 w-auto md:h-14"
               loading="lazy"
+              unoptimized={logoSrc.startsWith('http')}
             />
           </Link>
           <p className="text-sm text-zinc-500 leading-relaxed">
-            Luxury mobility & aviation experiences—anytime, anywhere. Premium transportation services proudly serving Jubilee Hills, Banjara Hills, HITEC City, Gachibowli, Kokapet, Madhapur, and all of Hyderabad.
+            {description}
           </p>
         </motion.div>
 
@@ -175,10 +233,10 @@ export function SiteFooter() {
 
             {/* Social Links */}
             <div className="flex items-center gap-5 text-sm text-zinc-500">
-              <a href="#" className="hover:text-[var(--gold-400)] transition-colors duration-300">Instagram</a>
-              <a href="#" className="hover:text-[var(--gold-400)] transition-colors duration-300">Facebook</a>
-              <a href="#" className="hover:text-[var(--gold-400)] transition-colors duration-300">LinkedIn</a>
-              <a href="#" className="hover:text-[var(--gold-400)] transition-colors duration-300">Twitter</a>
+              <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold-400)] transition-colors duration-300">Instagram</a>
+              <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold-400)] transition-colors duration-300">Facebook</a>
+              <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold-400)] transition-colors duration-300">LinkedIn</a>
+              <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold-400)] transition-colors duration-300">Twitter</a>
             </div>
 
             {/* Legal Links */}

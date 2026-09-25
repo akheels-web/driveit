@@ -6,27 +6,38 @@ import { motion, useInView } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { BrandIcon } from '@/components/brand-icon'
+import type { CarDetails } from '@/lib/cars'
 
-const fleet = [
-  { src: "/sadan/5.jpg", name: "Mercedes S 450", category: "Sedan" },
-  { src: "/trending/4.jpg", name: "Range Rover Vogue", category: "SUV" },
-  { src: "/sadan/2.jpg", name: "Lamborghini Gallardo", category: "Sports" },
-  { src: "/trending/1.jpg", name: "Mercedes G 350 Wagon", category: "SUV" },
-  { src: "/sadan/8.jpg", name: "Audi A6", category: "Sedan" },
-  { src: "/suv/7.jpg", name: "Toyota Vellfire", category: "MPV" },
-  { src: "/trending/7.jpg", name: "BMW 730 LD", category: "Sedan" },
-  { src: "/suv/8.jpg", name: "Volvo XC60", category: "SUV" },
-  { src: "/trending/9.jpg", name: "Mercedes C300 Convertible", category: "Sports" },
-  { src: "/sadan/9.jpg", name: "Audi RS5 QUATRO", category: "Sports" },
-  { src: "/trending/5.jpg", name: "Volvo S90", category: "Sedan" },
-  { src: "/suv/2.jpg", name: "Mercedes GLS 350D", category: "SUV" },
+const defaultFleet = [
+  { src: "/sadan/5.jpg", name: "Mercedes S 450", category: "Sedan", slug: "mercedes-s-450" },
+  { src: "/trending/4.jpg", name: "Range Rover Vogue", category: "SUV", slug: "range-rover-vogue" },
+  { src: "/sadan/2.jpg", name: "Lamborghini Gallardo", category: "Sports", slug: "lamborghini-gallardo" },
+  { src: "/trending/1.jpg", name: "Mercedes G 350 Wagon", category: "SUV", slug: "mercedes-g-350-wagon" },
+  { src: "/sadan/8.jpg", name: "Audi A6", category: "Sedan", slug: "audi-a6" },
+  { src: "/suv/7.jpg", name: "Toyota Vellfire", category: "MPV", slug: "toyota-vellfire" },
+  { src: "/trending/7.jpg", name: "BMW 730 LD", category: "Sedan", slug: "bmw-730-ld" },
+  { src: "/suv/8.jpg", name: "Volvo XC60", category: "SUV", slug: "volvo-xc60" },
+  { src: "/trending/9.jpg", name: "Mercedes C300 Convertible", category: "Sports", slug: "mercedes-c300-convertible" },
+  { src: "/sadan/9.jpg", name: "Audi RS5 QUATRO", category: "Sports", slug: "audi-rs5-quatro" },
+  { src: "/trending/5.jpg", name: "Volvo S90", category: "Sedan", slug: "volvo-s90" },
+  { src: "/suv/2.jpg", name: "Mercedes GLS 350D", category: "SUV", slug: "mercedes-gls-350d" },
 ]
 
-export function FleetCarousel() {
+export function FleetCarousel({ cars: propCars }: { cars?: CarDetails[] } = {}) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
+
+  const fleet =
+    propCars && propCars.length > 0
+      ? propCars.map((c) => ({
+          src: c.src,
+          name: c.name,
+          category: c.category.toUpperCase(),
+          slug: c.slug,
+        }))
+      : defaultFleet
 
   const scrollByAmount = (dir: number) => {
     const el = scrollRef.current
@@ -125,32 +136,35 @@ export function FleetCarousel() {
                 animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.3 + i * 0.06 }}
               >
-                <div className="relative h-[200px] md:h-[240px] rounded-2xl overflow-hidden border-glow-gold mb-3">
-                  <Image
-                    src={car.src}
-                    alt={`${car.name} for rent in Hyderabad`}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    loading="lazy"
-                    sizes="320px"
-                  />
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <Link href={car.slug ? `/cars/${car.slug}` : '/cars'} className="block">
+                  <div className="relative h-[200px] md:h-[240px] rounded-2xl overflow-hidden border-glow-gold mb-3">
+                    <Image
+                      src={car.src}
+                      alt={`${car.name} for rent in Hyderabad`}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      loading="lazy"
+                      sizes="320px"
+                      unoptimized={car.src.startsWith('http')}
+                    />
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                  {/* Category badge */}
-                  <div className="absolute top-3 left-3 glass-gold px-3 py-1 rounded-full">
-                    <span className="text-[10px] tracking-wider uppercase text-[var(--gold-400)] font-medium">
-                      {car.category}
-                    </span>
+                    {/* Category badge */}
+                    <div className="absolute top-3 left-3 glass-gold px-3 py-1 rounded-full">
+                      <span className="text-[10px] tracking-wider uppercase text-[var(--gold-400)] font-medium">
+                        {car.category}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-2 mt-3">
-                  <BrandIcon brand={car.name.split(' ')[0]} className="w-5 h-5 text-white/60" />
-                  <h4 className="text-sm font-medium text-white/80 group-hover:text-white transition-colors duration-300">
-                    {car.name}
-                  </h4>
-                </div>
+                  
+                  <div className="flex items-center gap-2 mt-3">
+                    <BrandIcon brand={car.name.split(' ')[0]} className="w-5 h-5 text-white/60" />
+                    <h4 className="text-sm font-medium text-white/80 group-hover:text-white transition-colors duration-300">
+                      {car.name}
+                    </h4>
+                  </div>
+                </Link>
               </motion.div>
             ))}
           </div>

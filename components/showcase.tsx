@@ -5,7 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion, useInView } from "motion/react"
 
-const sections = [
+import type { ServiceView } from '@/lib/content-seed'
+
+const defaultSections = [
   {
     title: "Chauffeur Luxury Service",
     desc: "Executive rides with professional chauffeurs, on time and in style.",
@@ -22,9 +24,41 @@ const sections = [
   },
 ]
 
-export function Showcase() {
+export function Showcase({ services }: { services?: ServiceView[] } = {}) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" })
+
+  const chauffeurService = services?.find(
+    (s) => s.slug === 'airport-taxi' || s.slug.includes('chauffeur')
+  )
+  const luxuryCarService = services?.find(
+    (s) => s.slug === 'luxury-car-rental'
+  )
+  const weddingCarService = services?.find(
+    (s) => s.slug === 'wedding-cars'
+  )
+
+  const cardSections = [
+    {
+      title: chauffeurService?.title || defaultSections[0].title,
+      desc: chauffeurService?.summary || defaultSections[0].desc,
+      href: chauffeurService?.href || defaultSections[0].href,
+      img: chauffeurService?.image || defaultSections[0].img,
+      alt: `${chauffeurService?.title || defaultSections[0].title} Hyderabad`,
+    },
+    {
+      title: luxuryCarService?.title || defaultSections[1].title,
+      desc: luxuryCarService?.summary || defaultSections[1].desc,
+      href: luxuryCarService?.href || defaultSections[1].href,
+      img: luxuryCarService?.image || defaultSections[1].img,
+      alt: `${luxuryCarService?.title || defaultSections[1].title} Hyderabad`,
+    },
+  ]
+
+  const weddingTitle = weddingCarService?.title || "Wedding Cars"
+  const weddingDesc = weddingCarService?.summary || "Make your big day unforgettable with our elegant wedding fleet."
+  const weddingImg = weddingCarService?.image || "https://i.pinimg.com/736x/09/f9/44/09f944012c94c6a5b75bffa4e11333c5.jpg"
+  const weddingHref = weddingCarService?.href || "/services/wedding-cars"
 
   return (
     <section className="bg-[var(--luxury-bg)] text-white">
@@ -44,7 +78,7 @@ export function Showcase() {
 
         {/* Two-card grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {sections.map((item, i) => (
+          {cardSections.map((item, i) => (
             <motion.div
               key={item.href}
               className="group relative h-80 md:h-[480px] rounded-2xl overflow-hidden border-glow-gold"
@@ -59,6 +93,7 @@ export function Showcase() {
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                 loading="lazy"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                unoptimized={item.img.startsWith('http')}
               />
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-500 group-hover:from-black/90" />
@@ -96,22 +131,23 @@ export function Showcase() {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          <Link href="/services/wedding-cars" className="absolute inset-0 z-10" aria-label="Wedding Cars" />
+          <Link href={weddingHref} className="absolute inset-0 z-10" aria-label={weddingTitle} />
           <Image
-            src="https://i.pinimg.com/736x/09/f9/44/09f944012c94c6a5b75bffa4e11333c5.jpg"
-            alt="Luxury wedding car rentals in Hyderabad"
+            src={weddingImg}
+            alt={`${weddingTitle} in Hyderabad`}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"
             loading="lazy"
             sizes="100vw"
+            unoptimized={weddingImg.startsWith('http')}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <div className="absolute bottom-0 left-0 p-6 md:p-8 z-20">
             <h3 className="text-2xl md:text-3xl font-[family-name:var(--font-playfair)] font-semibold text-white mb-2">
-              Wedding Cars
+              {weddingTitle}
             </h3>
             <p className="text-sm md:text-base text-white/70">
-              Make your big day unforgettable with our elegant wedding fleet.
+              {weddingDesc}
             </p>
           </div>
           {/* Gold corner accent */}

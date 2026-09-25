@@ -63,9 +63,81 @@ export default async function CarDetailPage({ params }: { params: Promise<{ slug
 
   const gallery = car.gallery && car.gallery.length > 0 ? car.gallery : [car.src]
   const hasRatings = car.reviewsCount > 0 && car.rating > 0
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com').replace(/\/$/, '')
+  const carUrl = `${baseUrl}/cars/${car.slug}`
+
+  const vehicleSchema = {
+    '@context': 'https://schema.org',
+    '@type': ['Car', 'Product'],
+    name: car.name,
+    description: car.description || `Rent ${car.name} in Hyderabad with chauffeur or self-drive options.`,
+    image: gallery,
+    brand: {
+      '@type': 'Brand',
+      name: car.brand,
+    },
+    vehicleConfiguration: `${car.category}, ${car.seats} seats, ${car.transmission}, ${car.fuel}`,
+    seatingCapacity: car.seats,
+    vehicleTransmission: car.transmission,
+    fuelType: car.fuel,
+    modelDate: car.specs?.year || '2024',
+    offers: {
+      '@type': 'Offer',
+      url: carUrl,
+      price: car.price,
+      priceCurrency: 'INR',
+      availability: 'https://schema.org/InStock',
+      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      itemCondition: 'https://schema.org/UsedCondition',
+    },
+    ...(hasRatings
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: car.rating,
+            reviewCount: car.reviewsCount,
+            bestRating: '5',
+            worstRating: '1',
+          },
+        }
+      : {}),
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: baseUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Luxury Fleet',
+        item: `${baseUrl}/cars`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: car.name,
+        item: carUrl,
+      },
+    ],
+  }
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <SiteHeader />
       <main className="bg-[#0a0a0a] min-h-screen text-white pt-24 pb-20">
         <div className="max-w-7xl mx-auto px-4 py-4 text-xs text-white/40 mb-2">
@@ -90,6 +162,7 @@ export default async function CarDetailPage({ params }: { params: Promise<{ slug
                 priority
                 sizes="(max-width: 768px) 100vw, 66vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
+                unoptimized={gallery[0].startsWith('http')}
               />
             </div>
             <div className="hidden md:flex flex-col gap-4 h-full">
@@ -101,6 +174,7 @@ export default async function CarDetailPage({ params }: { params: Promise<{ slug
                     fill
                     sizes="33vw"
                     className="object-cover"
+                    unoptimized={src.startsWith('http')}
                   />
                 </div>
               ))}
@@ -188,8 +262,18 @@ export default async function CarDetailPage({ params }: { params: Promise<{ slug
                   },
                   {
                     icon: CalendarDays,
-                    title: 'Transparent pricing',
-                    copy: `${car.cancellationPolicy} ${car.securityDeposit ? `Refundable deposit ${car.securityDeposit}.` : ''}`,
+                    title: 'Transparent deposit & cancellation',
+                    copy: `${car.cancellationPolicy} Refundable security deposit of ${car.securityDeposit || '₹25,000'} released in 24–48 hours post inspection.`,
+                  },
+                  {
+                    icon: Fuel,
+                    title: 'Full-to-Full Fuel & Electronic FASTag',
+                    copy: 'Delivered with a full tank — return with the same level with zero fuel surcharge. Non-stop electronic FASTag toll lanes included.',
+                  },
+                  {
+                    icon: ShieldCheck,
+                    title: 'Exact Car Guarantee',
+                    copy: 'The vehicle photographed and described is the exact vehicle delivered to your doorstep. Zero bait-and-switch.',
                   },
                 ].map(({ icon: Icon, title, copy }) => (
                   <div key={title} className="flex gap-4">

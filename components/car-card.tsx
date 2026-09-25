@@ -47,6 +47,7 @@ export function CarCard({ car, onBook, isCompared, onToggleCompare }: CarCardPro
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-700"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          unoptimized={car.src.startsWith('http')}
         />
         {/* Rating overlay */}
         <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-md px-2 py-1 rounded-md text-[10px] text-white flex items-center gap-1 border border-white/10">

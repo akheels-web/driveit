@@ -16,9 +16,57 @@ export const metadata: Metadata = {
 
 export default async function ServicesPage() {
   const services = await getServicesFromCMS()
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com').replace(/\/$/, '')
+
+  const servicesSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: services.map((service, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'Service',
+        name: service.title,
+        description: service.summary,
+        url: `${baseUrl}${service.href}`,
+        provider: {
+          '@type': 'LocalBusiness',
+          name: 'DRIVEIT Luxury',
+          url: baseUrl,
+        },
+      },
+    })),
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: baseUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Services',
+        item: `${baseUrl}/services`,
+      },
+    ],
+  }
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <SiteHeader />
       <main className="bg-black text-zinc-100">
         <div className="mx-auto max-w-5xl px-4 py-16">
@@ -41,6 +89,7 @@ export default async function ServicesPage() {
                         fill
                         sizes="(min-width: 640px) 50vw, 100vw"
                         className="object-cover"
+                        unoptimized={service.image.startsWith('http')}
                       />
                     </div>
                   )}

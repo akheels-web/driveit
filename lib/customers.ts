@@ -22,6 +22,10 @@ export type CustomerProfilePatch = {
   homeAddress?: string | null
   officeAddress?: string | null
   airportAddress?: string | null
+  gstin?: string | null
+  companyName?: string | null
+  drivingLicenseNumber?: string | null
+  aadhaarLast4?: string | null
 }
 
 const normaliseEmail = (email: string) => email.trim().toLowerCase()

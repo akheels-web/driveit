@@ -8,6 +8,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled'
+export type SecurityDepositStatus = 'na' | 'held' | 'inspection_passed' | 'refunded' | 'deducted'
 
 export interface Booking {
   id: string
@@ -26,6 +27,20 @@ export interface Booking {
   totalPrice: number
   discountApplied?: number | null
   couponCode?: string | null
+  securityDepositAmount?: number | null
+  securityDepositStatus?: SecurityDepositStatus | null
+  depositRefundUtr?: string | null
+  flightNumber?: string | null
+  airportTerminal?: string | null
+  gstin?: string | null
+  companyName?: string | null
+  chauffeurDetails?: {
+    name?: string
+    phone?: string
+    photoUrl?: string
+    vehicleNumber?: string
+    carColor?: string
+  } | null
   createdAt: string
 }
 
@@ -35,6 +50,11 @@ export interface CustomerProfile {
   homeAddress: string | null
   officeAddress: string | null
   airportAddress: string | null
+  gstin?: string | null
+  companyName?: string | null
+  kycStatus?: 'unverified' | 'pending' | 'verified' | 'rejected'
+  drivingLicenseNumber?: string | null
+  aadhaarLast4?: string | null
   loyaltyPoints: number
   loyaltyTier: 'silver' | 'gold' | 'platinum'
   completedBookings: number
@@ -78,6 +98,9 @@ export interface FleetCar {
   bookingsCount?: number
   cancellationPolicy?: string
   securityDeposit?: string
+  securityDepositAmount?: number
+  fuelPolicy?: string
+  fastTagEquipped?: boolean
 }
 
 export interface SavedProfile {

@@ -41,6 +41,7 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialView }) {
             sizes="40px"
             loading="lazy"
             className="object-cover"
+            unoptimized={testimonial.image.startsWith('http')}
           />
         </div>
         <div>

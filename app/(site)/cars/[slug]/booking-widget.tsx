@@ -240,10 +240,27 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
             </div>
          </div>
          <div className="flex gap-3">
+            <ShieldCheck className="w-5 h-5 text-[var(--gold-400)] shrink-0" />
+            <div>
+               <h4 className="text-xs font-semibold text-white/90">
+                 {service === 'selfdrive' ? 'Refundable Security Deposit' : 'Zero Deposit Chauffeur'}
+               </h4>
+               <p className="text-[10px] text-white/40 mt-1">
+                 {service === 'selfdrive'
+                   ? `${car.securityDeposit || '₹25,000'} refundable deposit released within 24–48h via UPI post inspection.`
+                   : 'Zero security deposit required for our chauffeur-driven luxury trips.'}
+               </p>
+            </div>
+         </div>
+         <div className="flex gap-3">
             <Info className="w-5 h-5 text-white/40 shrink-0" />
             <div>
-               <h4 className="text-xs font-semibold text-white/90">Refundable Deposit</h4>
-               <p className="text-[10px] text-white/40 mt-1">{car.securityDeposit} holding deposit required at pickup.</p>
+               <h4 className="text-xs font-semibold text-white/90">Fuel & Electronic Tolls</h4>
+               <p className="text-[10px] text-white/40 mt-1">
+                 {service === 'selfdrive'
+                   ? 'Full-to-Full fuel policy. Equipped with electronic FASTag for automatic highway & airport toll lanes.'
+                   : 'Chauffeur trips include fuel and chauffeur allowances; tolls & parking billed at actuals.'}
+               </p>
             </div>
          </div>
          <div className="flex gap-3">

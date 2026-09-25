@@ -126,3 +126,77 @@
   - Replaced browser-native `<select>` with [`components/luxury-select.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/luxury-select.tsx) in [`components/booking-section.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/booking-section.tsx).
   - Eliminates the OS/Windows default blue highlight box (`#0066cc`) on options, replacing it with obsidian glass surfaces (`#0c0c0e`), 1px gold border (`var(--gold-400)`), rich gold hover background (`hover:bg-[var(--gold-400)]/15 hover:text-[var(--gold-400)]`), gold selected state with checkmark, and React Portal rendering.
   - Global CSS updated in [`app/globals.css`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/globals.css) and [`components/ui/select.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/ui/select.tsx) to enforce gold accents across all dropdown implementations.
+
+## 9. Customer KYC Vault, Security Deposit Engine, Fuel/FASTag, Airport VIP & Fleet Partner Consignment
+- **Customer Document Vault (Self-Drive KYC)**:
+  - Added to [`collections/Customers.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/Customers.ts): `kycStatus` (`unverified`, `pending`, `verified`, `rejected`), `drivingLicenseNumber`, `drivingLicenseFront`, `drivingLicenseBack`, `aadhaarLast4`, `idProofDocument`, and corporate `gstin` + `companyName`.
+  - Secure upload endpoint: [`app/api/profile/documents/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/profile/documents/route.ts) saves documents to Cloudinary under `driveit/kyc_vault/` and updates customer KYC status.
+  - Upgraded [`components/profile-form.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/profile-form.tsx) with interactive VIP Document Vault status banners and DL/Aadhaar file dropzones.
+- **Admin-Controlled Security Deposit & Live Refund Tracker**:
+  - Structured numeric field in [`collections/Cars.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/Cars.ts): `securityDepositAmount` (e.g. ₹25,000 for self-drive, ₹0 for chauffeur).
+  - Tracked in [`collections/Bookings.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/Bookings.ts): `securityDepositAmount`, `securityDepositStatus` (`held`, `inspection_passed`, `refunded`, `deducted`), `depositRefundUtr`, `depositRefundedAt`.
+  - Live 4-step progress tracker rendered in [`app/(site)/dashboard/bookings/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/dashboard/bookings/page.tsx) with verified bank UTR display.
+- **User-Managed Fuel & Electronic FASTag Policies**:
+  - `fuelPolicy` ("Full-to-Full Fuel") and `fastTagEquipped` (boolean) declared in `collections/Cars.ts`, displayed transparently across [`app/(site)/cars/[slug]/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/cars/[slug]/page.tsx), [`booking-widget.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/cars/[slug]/booking-widget.tsx), [`components/booking-section.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/booking-section.tsx), and checkout summary.
+- **Chauffeur Dossier Card & VIP Airport Flight Delay Guarantee**:
+  - `flightNumber` and `airportTerminal` inputs integrated into booking section and checkout flow with complimentary 60-minute wait policy from flight touchdown.
+  - `chauffeurDetails` group in `Bookings.ts` renders a dedicated Chauffeur Dossier card (Driver Name, Phone with 1-tap call, Vehicle plate, Car color) in the customer dashboard.
+- **Luxury Fleet Consignment & Partner Program**:
+  - Avoids P2P quality degradation by offering a curated vehicle consignment onboarding workflow.
+  - New collections: [`collections/PartnerApplications.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/PartnerApplications.ts) and [`collections/PayoutRequests.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/PayoutRequests.ts).
+  - Public submission endpoint: [`app/api/partners/apply/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/partners/apply/route.ts).
+  - Landing and onboarding form: [`app/(site)/partner/list-fleet/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/partner/list-fleet/page.tsx) and [`partner-form.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/partner/list-fleet/partner-form.tsx).
+
+## 10. Payload CMS 100% Content, Media & Branding Management
+- **SiteSettings Global (`globals/SiteSettings.ts`)**:
+  - **Brand Assets**: `headerLogo` (Media), `footerLogo` (Media), `favicon` (Media), `appleTouchIcon` (Media).
+  - **SEO & Social**: `metaTitle`, `metaDescription`, `ogImage` (Media), `siteName`.
+  - **Homepage Hero**: `headerVideoUrl` (text), `heroImage` (Media), `heroSubtitle`, `heroHeadingLine1`, `heroHeadingLine2`.
+  - **Mission Section**: `missionBadge`, `missionTitle`, `missionText`, `missionImage` (Media).
+  - **Top Promo Banner**: `promoBannerEnabled`, `promoBannerText`, `promoBannerCode`.
+  - **Contact & Location**: `contactPhone`, `contactEmail`, `whatsappNumber`, `address`, `mapEmbedUrl`, `mapLink`.
+  - **Counters & FAQs**: `stats` (array of label, value, suffix), `faqs` (array of question, answer).
+  - **Social Links**: `instagramUrl`, `facebookUrl`, `youtubeUrl`, `linkedinUrl`, `twitterUrl`.
+- **Dynamic Root Layout (`app/(site)/layout.tsx`)**:
+  - `generateMetadata()` dynamically queries `getSiteSettings()` to provide CMS-managed `title`, `description`, `icons` (favicon, apple-touch-icon, shortcut), and OpenGraph / Twitter cards.
+  - `RootLayout` embeds dynamic JSON-LD LocalBusiness schema with CMS phone, email, and address.
+- **Client Auto-Sync Endpoint (`app/api/site-settings/route.ts`)**:
+  - Exposes public JSON endpoint returning all CMS site settings, logos, and media links with `s-maxage=60, stale-while-revalidate=300`.
+  - Client components (`SiteHeader`, `SiteFooter`, `PromoBanner`, `ContactPage`) automatically pull from `/api/site-settings` on mount while instantly rendering SSR props when provided.
+- **Component Prop Piping**:
+  - [`components/hero.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/hero.tsx), [`components/Mision.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/Mision.tsx), [`components/showcase.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/showcase.tsx), [`components/trending-grid.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/trending-grid.tsx), and [`components/fleet-carousel.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/fleet-carousel.tsx) all accept CMS data as props with safe fallback seeds.
+  - Vehicle gallery images in [`collections/Cars.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/Cars.ts) support both direct Media uploads and static URLs with `resolveMediaUrl`.
+
+## 11. Search Engine Optimization (SEO), LLM Discoverability & Real-Time Auto-Update Engine
+- **Dynamic XML Sitemap (`app/sitemap.ts`)**:
+  - Dynamically synthesizes and prioritizes routes: core site pages (`/`, `/about`, `/contact`, `/cars`, `/services`, `/blog`, `/partner/list-fleet`, legal pages), all 9 dedicated luxury service landing pages, dynamic CMS services, active CMS fleet vehicles (`/cars/[slug]`), and published blog posts (`/blog/[slug]`).
+  - Prioritizes fleet vehicles (0.9, daily change frequency) and services (0.9, weekly), blogs (0.7, weekly), and core routes (1.0).
+  - Implements in-memory deduplication via `Map` and sets revalidation window of 1800s.
+- **Modern Robots.txt & AI Crawler Directives (`app/robots.ts`)**:
+  - Explicitly configured for Googlebot and Bingbot (`allow: '/'`).
+  - Whitelists 12 modern LLM & Generative AI web crawlers: `GPTBot`, `ChatGPT-User`, `Google-Extended`, `ClaudeBot`, `anthropic-ai`, `PerplexityBot`, `Bytespider`, `CCBot`, `cohere-ai`, `Meta-ExternalAgent`, `FacebookBot`, `Applebot-Extended`.
+  - Disallows private & transactional routes (`/admin/*`, `/api/*`, `/checkout/*`, `/dashboard/*`, `/_next/*`).
+  - Declares canonical XML sitemap and host bindings.
+- **LLM Discoverability Standard (`/llms.txt` & `/llms-full.txt`)**:
+  - Implements the [llmstxt.org](https://llmstxt.org) standard for AI search engines, citations, and assistants (Perplexity, ChatGPT, Claude, Gemini).
+  - [`app/llms.txt/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/llms.txt/route.ts): Markdown summary file detailing brand identity, core fleet highlights, service categories, policies (deposit, fuel, flight delay guarantee), and canonical navigation links.
+  - [`app/llms-full.txt/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/llms-full.txt/route.ts): Comprehensive AI dataset querying live CMS fleet data to export vehicle specifications, daily rental pricing, transmission, seating capacity, fuel type, security deposits, services offered, FAQs, and contact points.
+- **Blog RSS 2.0 Feed (`/feed.xml`)**:
+  - [`app/feed.xml/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/feed.xml/route.ts) serves an XML RSS feed containing all published blog articles, CDATA content descriptions, RFC 822 publication dates, and atom links.
+  - Discovered automatically via `<link rel="alternate" type="application/rss+xml" title="DRIVEIT Luxury Journal RSS Feed" href="/feed.xml" />` injected into `<head>` in [`app/(site)/layout.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/layout.tsx).
+- **Schema.org Structured Data (JSON-LD)**:
+  - **Organization / LocalBusiness**: Injected globally in `layout.tsx` with dynamic phone, email, address, geo-coordinates, and opening hours.
+  - **Car / Product**: Injected in [`app/(site)/cars/[slug]/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/cars/[slug]/page.tsx) with pricing, currency (`INR`), availability, specs, and breadcrumbs.
+  - **Service / ItemList**: Injected in [`app/(site)/services/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/services/page.tsx) and dedicated service routes.
+  - **BlogPosting**: Injected in [`app/(site)/blog/[slug]/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/blog/[slug]/page.tsx) with author, datePublished, headline, and article images.
+  - **BreadcrumbList**: Injected on all vehicle, service, and blog detail pages.
+- **Payload CMS Real-Time Auto-Update & Cache Invalidation Pipeline (`lib/revalidate.ts`)**:
+  - Extended `SEO_DISCOVERY_ROUTES = ['/sitemap.xml', '/robots.txt', '/llms.txt', '/llms-full.txt']`.
+  - When an admin saves, updates, or deletes a vehicle in `cars`, a blog in `blogs`, a service in `services`, or media in `media`, Next.js `revalidatePath()` automatically purges:
+    - The item's detail page (`/cars/${slug}`, `/blog/${slug}`, `/services/${slug}`).
+    - The item's catalog page (`/cars`, `/blog`, `/services`).
+    - The homepage (`/`).
+    - Dynamic discovery feeds: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/llms-full.txt`, and `/api/fleet`.
+  - When global `site-settings` are updated, the pipeline purges `/about`, `/contact`, `/api/site-settings`, and all SEO discovery endpoints instantly.
+
+

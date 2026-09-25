@@ -15,6 +15,10 @@ const PatchSchema = z.object({
   homeAddress: z.string().trim().max(300).optional().nullable(),
   officeAddress: z.string().trim().max(300).optional().nullable(),
   airportAddress: z.string().trim().max(300).optional().nullable(),
+  gstin: z.string().trim().max(30).optional().nullable(),
+  companyName: z.string().trim().max(160).optional().nullable(),
+  drivingLicenseNumber: z.string().trim().max(40).optional().nullable(),
+  aadhaarLast4: z.string().trim().max(20).optional().nullable(),
 })
 
 const publicProfile = (customer: Record<string, any> | null) =>
@@ -25,6 +29,11 @@ const publicProfile = (customer: Record<string, any> | null) =>
         homeAddress: customer.homeAddress ?? null,
         officeAddress: customer.officeAddress ?? null,
         airportAddress: customer.airportAddress ?? null,
+        gstin: customer.gstin ?? null,
+        companyName: customer.companyName ?? null,
+        kycStatus: customer.kycStatus ?? 'unverified',
+        drivingLicenseNumber: customer.drivingLicenseNumber ?? null,
+        aadhaarLast4: customer.aadhaarLast4 ?? null,
         loyaltyPoints: customer.loyaltyPoints ?? 0,
         loyaltyTier: customer.loyaltyTier ?? 'silver',
         completedBookings: customer.completedBookings ?? 0,

@@ -4,7 +4,19 @@ import Image from "next/image"
 import { useRef } from "react"
 import { motion, useScroll, useTransform, useInView } from "motion/react"
 
-export default function Hero({ videoUrl }: { videoUrl?: string }) {
+export default function Hero({
+  videoUrl,
+  heroImageSrc = '/rolls-royce-phantom-night.png',
+  subtitle = 'Premium Luxury Transportation',
+  headingLine1 = 'The Art of',
+  headingLine2 = 'Luxury',
+}: {
+  videoUrl?: string
+  heroImageSrc?: string
+  subtitle?: string
+  headingLine1?: string
+  headingLine2?: string
+}) {
   const heroRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(textRef, { once: true })
@@ -28,10 +40,6 @@ export default function Hero({ videoUrl }: { videoUrl?: string }) {
     }
   }
 
-  // Letter-by-letter animation for the heading
-  const headingLine1 = "The Art of"
-  const headingLine2 = "Luxury"
-
   return (
     <section
       ref={heroRef}
@@ -53,12 +61,13 @@ export default function Hero({ videoUrl }: { videoUrl?: string }) {
           />
         ) : (
           <Image
-            src="/rolls-royce-phantom-night.png"
-            alt="Luxury Rolls Royce Phantom at night - DRIVEIT premium fleet"
+            src={heroImageSrc}
+            alt="Luxury Fleet - DRIVEIT premium fleet"
             fill
             priority
             className="object-cover object-center"
             sizes="100vw"
+            unoptimized={heroImageSrc.startsWith('http')}
           />
         )}
       </motion.div>
@@ -96,7 +105,7 @@ export default function Hero({ videoUrl }: { videoUrl?: string }) {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          Premium Luxury Transportation
+          {subtitle}
         </motion.p>
 
         {/* Main Heading - Staggered letter animation */}

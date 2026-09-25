@@ -7,20 +7,23 @@ import type {
 } from 'payload'
 
 /**
- * Cache invalidation for ISR pages.
+ * Cache invalidation for ISR pages, sitemaps, RSS feeds, and LLM discoverability files.
  *
  * Public pages opt into ISR (`export const revalidate = N`), so a CMS edit must
  * explicitly invalidate the affected routes — otherwise editors "save" and see
  * nothing change for minutes.
  */
 
+const SEO_DISCOVERY_ROUTES = ['/sitemap.xml', '/robots.txt', '/llms.txt', '/llms-full.txt']
+
 const ROUTES_BY_COLLECTION: Record<string, string[]> = {
-  cars: ['/', '/cars', '/checkout', '/dashboard/wishlist'],
-  blogs: ['/blog'],
-  services: ['/', '/services'],
+  cars: ['/', '/cars', '/checkout', '/dashboard/wishlist', '/api/fleet', ...SEO_DISCOVERY_ROUTES],
+  blogs: ['/blog', '/feed.xml', ...SEO_DISCOVERY_ROUTES],
+  services: ['/', '/services', ...SEO_DISCOVERY_ROUTES],
   testimonials: ['/', '/about'],
   coupons: ['/checkout'],
-  media: ['/', '/cars', '/blog'],
+  media: ['/', '/cars', '/blog', ...SEO_DISCOVERY_ROUTES],
+  partner_applications: ['/partner/list-fleet'],
 }
 
 function safeRevalidate(path: string) {
@@ -53,7 +56,13 @@ export const revalidateAfterDelete: CollectionAfterDeleteHook = ({ collection, d
 }
 
 export const revalidateAfterGlobalChange: GlobalAfterChangeHook = ({ doc, global }) => {
-  if (global.slug === 'site-settings') safeRevalidate('/')
+  if (global.slug === 'site-settings') {
+    safeRevalidate('/')
+    safeRevalidate('/about')
+    safeRevalidate('/contact')
+    safeRevalidate('/api/site-settings')
+    for (const route of SEO_DISCOVERY_ROUTES) safeRevalidate(route)
+  }
   return doc
 }
 

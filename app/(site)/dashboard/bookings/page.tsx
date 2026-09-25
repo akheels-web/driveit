@@ -151,6 +151,129 @@ export default async function BookingsPage({
                     </div>
                   </div>
 
+                  {/* Flight Info for Airport Trips */}
+                  {booking.flightNumber && (
+                    <div className="mb-4 p-3 rounded-lg bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 text-white/80">
+                        <span className="text-[var(--gold-400)]">✈️ Flight:</span>
+                        <span className="font-semibold text-white">{booking.flightNumber}</span>
+                        <span className="text-white/40">({booking.airportTerminal || 'RGIA Airport'})</span>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 font-medium">✓ 60-min flight delay wait included</span>
+                    </div>
+                  )}
+
+                  {/* Chauffeur Dossier (if assigned) */}
+                  {booking.chauffeurDetails?.name && (
+                    <div className="mb-4 p-3 rounded-lg bg-[var(--gold-400)]/5 border border-[var(--gold-400)]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-[var(--gold-400)]/20 flex items-center justify-center text-[var(--gold-400)] font-bold text-xs">
+                          {booking.chauffeurDetails.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-white">Chauffeur: {booking.chauffeurDetails.name}</p>
+                          <p className="text-[10px] text-white/40">
+                            Vehicle Plate: <span className="text-[var(--gold-400)] font-mono">{booking.chauffeurDetails.vehicleNumber || 'Assigned'}</span> ({booking.chauffeurDetails.carColor || 'Obsidian Black'})
+                          </p>
+                        </div>
+                      </div>
+                      {booking.chauffeurDetails.phone && (
+                        <a
+                          href={`tel:${booking.chauffeurDetails.phone}`}
+                          className="px-3 py-1 rounded-md bg-[var(--gold-400)] text-black font-semibold text-[11px] hover:bg-[var(--gold-300)] text-center transition"
+                        >
+                          Call Chauffeur
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Security Deposit & Refund Tracker (for Self-Drive) */}
+                  {booking.securityDepositStatus && booking.securityDepositStatus !== 'na' && (
+                    <div className="mb-4 p-3.5 rounded-lg bg-black/40 border border-white/10 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-white/80 uppercase tracking-wider flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[var(--gold-400)]" />
+                          Security Deposit Tracker
+                        </span>
+                        <span className="text-xs font-bold text-[var(--gold-400)]">
+                          ₹{Number(booking.securityDepositAmount || 25000).toLocaleString('en-IN')}
+                        </span>
+                      </div>
+
+                      {/* 4-Step Progress Stepper */}
+                      <div className="grid grid-cols-4 gap-1 text-center pt-1">
+                        <div className="space-y-1">
+                          <div className="h-1.5 rounded-full bg-emerald-500" />
+                          <span className="text-[9px] text-emerald-400 font-medium">1. Held</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div
+                            className={`h-1.5 rounded-full ${
+                              ['inspection_passed', 'refunded'].includes(booking.securityDepositStatus)
+                                ? 'bg-emerald-500'
+                                : 'bg-white/10'
+                            }`}
+                          />
+                          <span
+                            className={`text-[9px] ${
+                              ['inspection_passed', 'refunded'].includes(booking.securityDepositStatus)
+                                ? 'text-emerald-400 font-medium'
+                                : 'text-white/30'
+                            }`}
+                          >
+                            2. Inspected
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <div
+                            className={`h-1.5 rounded-full ${
+                              ['inspection_passed', 'refunded'].includes(booking.securityDepositStatus)
+                                ? 'bg-emerald-500'
+                                : 'bg-white/10'
+                            }`}
+                          />
+                          <span
+                            className={`text-[9px] ${
+                              ['inspection_passed', 'refunded'].includes(booking.securityDepositStatus)
+                                ? 'text-emerald-400 font-medium'
+                                : 'text-white/30'
+                            }`}
+                          >
+                            3. Approved
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <div
+                            className={`h-1.5 rounded-full ${
+                              booking.securityDepositStatus === 'refunded' ? 'bg-emerald-500' : 'bg-white/10'
+                            }`}
+                          />
+                          <span
+                            className={`text-[9px] ${
+                              booking.securityDepositStatus === 'refunded'
+                                ? 'text-emerald-400 font-medium'
+                                : 'text-white/30'
+                            }`}
+                          >
+                            4. Refunded
+                          </span>
+                        </div>
+                      </div>
+
+                      {booking.securityDepositStatus === 'refunded' && booking.depositRefundUtr && (
+                        <p className="text-[10px] text-emerald-400 font-mono pt-1">
+                          ✓ Refund Dispatched via UPI. Bank UTR: <strong>{booking.depositRefundUtr}</strong>
+                        </p>
+                      )}
+                      {booking.securityDepositStatus === 'held' && (
+                        <p className="text-[10px] text-white/40">
+                          Refund released via UPI within 24–48 hours after vehicle return inspection.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <div className="pt-4 border-t border-white/5 flex items-center gap-3">
                     <Link
                       href={`/dashboard/invoices/${booking.id}`}

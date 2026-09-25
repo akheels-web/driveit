@@ -43,10 +43,46 @@ export const SiteSettings: GlobalConfig = {
       defaultValue: '+916300041186',
     },
     {
+      name: 'promoBannerEnabled',
+      type: 'checkbox',
+      label: 'Enable Top Promo Announcement Banner',
+      defaultValue: true,
+    },
+    {
+      name: 'promoBannerText',
+      type: 'text',
+      label: 'Promo Banner Text',
+      defaultValue: 'Exclusive Offer: Use code FIRST10 for 10% off your first luxury rental!',
+    },
+    {
+      name: 'promoBannerCode',
+      type: 'text',
+      label: 'Promo Code Badge',
+      defaultValue: 'FIRST10',
+    },
+    {
       name: 'headerLogo',
       type: 'relationship',
       relationTo: 'media',
       label: 'Header Logo Image',
+    },
+    {
+      name: 'footerLogo',
+      type: 'relationship',
+      relationTo: 'media',
+      label: 'Footer Logo Image',
+    },
+    {
+      name: 'favicon',
+      type: 'relationship',
+      relationTo: 'media',
+      label: 'Website Favicon (.ico or .png)',
+    },
+    {
+      name: 'appleTouchIcon',
+      type: 'relationship',
+      relationTo: 'media',
+      label: 'Apple Touch Icon / PWA Icon (180x180 png)',
     },
     {
       name: 'headerVideoUrl',
@@ -54,14 +90,76 @@ export const SiteSettings: GlobalConfig = {
       label: 'Homepage Header Video URL',
       admin: {
         description:
-          'Optional. Paste a direct .mp4 video URL to play a video background on the homepage instead of the static image. Leave blank to use the default image.',
+          'Optional. Direct .mp4 video URL to play as background on the homepage. Leave blank to use hero image.',
       },
     },
     {
-      name: 'footerLogo',
+      name: 'heroImage',
       type: 'relationship',
       relationTo: 'media',
-      label: 'Footer Logo Image',
+      label: 'Hero Background Image (used when no video)',
+    },
+    {
+      name: 'heroSubtitle',
+      type: 'text',
+      label: 'Hero Tagline Subtitle',
+      defaultValue: 'Premium Luxury Transportation',
+    },
+    {
+      name: 'heroHeadingLine1',
+      type: 'text',
+      label: 'Hero Heading Line 1',
+      defaultValue: 'The Art of',
+    },
+    {
+      name: 'heroHeadingLine2',
+      type: 'text',
+      label: 'Hero Heading Line 2 (Gold Accent)',
+      defaultValue: 'Luxury',
+    },
+    {
+      name: 'missionBadge',
+      type: 'text',
+      label: 'Mission Section Badge',
+      defaultValue: 'Who We Are',
+    },
+    {
+      name: 'missionTitle',
+      type: 'text',
+      label: 'Mission Section Title',
+      defaultValue: 'Our Mission',
+    },
+    {
+      name: 'missionText',
+      type: 'textarea',
+      label: 'Mission Statement Body',
+      defaultValue:
+        'DRIVEIT Luxury aims to be the world’s leading luxury mobility platform, offering unmatched service, exclusivity, and innovation. We redefine ultra-luxury travel with cutting-edge technology, global partnerships, and personalized experiences—setting new standards in premium lifestyle and elite mobility.',
+    },
+    {
+      name: 'missionImage',
+      type: 'relationship',
+      relationTo: 'media',
+      label: 'Mission Background Image',
+    },
+    {
+      name: 'metaTitle',
+      type: 'text',
+      label: 'Global SEO Meta Title',
+      defaultValue: 'DRIVEIT Luxury | Premium Luxury Car Rental Hyderabad | Book Online',
+    },
+    {
+      name: 'metaDescription',
+      type: 'textarea',
+      label: 'Global SEO Meta Description',
+      defaultValue:
+        'Experience unparalleled luxury with DRIVEIT. Premium car rental, private jet services, yacht charters, and luxury transportation in Hyderabad, India. VIP chauffeur services, wedding cars, and corporate transportation solutions.',
+    },
+    {
+      name: 'ogImage',
+      type: 'relationship',
+      relationTo: 'media',
+      label: 'Social Share Preview Image (OG Image 1200x630)',
     },
     {
       name: 'footerDescription',
@@ -87,6 +185,18 @@ export const SiteSettings: GlobalConfig = {
       type: 'text',
       label: 'YouTube Channel Link',
       defaultValue: 'https://youtube.com/@driveitluxury',
+    },
+    {
+      name: 'linkedinUrl',
+      type: 'text',
+      label: 'LinkedIn Page Link',
+      defaultValue: 'https://linkedin.com/company/driveitluxury',
+    },
+    {
+      name: 'twitterUrl',
+      type: 'text',
+      label: 'X (Twitter) Profile Link',
+      defaultValue: 'https://twitter.com/driveitluxury',
     },
     {
       name: 'address',

@@ -29,6 +29,9 @@ export interface CarDetails {
   cancellationPolicy: string
   kmAllowance: string
   securityDeposit: string
+  securityDepositAmount?: number
+  fuelPolicy?: string
+  fastTagEquipped?: boolean
 }
 
 function generateSlug(name: string): string {

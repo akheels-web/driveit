@@ -5,7 +5,17 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion, useScroll, useTransform, useInView } from "motion/react"
 
-export default function Mision() {
+export default function Mision({
+  badge = 'Who We Are',
+  title = 'Our Mission',
+  text = 'DRIVEIT Luxury aims to be the world’s leading luxury mobility platform, offering unmatched service, exclusivity, and innovation. We redefine ultra-luxury travel with cutting-edge technology, global partnerships, and personalized experiences—setting new standards in premium lifestyle and elite mobility.',
+  imageSrc = '/luxury-flagship-cars-in-black-studio.png',
+}: {
+  badge?: string
+  title?: string
+  text?: string
+  imageSrc?: string
+} = {}) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(textRef, { once: true, margin: "0px 0px -100px 0px" })
@@ -27,12 +37,13 @@ export default function Mision() {
           style={{ y: imageY }}
         >
           <Image
-            src="/luxury-flagship-cars-in-black-studio.png"
+            src={imageSrc}
             alt="DRIVEIT Luxury fleet lineup"
             fill
             className="object-cover"
             loading="lazy"
             sizes="100vw"
+            unoptimized={imageSrc.startsWith('http')}
           />
         </motion.div>
 
@@ -56,7 +67,7 @@ export default function Mision() {
               animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              Who We Are
+              {badge}
             </motion.span>
 
             <motion.h2
@@ -65,7 +76,13 @@ export default function Mision() {
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.2 }}
             >
-              Our <span className="text-gradient-gold">Mission</span>
+              {title.includes('Mission') ? (
+                <>
+                  Our <span className="text-gradient-gold">Mission</span>
+                </>
+              ) : (
+                <span className="text-gradient-gold">{title}</span>
+              )}
             </motion.h2>
 
             <motion.p
@@ -74,10 +91,7 @@ export default function Mision() {
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.4 }}
             >
-              DRIVEIT Luxury aims to be the world&apos;s leading luxury mobility platform, offering
-              unmatched service, exclusivity, and innovation. We redefine ultra-luxury travel with
-              cutting-edge technology, global partnerships, and personalized experiences—setting new
-              standards in premium lifestyle and elite mobility.
+              {text}
             </motion.p>
 
             {/* Learn More Button */}

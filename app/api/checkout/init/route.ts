@@ -25,6 +25,10 @@ const InitSchema = z.object({
   couponCode: z.string().trim().max(60).optional().nullable(),
   whatsappNumber: z.string().trim().max(30).optional().nullable(),
   packageType: z.string().trim().max(40).optional().nullable(),
+  flightNumber: z.string().trim().max(30).optional().nullable(),
+  airportTerminal: z.string().trim().max(100).optional().nullable(),
+  gstin: z.string().trim().max(30).optional().nullable(),
+  companyName: z.string().trim().max(160).optional().nullable(),
 })
 
 export async function POST(request: Request) {
@@ -123,6 +127,9 @@ export async function POST(request: Request) {
       discount,
     })
 
+    const isSelfDrive = input.serviceType === 'selfdrive'
+    const securityDepositAmount = isSelfDrive ? (car.securityDepositAmount ?? 25000) : 0
+
     const hold = await createBookingHold(payload, {
       carSlug: car.slug,
       carName: car.name,
@@ -140,6 +147,12 @@ export async function POST(request: Request) {
       couponCode,
       discountApplied: quote.discount,
       whatsappNumber: input.whatsappNumber ?? input.customerPhone,
+      securityDepositAmount,
+      securityDepositStatus: isSelfDrive ? 'held' : 'na',
+      flightNumber: input.flightNumber ?? null,
+      airportTerminal: input.airportTerminal ?? null,
+      gstin: input.gstin ?? null,
+      companyName: input.companyName ?? null,
     })
 
     return NextResponse.json({
@@ -155,7 +168,17 @@ export async function POST(request: Request) {
       addonLines: quote.addonLines,
       discount: quote.discount,
       couponCode,
-      car: { id: car.id, slug: car.slug, name: car.name, image: car.src, pricePerDay: car.price },
+      securityDepositAmount,
+      car: {
+        id: car.id,
+        slug: car.slug,
+        name: car.name,
+        image: car.src,
+        pricePerDay: car.price,
+        securityDepositAmount,
+        fuelPolicy: car.fuelPolicy,
+        fastTagEquipped: car.fastTagEquipped,
+      },
     })
   } catch (error) {
     if (error instanceof BookingConflictError) {

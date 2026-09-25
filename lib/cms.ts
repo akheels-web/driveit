@@ -29,18 +29,28 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '')
 
+export function resolveMediaUrl(media: any, fallback: string = ''): string {
+  if (!media) return fallback
+  if (typeof media === 'string' && media.trim()) return media.trim()
+  if (typeof media === 'object' && typeof media.url === 'string' && media.url.trim()) return media.url.trim()
+  return fallback
+}
+
 type CarDoc = Record<string, any>
 
 function resolveImage(doc: CarDoc): string {
-  if (doc.image && typeof doc.image === 'object' && typeof doc.image.url === 'string') return doc.image.url
-  if (typeof doc.imageSrc === 'string' && doc.imageSrc.trim()) return doc.imageSrc.trim()
-  return '/placeholder.jpg'
+  return resolveMediaUrl(
+    doc.image,
+    typeof doc.imageSrc === 'string' && doc.imageSrc.trim() ? doc.imageSrc.trim() : '/placeholder.jpg',
+  )
 }
 
 export function mapCarDoc(doc: CarDoc): CarDetails {
   const price = Number(doc.pricePerDay ?? doc.price ?? 0)
   const gallery = Array.isArray(doc.gallery)
-    ? (doc.gallery.map((entry: any) => entry?.src).filter(Boolean) as string[])
+    ? (doc.gallery
+        .map((entry: any) => resolveMediaUrl(entry?.image, typeof entry?.src === 'string' ? entry.src : ''))
+        .filter(Boolean) as string[])
     : undefined
 
   return {
@@ -72,6 +82,9 @@ export function mapCarDoc(doc: CarDoc): CarDetails {
       doc.cancellationPolicy || 'Free cancellation up to 48 hours before pickup.',
     kmAllowance: doc.kmAllowance || '100 km/day included.',
     securityDeposit: doc.securityDeposit || '₹25,000',
+    securityDepositAmount: Number(doc.securityDepositAmount ?? 25000),
+    fuelPolicy: doc.fuelPolicy || 'Full-to-Full (Return full tank, pay ₹0 fuel fee)',
+    fastTagEquipped: doc.fastTagEquipped !== false,
   }
 }
 

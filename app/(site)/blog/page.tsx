@@ -51,6 +51,7 @@ export default async function BlogPage() {
                       fill
                       sizes="(min-width: 768px) 50vw, 100vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      unoptimized={post.image.startsWith('http')}
                     />
                     <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-xs font-semibold tracking-wider text-[var(--gold-400)] uppercase">
                       {post.category}
