@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, Car, Plane, MapPin, Bus, Heart, Building, Anchor } from "lucide-react"
 import { motion, useInView } from "motion/react"
@@ -92,47 +93,28 @@ function ServiceCard({
   index: number
   isInView: boolean
 }) {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  const cardRef = useRef<HTMLAnchorElement>(null)
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardRef.current) return
-    const rect = cardRef.current.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 10
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -10
-    setMousePos({ x, y })
-  }
-
-  const handleMouseLeave = () => {
-    setMousePos({ x: 0, y: 0 })
-  }
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.4), ease: [0.25, 0.1, 0.25, 1] }}
     >
       <Link
-        ref={cardRef}
         href={service.href}
-        className="group relative block h-80 md:h-[420px] rounded-2xl overflow-hidden border-glow-gold cursor-pointer"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          transform: `perspective(800px) rotateX(${mousePos.y}deg) rotateY(${mousePos.x}deg)`,
-          transition: "transform 0.15s ease-out",
-        }}
+        className="group relative block h-80 md:h-[420px] rounded-2xl overflow-hidden border-glow-gold cursor-pointer gpu-layer transition-transform duration-500 ease-out hover:-translate-y-2 hover:scale-[1.01]"
       >
-        <img
+        <Image
           src={service.img}
-          alt={service.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          alt={`${service.title} Hyderabad`}
+          fill
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           loading="lazy"
+          unoptimized={service.img.startsWith('http')}
         />
 
         {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-all duration-500 group-hover:from-black/90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent transition-all duration-500 group-hover:from-black/95" />
 
         {/* Icon badge */}
         <div className="absolute top-4 left-4 w-10 h-10 glass-gold rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110">
@@ -151,7 +133,7 @@ function ServiceCard({
         </div>
 
         {/* Gold corner accent */}
-        <div className="absolute top-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+        <div className="absolute top-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
           <div className="absolute top-4 right-4 w-6 h-px bg-[var(--gold-400)]" />
           <div className="absolute top-4 right-4 w-px h-6 bg-[var(--gold-400)]" />
         </div>
@@ -181,9 +163,9 @@ export function TrendingGrid({ services: propServices }: { services?: ServiceVie
         {/* Header */}
         <motion.div
           className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 25 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.6 }}
         >
           <div>
             <span className="text-xs tracking-[0.25em] uppercase text-white/40">What We Offer</span>
@@ -193,7 +175,7 @@ export function TrendingGrid({ services: propServices }: { services?: ServiceVie
           </div>
           <Link
             href="/services"
-            className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-6 py-3 glass-gold rounded-full text-sm font-medium text-white transition-all duration-300 hover:bg-[var(--gold-400)]/10 hover:scale-105 group"
+            className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-6 py-3 glass-gold rounded-full text-sm font-medium text-white transition-all duration-300 hover:bg-[var(--gold-400)]/10 hover:scale-105 group min-h-[44px]"
           >
             Discover More
             <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />

@@ -286,3 +286,29 @@
 - **Fleet Summary API ([`app/api/telematics/fleet/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/telematics/fleet/route.ts))**:
   - Provides a single JSON endpoint returning real-time GPS locations, speed, ignition, and odometer readings for all vehicles in the fleet.
 
+## 17. High-Performance Scrolling, Loading Screens & Zero-Hang Transitions
+- **Global Luxury Loading Screen ([`app/(site)/loading.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/loading.tsx))**:
+  - Automatically streamed by Next.js App Router during server component data fetching.
+  - Deep obsidian black background (`#050505`), animated concentric gold radar rings, golden monogram emblem, and gold shimmer loader strip. Eliminates blank screens and perceived route freezes.
+- **Zero-Latency Top Progress Bar ([`components/page-progress-bar.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/page-progress-bar.tsx))**:
+  - Mounted inside `app/(site)/layout.tsx`.
+  - Captures internal link clicks instantly and fires a 2.5px gold neon progress pulse across the top edge (`0%` -> `75%` -> `100%`) before completing upon `pathname`/`searchParams` update.
+  - Provides immediate (<10ms) tactile visual feedback so users never feel like clicks are ignored or hanging.
+- **Scroll Performance & CPU De-bottlenecking**:
+  - **Eliminated SVG Fractal Turbulence**: Replaced CPU-hogging `.grain-overlay::after` 400% infinite SVG `feTurbulence` animation in [`app/globals.css`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/globals.css) with a static, GPU-accelerated radial vignette.
+  - **Freed Window Scroll Thread**: Removed continuous JS `useScroll` and `useTransform` matrix recalculations on full-viewport backgrounds in [`components/hero.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/hero.tsx) and [`components/Mision.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/Mision.tsx), replacing them with hardware-accelerated (`gpu-layer`) entrance animations.
+  - **Eliminated MouseMove React Re-renders**: Removed stateful `setMousePos` from [`components/trending-grid.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/trending-grid.tsx), switching to zero-overhead CSS GPU hover transitions and Next.js `<Image>`.
+  - **Modern Off-Screen Layout Deferral (`content-visibility: auto`)**: Added `.content-auto` with `contain-intrinsic-size: 1px 700px` to below-the-fold landing page sections (`#services`, `FleetCarousel`, `#about` in [`app/(site)/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/page.tsx)), allowing browsers to skip rendering offscreen sections until approached.
+  - **Hardware Accelerated Marquees**: Added `transform: translate3d(0, 0, 0)` and `will-change: transform` to marquee tracks.
+
+## 18. Database Schema Migrations & CMS Sync
+- **Root Cause of `[cms] Failed to load site settings`**:
+  - The `SiteSettings` global schema, `PartnerApplications` collection, and telematics columns on `Cars`/`Bookings` were added to TypeScript collections, but had not been migrated to the local Postgres database.
+  - In `payload.config.ts`, `pushSchema` defaults to `false` (migrations only). Consequently, Postgres rejected queries trying to select columns `promo_banner_enabled`, `header_logo_id`, `site_settings_stats`, and `site_settings_faqs`.
+- **Resolution**:
+  - Generated official migration [`migrations/20260925_072756.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/migrations/20260925_072756.ts) with `npm run migrate:create`.
+  - Executed `npm run migrate` (`Migrated: 20260925_072756 (236ms)`), creating all required tables and columns in Postgres.
+  - Added `PAYLOAD_SCHEMA_PUSH=true` to [`.env.local`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/.env.local) so local development automatically pushes any future schema adjustments directly to Postgres on boot.
+
+
+

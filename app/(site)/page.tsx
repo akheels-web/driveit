@@ -98,7 +98,7 @@ export default async function HomePage() {
         <TrustStrip />
 
         {/* Showcase & Mission */}
-        <section id="services">
+        <section id="services" className="content-auto">
           <Showcase services={services} />
           <Mision
             badge={siteSettings.missionBadge}
@@ -111,10 +111,12 @@ export default async function HomePage() {
         </section>
 
         {/* Fleet */}
-        <FleetCarousel cars={cars} />
+        <div className="content-auto">
+          <FleetCarousel cars={cars} />
+        </div>
 
         {/* Social Proof & Info */}
-        <section id="about">
+        <section id="about" className="content-auto">
           <Testomonials testimonials={testimonials} />
           <FAQ faqs={faqs} />
           <About

@@ -17,6 +17,7 @@ const playfair = Playfair_Display({
 
 import { getSiteSettings, resolveMediaUrl, SITE_DEFAULTS } from "@/lib/cms"
 import { SessionProvider } from "@/components/providers/session-provider"
+import { PageProgressBar } from "@/components/page-progress-bar"
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings()
@@ -184,6 +185,9 @@ export default async function RootLayout({
         className={`bg-background text-foreground antialiased font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable}`}
       >
         <SessionProvider>
+          <Suspense fallback={null}>
+            <PageProgressBar />
+          </Suspense>
           <Suspense fallback={null}>{children}</Suspense>
           <Sidectabtn />
           {process.env.NEXT_PUBLIC_TIDIO_CODE && (

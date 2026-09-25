@@ -152,6 +152,12 @@
    ═══════════════════════════════════════════════════════════════ */
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -379,6 +385,7 @@
   display: flex;
   width: max-content;
   animation: marquee-scroll 120s linear infinite;
+  transform: translate3d(0, 0, 0);
   will-change: transform;
   backface-visibility: hidden;
 }
@@ -391,9 +398,9 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
-
-
 
 @keyframes scrollBounce {
   0%, 100% { transform: translateY(0); opacity: 1; }
@@ -413,18 +420,34 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FILM GRAIN OVERLAY
+   PERFORMANCE & COMPOSITING UTILITIES
    ═══════════════════════════════════════════════════════════════ */
 
+/* Defer layout and rendering for below-the-fold content until user approaches */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 700px;
+}
+
+/* Hardware-accelerated GPU layer */
+.gpu-layer {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHTWEIGHT CINEMATIC VIGNETTE OVERLAY (ZERO CPU PENALTY)
+   ═══════════════════════════════════════════════════════════════ */
+
+.grain-overlay {
+  position: relative;
+}
 .grain-overlay::after {
   content: "";
   position: absolute;
-  inset: -200%;
-  width: 400%;
-  height: 400%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  animation: grain 8s steps(10) infinite;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, transparent 50%, rgba(0, 0, 0, 0.5) 100%);
   pointer-events: none;
-  z-index: 1;
-  opacity: 0.5;
+  z-index: 2;
 }

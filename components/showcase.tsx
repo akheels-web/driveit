@@ -90,7 +90,7 @@ export function Showcase({ services }: { services?: ServiceView[] } = {}) {
                 src={item.img}
                 alt={item.alt}
                 fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                className="object-cover transition-transform duration-700 group-hover:scale-105 gpu-layer"
                 loading="lazy"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 unoptimized={item.img.startsWith('http')}
@@ -136,7 +136,7 @@ export function Showcase({ services }: { services?: ServiceView[] } = {}) {
             src={weddingImg}
             alt={`${weddingTitle} in Hyderabad`}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            className="object-cover transition-transform duration-700 group-hover:scale-105 gpu-layer"
             loading="lazy"
             sizes="100vw"
             unoptimized={weddingImg.startsWith('http')}

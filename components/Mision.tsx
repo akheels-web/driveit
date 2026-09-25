@@ -3,7 +3,7 @@
 import { useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { motion, useScroll, useTransform, useInView } from "motion/react"
+import { motion, useInView } from "motion/react"
 
 export default function Mision({
   badge = 'Who We Are',
@@ -16,39 +16,27 @@ export default function Mision({
   text?: string
   imageSrc?: string
 } = {}) {
-  const sectionRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
-  const isInView = useInView(textRef, { once: true, margin: "0px 0px -100px 0px" })
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  })
-
-  // Parallax: image moves slower than scroll
-  const imageY = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"])
+  const isInView = useInView(textRef, { once: true, margin: "0px 0px -80px 0px" })
 
   return (
-    <section ref={sectionRef} className="relative bg-black text-white overflow-hidden">
+    <section className="relative bg-black text-white overflow-hidden gpu-layer">
       <div className="relative h-[500px] md:h-[600px] lg:h-[700px] w-full">
-        {/* Parallax Background Image */}
-        <motion.div
-          className="absolute inset-0 w-full h-[120%] -top-[10%]"
-          style={{ y: imageY }}
-        >
+        {/* Background Image (Hardware Accelerated, Smooth Native Scrolling) */}
+        <div className="absolute inset-0 w-full h-full">
           <Image
             src={imageSrc}
-            alt="DRIVEIT Luxury fleet lineup"
+            alt="DRIVEIT Luxury fleet lineup Hyderabad"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             loading="lazy"
             sizes="100vw"
             unoptimized={imageSrc.startsWith('http')}
           />
-        </motion.div>
+        </div>
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20" />
 
         {/* Mission Content at Bottom */}
         <div className="absolute inset-0 flex items-end justify-center px-4 md:px-6 pb-12 md:pb-16">
@@ -72,9 +60,9 @@ export default function Mision({
 
             <motion.h2
               className="mt-3 text-3xl md:text-4xl font-[family-name:var(--font-playfair)] font-semibold text-white"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 25 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.2 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
               {title.includes('Mission') ? (
                 <>
@@ -89,20 +77,20 @@ export default function Mision({
               className="mt-4 text-sm md:text-base lg:text-lg leading-relaxed font-light text-white/70 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.4 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
             >
               {text}
             </motion.p>
 
             {/* Learn More Button */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.6 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
             >
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 mt-6 text-sm font-medium text-[var(--gold-400)] hover:text-[var(--gold-200)] transition-colors duration-300 group"
+                className="inline-flex items-center gap-2 mt-6 text-sm font-medium text-[var(--gold-400)] hover:text-[var(--gold-200)] transition-colors duration-300 group min-h-[44px]"
               >
                 Learn More
                 <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
