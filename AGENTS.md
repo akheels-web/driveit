@@ -310,5 +310,22 @@
   - Executed `npm run migrate` (`Migrated: 20260925_072756 (236ms)`), creating all required tables and columns in Postgres.
   - Added `PAYLOAD_SCHEMA_PUSH=true` to [`.env.local`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/.env.local) so local development automatically pushes any future schema adjustments directly to Postgres on boot.
 
+## 19. VIP Atelier Split-Screen Authentication Architecture
+- **Two-Section Layout ([`app/(site)/login/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/login/page.tsx))**:
+  - Replaced the previous basic centered box with a high-end split-screen experience (`lg:w-7/12` visual atelier + `lg:w-5/12` access portal).
+  - **Left Section (Prestige Atelier & Trust)**:
+    - High-res cinematic Maybach backdrop with multi-layered obsidian vignette overlays.
+    - Golden brand crest and live "Concierge Active 24/7" status badge.
+    - 3 core member privilege feature cards: Priority Dispatch & 10-Min Hold, Digital KYC Vault, and Live Telematics Radar.
+    - Verified client quote (`Vikramaditya R., Jubilee Hills`) with 5 gold stars and live fleet counter (`50+ Vehicles • 1,200+ VIP Trips • 4.9★`).
+  - **Right Section (Interactive VIP Portal)**:
+    - Return to Fleet navigation and direct 24/7 WhatsApp VIP support button with live pulse.
+    - Golden crown emblem with smooth tab switcher (`Sign In` vs `New VIP Account`).
+    - Prominent Google 1-Tap button featuring official multicolor Google "G" SVG logo and animated arrow.
+    - VIP perks checklist, direct concierge phone hotline (`+91 63000 41186`), and 256-bit SSL security badge.
+  - **Unified `/signup` Route ([`app/(site)/signup/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/signup/page.tsx))**:
+    - Automatically forwards to `/login?mode=signup`, pre-selecting the "New VIP Account" tab without code duplication.
+
+
 
 
