@@ -172,16 +172,16 @@ function LoginForm() {
           >
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--gold-400)]/10 border border-[var(--gold-400)]/30 text-[var(--gold-300)] text-xs font-semibold tracking-wide">
               <Sparkles className="w-3.5 h-3.5 text-[var(--gold-400)]" />
-              Private Member Benefits
+              Customer Account Benefits
             </div>
 
             <h2 className="text-3xl sm:text-4xl xl:text-5xl font-[family-name:var(--font-playfair)] font-bold text-white leading-tight">
-              Bespoke Mobility for <br />
-              <span className="text-gradient-gold">Discerning Leaders.</span>
+              Luxury Mobility, <br />
+              <span className="text-gradient-gold">Flawlessly Managed.</span>
             </h2>
 
             <p className="text-sm sm:text-base text-white/70 font-light leading-relaxed">
-              Experience flawless airport pickups, wedding convoy management, and self-drive access to Hyderabad&apos;s finest automotive collection.
+              Sign in to manage your luxury car bookings, self-drive driving license verification, live chauffeur GPS tracking, and GST invoices.
             </p>
 
             {/* 3 Pillar Feature Highlights */}
@@ -190,9 +190,9 @@ function LoginForm() {
                 <div className="w-8 h-8 rounded-lg bg-[var(--gold-400)]/10 flex items-center justify-center text-[var(--gold-400)]">
                   <Crown className="w-4 h-4" />
                 </div>
-                <h4 className="text-xs font-semibold text-white">Priority Dispatch</h4>
+                <h4 className="text-xs font-semibold text-white">Instant Booking</h4>
                 <p className="text-[11px] text-white/50 leading-normal">
-                  Guaranteed allocation & 10-minute hold lock for VIP dates.
+                  Saved customer details and 10-minute hold lock for your dates.
                 </p>
               </div>
 
@@ -200,9 +200,9 @@ function LoginForm() {
                 <div className="w-8 h-8 rounded-lg bg-emerald-400/10 flex items-center justify-center text-emerald-400">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
-                <h4 className="text-xs font-semibold text-white">Digital KYC Vault</h4>
+                <h4 className="text-xs font-semibold text-white">Digital DL & KYC</h4>
                 <p className="text-[11px] text-white/50 leading-normal">
-                  Upload DL once for zero-paperwork express departures.
+                  Upload Driving License once for express self-drive departure.
                 </p>
               </div>
 
@@ -210,9 +210,9 @@ function LoginForm() {
                 <div className="w-8 h-8 rounded-lg bg-amber-400/10 flex items-center justify-center text-amber-400">
                   <Compass className="w-4 h-4" />
                 </div>
-                <h4 className="text-xs font-semibold text-white">Live Telematics</h4>
+                <h4 className="text-xs font-semibold text-white">Live Radar & Invoices</h4>
                 <p className="text-[11px] text-white/50 leading-normal">
-                  Real-time radar tracking, chauffeur profile & GPS receipt.
+                  Track chauffeur telematics radar and download GST tax invoices.
                 </p>
               </div>
             </div>
@@ -246,7 +246,7 @@ function LoginForm() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          SECTION 2: VIP ACCESS PORTAL & AUTHENTICATION (RIGHT)
+          SECTION 2: CUSTOMER ACCESS PORTAL & AUTHENTICATION (RIGHT)
           ───────────────────────────────────────────────────────────── */}
       <section className="w-full lg:w-5/12 xl:w-4/12 min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-12 bg-[#09090c] relative z-20">
         {/* Top Utility Nav */}
@@ -280,12 +280,12 @@ function LoginForm() {
 
             <div>
               <h1 className="text-2xl sm:text-3xl font-[family-name:var(--font-playfair)] font-bold text-white">
-                {mode === 'signin' ? 'Member Access' : 'Create VIP Account'}
+                {mode === 'signin' ? 'Customer Sign In' : 'Create Customer Account'}
               </h1>
               <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
                 {mode === 'signin'
-                  ? 'Sign in to access your itinerary, telematics radar, and tax invoices.'
-                  : 'Join DRIVEIT in 1 tap — instant booking checkout & welcome privileges.'}
+                  ? 'Sign in to access your bookings, live chauffeur radar, and GST invoices.'
+                  : 'Create your customer account with Google in 1 click to book vehicles.'}
               </p>
             </div>
           </div>
@@ -312,7 +312,7 @@ function LoginForm() {
                   : 'text-white/50 hover:text-white'
               }`}
             >
-              New VIP Account
+              Create Account
             </button>
           </div>
 
@@ -339,7 +339,7 @@ function LoginForm() {
             </motion.div>
           )}
 
-          {/* Primary Action: Google 1-Tap VIP Sign-In Button */}
+          {/* Primary Action: Google 1-Tap Sign-In Button */}
           <div className="space-y-3">
             <button
               onClick={() => {
@@ -356,7 +356,7 @@ function LoginForm() {
                     ? 'Connecting to Secure Server…'
                     : mode === 'signin'
                     ? 'Continue with Google'
-                    : 'Join in 1-Tap with Google'}
+                    : 'Sign Up with Google (1-Click)'}
                 </span>
               </div>
               <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform duration-300" />
@@ -367,17 +367,17 @@ function LoginForm() {
             </p>
           </div>
 
-          {/* VIP Features Checklist */}
+          {/* Customer Features Checklist */}
           <div className="pt-4 border-t border-white/10 space-y-2.5">
             <p className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">
-              {mode === 'signin' ? 'Your Access Includes:' : 'New Member Privileges:'}
+              {mode === 'signin' ? 'Your Customer Account Includes:' : 'New Account Benefits:'}
             </p>
             <ul className="space-y-2 text-xs text-white/70">
               <li className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-emerald-400/10 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 </div>
-                <span>One-click checkout with saved details</span>
+                <span>One-click car booking with saved customer profile</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
@@ -395,9 +395,20 @@ function LoginForm() {
                 <div className="w-4 h-4 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[var(--gold-400)]" />
                 </div>
-                <span>Automatic 10% welcome voucher (WELCOME10)</span>
+                <span>10% welcome discount on your first rental (WELCOME10)</span>
               </li>
             </ul>
+          </div>
+
+          {/* Car Owner Fleet Partner Prompt */}
+          <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 text-center text-xs space-y-1">
+            <span className="text-white/60 block">Are you a luxury car owner looking to list your vehicle?</span>
+            <Link
+              href="/partner/list-fleet"
+              className="text-[var(--gold-400)] hover:text-[var(--gold-300)] font-semibold inline-flex items-center gap-1 hover:underline"
+            >
+              Apply to DRIVEIT Fleet Partner Program →
+            </Link>
           </div>
 
           {/* Direct Concierge Phone Contact */}
@@ -419,8 +430,8 @@ function LoginForm() {
         <div className="pt-6 border-t border-white/10 text-center text-[10px] text-white/30 space-y-1">
           <p>
             By continuing, you agree to DRIVEIT&apos;s{' '}
-            <Link href="/terms-of-service" className="text-white/50 hover:underline">
-              Terms of Service
+            <Link href="/terms-conditions" className="text-white/50 hover:underline">
+              Terms &amp; Conditions
             </Link>{' '}
             and{' '}
             <Link href="/privacy-policy" className="text-white/50 hover:underline">
