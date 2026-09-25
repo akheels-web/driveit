@@ -83,20 +83,20 @@ A: ${f.a}
 - **Website**: ${baseUrl}
 
 ## 2. Complete Active Fleet Catalog
-${carDetails || 'No vehicles currently registered in the CMS.'}
+${carDetails || 'No vehicles currently listed in the fleet directory.'}
 
 ## 3. Comprehensive Service Directory
-${serviceDetails || 'No services currently registered in the CMS.'}
+${serviceDetails || 'No services currently listed in the directory.'}
 
 ## 4. Frequently Asked Questions
-${faqDetails || 'No FAQs currently registered in the CMS.'}
+${faqDetails || 'No FAQs currently listed.'}
 
 ## 5. Journal & Guides
-${blogDetails || 'No journal entries registered.'}
+${blogDetails || 'No journal entries listed.'}
 
 ## 6. Verification, KYC & Booking Safety
 - **KYC Vault**: Self-drive customers must upload a valid Driving License and Govt ID (Aadhaar/Passport).
-- **Concurrency Hold**: The booking engine issues a 10-minute cryptographic hold with advisory locking so vehicles cannot be double-booked.
+- **Concurrency Hold**: The booking engine secures a 10-minute guaranteed reservation hold so vehicles cannot be double-booked.
 - **Deposit Refund Policy**: Admin verifies return inspection; security deposits are refunded within 48 hours with verifiable bank UTR reference numbers.
 - **VIP Touchdown Delay Guarantee**: Complimentary 60-minute wait policy from flight landing for airport arrivals.
 `

@@ -23,7 +23,7 @@ export const AfterLogin = () => {
         </a>
         <span className="driveit-dot-divider">•</span>
         <a href="/login" className="driveit-admin-customer-link">
-          Customer Portal (/login)
+          Customer Portal
         </a>
       </div>
 
@@ -31,7 +31,7 @@ export const AfterLogin = () => {
       <div className="driveit-admin-support-row">
         <span className="driveit-admin-support-label">Need staff credentials?</span>
         <a
-          href="https://wa.me/916300041186?text=Hi%20DRIVEIT%20Concierge,%20I%20am%20a%20team%20member%20requesting%20CMS%20access"
+          href="https://wa.me/916300041186?text=Hi%20DRIVEIT%20Concierge,%20I%20am%20a%20team%20member%20requesting%20staff%20portal%20access"
           target="_blank"
           rel="noopener noreferrer"
           className="driveit-admin-wa-link"

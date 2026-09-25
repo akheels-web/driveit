@@ -345,6 +345,19 @@
   - **Customer Portal (`/login` & `/signup`)**: Explicitly clarified as the **Customer Account Portal** for normal renters and clients. Removed confusing "VIP Member / Club" jargon; replaced with clear tabs `Customer Sign In` and `Create Customer Account` with 1-click Google OAuth. Added a clear callout redirecting luxury car owners to `/partner/list-fleet`.
   - **CMS Admin Portal (`/admin/login`)**: Strictly for internal operations and staff. Redesigned with a 2-section executive atelier layout in `admin.css`, `Logo.tsx`, and `AfterLogin.tsx`, free from customer-facing booking prompts, with explicit restricted security warnings and return links.
 
-
-
-
+## 21. Public & Customer View Copy Policy (Zero Backend / Package Jargon)
+- **Strict Directive**: Under no circumstance should any backend tool, software architecture detail, package name, database technology, or developer jargon be displayed in customer-facing, public, or portal views.
+- **Prohibited Terms in Customer & Public UI**:
+  - `PostgreSQL` / `Postgres 16` ➔ Replace with `Concierge Dispatch`, `Verified Operations`, or `Secure Reservations`.
+  - `Payload CMS` / `Headless CMS` ➔ Replace with `Executive Console`, `Fleet Operations`, or `Operations Atelier`.
+  - `Advisory locks` / `pg_advisory_xact_lock` ➔ Replace with `Guaranteed Reservation Hold` or `High-concurrency reservation lock`.
+  - `OAuth 2.0` / `Auth.js` ➔ Replace with `One-tap secure login with Google` or `Instant Google Sign-In`.
+  - `Calculated on our server` / `verified server-side` ➔ Replace with `Guaranteed availability` or `All rates and discounts are guaranteed before payment`.
+  - Route syntax like `(/login)` ➔ Replace with clean plain text names like `Customer Portal`.
+  - Low-level network terms like `Active Ping`, `Telematics Zone` ➔ Replace with `Live Signal`, `City Limits`, `Vehicle Status`.
+- **Audited Surfaces**:
+  - `components/cms/Logo.tsx` & `components/cms/AfterLogin.tsx` (Internal staff login)
+  - `app/(site)/login/page.tsx` (Customer login)
+  - `app/(site)/checkout/checkout-client.tsx` (Customer checkout & booking engine)
+  - `components/live-vehicle-tracker.tsx` (Customer live GPS tracker)
+  - `app/llms.txt/route.ts` & `app/llms-full.txt/route.ts` (Public LLM discovery endpoints)

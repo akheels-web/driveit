@@ -516,7 +516,7 @@ export function CheckoutClient() {
               </button>
               <p className="text-[11px] text-white/40 flex items-center gap-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-green-400" />
-                Continuing reserves this car for 10 minutes. The final amount is calculated on our server.
+                Continuing reserves this car for 10 minutes with guaranteed availability.
               </p>
             </motion.div>
           ) : (
@@ -728,7 +728,7 @@ export function CheckoutClient() {
               <ShieldCheck className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
               <p className="text-[10px] text-white/50 leading-relaxed">
                 {car.cancellationPolicy ||
-                  'Free cancellation up to 48 hours before pickup. Amounts are verified server-side before payment.'}
+                  'Free cancellation up to 48 hours before pickup. All rates and discounts are guaranteed before payment.'}
               </p>
             </div>
           </div>

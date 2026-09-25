@@ -63,7 +63,7 @@ ${blogList || '- Top luxury wedding cars in Hyderabad\n- Chauffeur vs self-drive
 - **Electronic FASTag**: 100% active FASTag installed for automatic toll lanes.
 - **Security Deposit**: Governed transparently with live bank UTR refund tracking in dashboard within 48h after return inspection.
 - **Airport Delay Guarantee**: Complimentary 60-minute wait policy from flight touchdown at RGIA Hyderabad.
-- **Booking Protection**: Postgres advisory transactional locking with 10-minute hold prevents double-booking during checkout.
+- **Booking Protection**: Guaranteed reservation hold with 10-minute lock prevents double-booking during checkout.
 
 ## Official Concierge & Contact
 - **Phone**: ${phone}

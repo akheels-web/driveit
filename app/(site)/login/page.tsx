@@ -100,8 +100,8 @@ function LoginForm() {
       if (errorParam === 'Configuration') {
         return {
           type: 'error',
-          title: 'Authentication Configuration Issue',
-          message: 'Server authentication could not be resolved. Please call our 24/7 concierge at +91 63000 41186.',
+          title: 'Sign-In Issue',
+          message: 'Authentication could not be completed. Please try again or call our 24/7 concierge at +91 63000 41186.',
         }
       }
       return {
@@ -353,7 +353,7 @@ function LoginForm() {
                 <GoogleIcon />
                 <span>
                   {loading
-                    ? 'Connecting to Secure Server…'
+                    ? 'Connecting Securely…'
                     : mode === 'signin'
                     ? 'Continue with Google'
                     : 'Sign Up with Google (1-Click)'}
@@ -363,7 +363,7 @@ function LoginForm() {
             </button>
 
             <p className="text-center text-[11px] text-white/40 leading-relaxed">
-              Zero passwords to remember. Encrypted directly via Google OAuth 2.0.
+              Zero passwords to remember. One-tap secure login with Google.
             </p>
           </div>
 

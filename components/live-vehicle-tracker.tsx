@@ -76,9 +76,9 @@ export function LiveVehicleTracker({
           </div>
           <div>
             <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-              Live Fleet Telematics & GPS
+              Live GPS & Vehicle Status
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[var(--gold-400)]/10 text-[var(--gold-400)] border border-[var(--gold-400)]/20">
-                ACTIVE PING
+                LIVE SIGNAL
               </span>
             </h4>
             <p className="text-[11px] text-white/40">
@@ -137,7 +137,7 @@ export function LiveVehicleTracker({
 
         {/* Bottom map overlay tag */}
         <div className="absolute bottom-2.5 left-3 text-[10px] text-white/40 font-mono bg-black/60 px-2 py-0.5 rounded backdrop-blur-sm">
-          Hyderabad Telematics Zone • Dual-Channel GPS SIM Active
+          Hyderabad City Limits • Live GPS Signal Active
         </div>
       </div>
 
@@ -241,7 +241,7 @@ export function LiveVehicleTracker({
       {telemetryAlerts.length > 0 && (
         <div className="mt-4 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 space-y-1.5">
           <p className="text-xs font-semibold text-amber-300 flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5" /> Recent Telematics Notifications
+            <AlertTriangle className="w-3.5 h-3.5" /> Recent Vehicle Alerts
           </p>
           {telemetryAlerts.slice(-3).map((item, index) => (
             <p key={index} className="text-[11px] text-white/60 font-mono">
@@ -254,7 +254,7 @@ export function LiveVehicleTracker({
       {/* Quick Action Footer */}
       <div className="mt-4 pt-3 flex flex-wrap items-center justify-between gap-3 text-xs border-t border-white/5">
         <span className="text-white/40 text-[11px]">
-          {lastPingAt ? `Last ping: ${new Date(lastPingAt).toLocaleTimeString('en-IN')}` : 'Live signal online'}
+          {lastPingAt ? `Updated: ${new Date(lastPingAt).toLocaleTimeString('en-IN')}` : 'Live signal online'}
         </span>
         <a
           href={`tel:${chauffeurPhone.replace(/\s+/g, '')}`}

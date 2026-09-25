@@ -12,7 +12,7 @@ export const Logo = () => {
         </div>
         <div className="driveit-nav-text">
           <span className="driveit-nav-title">DriveIt</span>
-          <span className="driveit-nav-subtitle">Executive CMS</span>
+          <span className="driveit-nav-subtitle">Executive Console</span>
         </div>
       </div>
 
@@ -34,7 +34,7 @@ export const Logo = () => {
 
           <div className="driveit-showcase-status-badge">
             <span className="driveit-status-dot" />
-            <span className="driveit-status-label">CMS 3.90 • Online</span>
+            <span className="driveit-status-label">Operations Console • Active</span>
           </div>
         </div>
 
@@ -49,11 +49,11 @@ export const Logo = () => {
 
           <h1 className="driveit-showcase-heading">
             Fleet Operations & <br />
-            <span className="driveit-gold-gradient-text">Content Architecture.</span>
+            <span className="driveit-gold-gradient-text">Executive Operations.</span>
           </h1>
 
           <p className="driveit-showcase-desc">
-            Centralized management console for vehicle inventory, dual chauffeur & self-drive rate tables, booking holds, telemetry feeds, and customer document verification.
+            Centralized executive console for vehicle inventory, chauffeur & self-drive rate management, reservations, concierge dispatch, and customer verification.
           </p>
 
           {/* 3 Executive Operations Cards */}
@@ -81,7 +81,7 @@ export const Logo = () => {
               </div>
               <div>
                 <h4 className="driveit-feat-title">Reservations & Live Holds</h4>
-                <p className="driveit-feat-subtitle">Monitor PostgreSQL advisory locks, calendar availability, and booking statuses.</p>
+                <p className="driveit-feat-subtitle">Monitor live calendar availability, real-time reservations, and vehicle allocation.</p>
               </div>
             </div>
 
@@ -109,13 +109,13 @@ export const Logo = () => {
           </div>
           <div className="driveit-footer-stat-sep" />
           <div className="driveit-footer-stat">
-            <span className="driveit-footer-stat-value">Postgres 16</span>
-            <span className="driveit-footer-stat-label">Database</span>
+            <span className="driveit-footer-stat-value">24/7</span>
+            <span className="driveit-footer-stat-label">Concierge Dispatch</span>
           </div>
           <div className="driveit-footer-stat-sep" />
           <div className="driveit-footer-stat">
-            <span className="driveit-footer-stat-value">Payload 3.90</span>
-            <span className="driveit-footer-stat-label">Headless CMS</span>
+            <span className="driveit-footer-stat-value">100%</span>
+            <span className="driveit-footer-stat-label">Verified Operations</span>
           </div>
         </div>
       </div>
