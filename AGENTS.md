@@ -199,4 +199,22 @@
     - Dynamic discovery feeds: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/llms-full.txt`, and `/api/fleet`.
   - When global `site-settings` are updated, the pipeline purges `/about`, `/contact`, `/api/site-settings`, and all SEO discovery endpoints instantly.
 
+## 12. UI Architecture: Obsidian-Gold Dropdowns, Calendar & Smart Booking Flow
+- **Obsidian-Gold Date Picker ([`components/luxury-date-picker.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/luxury-date-picker.tsx))**:
+  - Replaces native OS `<input type="date">` across Homepage Booking Section, Vehicle Detail Widget, and Car Booking Modal.
+  - Renders an obsidian glass popover (`#0c0c0e/98`, `border-[var(--gold-400)]/30`, gold ambient glow) with Month/Year header, Chevron navigation, gold weekday headers, today ring indicator, and gold-gradient active selection pill.
+  - Native fallback inputs in `app/globals.css` set `color-scheme: dark !important; accent-color: #d4af37 !important;` with gold calendar indicator filter.
+- **Universal Luxury Select ([`components/luxury-select.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/luxury-select.tsx))**:
+  - Eliminates all native browser `<select>` elements and Windows blue hover outlines across the entire site:
+    - Contact Form ([`components/contact-form.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/contact-form.tsx)) used on Contact, Yachts, and Private Jets pages.
+    - Secondary Contact page ([`app/(site)/contactus/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/contactus/page.tsx)).
+    - Fleet catalog sorting ([`app/(site)/cars/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/cars/page.tsx)).
+    - Car booking modal ([`components/car-booking-modal.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/car-booking-modal.tsx)).
+    - Checkout address selector ([`app/(site)/checkout/checkout-client.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/checkout/checkout-client.tsx)).
+- **Smart Passenger & Vehicle Workflow ([`components/booking-section.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/booking-section.tsx))**:
+  - Ordered as: **1. Passengers** → **2. Select Vehicle** → **3. Service Type** → **4. Occasion**.
+  - **Passenger Capacity Filter**: Selecting `4 Passengers` strictly displays 4/5-seater sedans & SUVs (hiding 7-seaters like Fortuner, Vellfire, Crysta, GLS, Q7). Selecting `7 Passengers` filters to 7-seater luxury SUVs & MPVs.
+  - **Bidirectional Auto-Sync**: Selecting `Toyota Fortuner` (or any 7-seater) automatically sets `passengers` to `"7"`. Selecting a 4-passenger filter automatically clears any previously selected 7-seater car so only valid vehicles are shown.
+
+
 

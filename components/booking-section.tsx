@@ -54,7 +54,7 @@ export function BookingSection() {
     pickupTime: "",
     returnDate: "",
     returnTime: "",
-    passengers: "1",
+    passengers: "4",
     occasion: "",
     flightNumber: "",
     airportTerminal: "RGIA Shamshabad — Domestic Arrival",
@@ -66,6 +66,101 @@ export function BookingSection() {
 
   const updateField = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  // Filter vehicles according to passenger capacity
+  const filteredCars = useMemo(() => {
+    if (!form.passengers) return carsData
+    const count = parseInt(form.passengers, 10)
+    if (isNaN(count)) return carsData
+
+    if (count <= 2) {
+      // 1-2 passengers: sports cars (2-seater) and 4/5 seater sedans/SUVs (excludes 7-seaters)
+      return carsData.filter((car) => car.seats <= 5)
+    }
+
+    if (count === 3 || count === 4) {
+      // Exactly 3-4 passengers: strictly 4 or 5 seaters, NOT 7 seaters
+      return carsData.filter((car) => car.seats === 4 || car.seats === 5)
+    }
+
+    if (count === 5) {
+      // 5 passengers: strictly 5 seaters
+      return carsData.filter((car) => car.seats === 5)
+    }
+
+    if (count === 6 || count === 7) {
+      // 6-7 passengers: 7 or 8 seaters (Fortuner, Crysta, Vellfire, GLS, Q7)
+      return carsData.filter((car) => car.seats === 7 || car.seats === 8)
+    }
+
+    if (count >= 8) {
+      // 8+ passengers: high-capacity vans & commuter buses
+      return carsData.filter((car) => car.seats >= 8)
+    }
+
+    return carsData
+  }, [carsData, form.passengers])
+
+  const handleCarSelect = (selectedCarId: string) => {
+    const car = carsData.find((c) => c.id === selectedCarId)
+    if (!car) {
+      updateField("carId", selectedCarId)
+      return
+    }
+
+    setForm((prev) => {
+      let nextPassengers = prev.passengers
+      const currentCount = parseInt(prev.passengers || "0", 10)
+
+      // When vehicle = Fortuner (or any 7-seater), passengers is automatically set to 7.
+      // If car is a 2-seater sports car, auto-set to 2.
+      // If car is a 14-seater bus, auto-set to 14.
+      if (!currentCount || car.seats === 7 || (currentCount <= 4 && car.seats >= 7) || currentCount > car.seats) {
+        nextPassengers = String(car.seats)
+      } else if (car.seats === 2 && currentCount > 2) {
+        nextPassengers = "2"
+      }
+
+      return {
+        ...prev,
+        carId: selectedCarId,
+        passengers: nextPassengers,
+      }
+    })
+  }
+
+  const handlePassengersChange = (newPassengers: string) => {
+    setForm((prev) => {
+      const count = parseInt(newPassengers, 10)
+      const selectedCarData = carsData.find((c) => c.id === prev.carId)
+      let newCarId = prev.carId
+
+      if (selectedCarData) {
+        let isStillValid = false
+        if (count <= 2) {
+          isStillValid = selectedCarData.seats <= 5
+        } else if (count === 3 || count === 4) {
+          isStillValid = selectedCarData.seats === 4 || selectedCarData.seats === 5
+        } else if (count === 5) {
+          isStillValid = selectedCarData.seats === 5
+        } else if (count === 6 || count === 7) {
+          isStillValid = selectedCarData.seats === 7 || selectedCarData.seats === 8
+        } else if (count >= 8) {
+          isStillValid = selectedCarData.seats >= 8
+        }
+
+        if (!isStillValid) {
+          newCarId = ""
+        }
+      }
+
+      return {
+        ...prev,
+        passengers: newPassengers,
+        carId: newCarId,
+      }
+    })
   }
 
   // Real-time Pricing Logic
@@ -280,59 +375,101 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* 1. PASSENGERS (FIRST) */}
                 <div>
-                  <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Select Vehicle *</label>
+                  <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">
+                    1. Number of Passengers *
+                  </label>
+                  <LuxurySelect
+                    value={form.passengers}
+                    onChange={handlePassengersChange}
+                    icon={<Users className="w-4 h-4 text-[var(--gold-400)]/70" />}
+                    options={[
+                      { value: "1", label: "1 Passenger", sub: "Executive Sedans & 5-Seater SUVs" },
+                      { value: "2", label: "2 Passengers", sub: "Coupes, Sedans & 5-Seater SUVs" },
+                      { value: "3", label: "3 Passengers", sub: "Executive Sedans & 5-Seater SUVs" },
+                      { value: "4", label: "4 Passengers", sub: "4–5 Seater Sedans & SUVs (excludes 7-seaters)" },
+                      { value: "5", label: "5 Passengers", sub: "Spacious 5-Seater Sedans & SUVs" },
+                      { value: "6", label: "6 Passengers", sub: "7-Seater Luxury SUVs & MPVs" },
+                      { value: "7", label: "7 Passengers", sub: "7-Seater Fortuner, Crysta, Vellfire, GLS" },
+                      { value: "8", label: "8 Passengers", sub: "8+ Seater Executive Vans" },
+                      { value: "10", label: "10 Passengers", sub: "Luxury Mini Coach" },
+                      { value: "14", label: "14+ Passengers", sub: "High-Capacity Commuter & Luxury Bus" },
+                    ]}
+                  />
+                  <p className="text-[11px] mt-1.5 flex items-center gap-1">
+                    {form.passengers === "4" && (
+                      <span className="text-[var(--gold-300)] font-medium">✓ Filtered to 4/5-seater sedans & SUVs (7-seaters hidden)</span>
+                    )}
+                    {form.passengers === "7" && (
+                      <span className="text-[var(--gold-300)] font-medium">✓ Filtered to 7-seater luxury SUVs & MPVs (Fortuner, Vellfire, etc.)</span>
+                    )}
+                    {(form.passengers === "1" || form.passengers === "2" || form.passengers === "3") && (
+                      <span className="text-white/40">Showing executive 4/5-seater fleet</span>
+                    )}
+                    {parseInt(form.passengers, 10) >= 8 && (
+                      <span className="text-[var(--gold-300)] font-medium">Showing high-capacity luxury buses & commuter vans</span>
+                    )}
+                  </p>
+                </div>
+
+                {/* 2. SELECT VEHICLE (SECOND) */}
+                <div>
+                  <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">
+                    2. Select Vehicle *
+                  </label>
                   <LuxurySelect
                     value={form.carId}
-                    onChange={(val) => updateField("carId", val)}
-                    placeholder="Choose a specific vehicle..."
-                    options={carsData
-                      .filter((car) => car.seats >= parseInt(form.passengers || "1", 10))
-                      .map((car) => ({
-                        value: car.id,
-                        label: `${car.name} (${car.seats} Seats) - ${car.priceDisplay}`,
-                      }))}
+                    onChange={handleCarSelect}
+                    placeholder={
+                      form.passengers === "4"
+                        ? "Choose a 4–5 seater vehicle..."
+                        : form.passengers === "7"
+                        ? "Choose a 7-seater SUV / MPV..."
+                        : "Choose a vehicle..."
+                    }
+                    icon={<Car className="w-4 h-4 text-[var(--gold-400)]/70" />}
+                    options={filteredCars.map((car) => ({
+                      value: car.id,
+                      label: `${car.name} (${car.seats} Seats) - ${car.priceDisplay}`,
+                      sub: `${car.category.toUpperCase()} • ${car.transmission} • ${car.seats} Seats`,
+                    }))}
                   />
-                  {carsData.filter((car) => car.seats >= parseInt(form.passengers || "1", 10)).length === 0 && (
-                    <p className="text-xs text-red-400 mt-2">No single vehicle can fit {form.passengers} passengers.</p>
+                  {selectedCar && (
+                    <p className="text-[11px] text-[var(--gold-400)] mt-1.5 flex items-center gap-1.5 font-medium">
+                      <span>✓ {selectedCar.name} ({selectedCar.seats} seats)</span>
+                      {selectedCar.seats === 7 && (
+                        <span className="text-white/70 bg-[var(--gold-400)]/15 px-2 py-0.5 rounded-full text-[10px] border border-[var(--gold-400)]/30">
+                          Auto-configured for 7 passengers
+                        </span>
+                      )}
+                    </p>
+                  )}
+                  {filteredCars.length === 0 && (
+                    <p className="text-xs text-red-400 mt-1.5">No vehicles found matching {form.passengers} passengers.</p>
                   )}
                 </div>
+
+                {/* 3. SERVICE TYPE (THIRD) */}
                 <div>
-                  <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Service Type *</label>
+                  <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">
+                    3. Service Type *
+                  </label>
                   <LuxurySelect
                     value={form.driverOption}
                     onChange={(val) => updateField("driverOption", val)}
                     options={[
-                      { value: "Chauffeur Driven", label: "With Driver (Chauffeur Driven)" },
-                      { value: "Self Drive", label: "Without Driver (Self Drive)" },
+                      { value: "Chauffeur Driven", label: "With Driver (Chauffeur Driven)", sub: "Uniformed VIP driver, zero deposit liability" },
+                      { value: "Self Drive", label: "Without Driver (Self Drive)", sub: "Drive yourself with FASTag & full fuel" },
                     ]}
                   />
                 </div>
 
+                {/* 4. OCCASION (FOURTH) */}
                 <div>
-                  <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Passengers</label>
-                  <LuxurySelect
-                    value={form.passengers}
-                    onChange={(newPassengers) => {
-                      setForm((prev) => {
-                        const selectedCarData = carsData.find((c) => c.id === prev.carId);
-                        let newCarId = prev.carId;
-                        if (selectedCarData && selectedCarData.seats < parseInt(newPassengers, 10)) {
-                          newCarId = "";
-                        }
-                        return { ...prev, passengers: newPassengers, carId: newCarId };
-                      });
-                    }}
-                    icon={<Users className="w-4 h-4 text-white/40" />}
-                    options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((num) => ({
-                      value: String(num),
-                      label: `${num} ${num === 1 ? "Passenger" : "Passengers"}`,
-                    }))}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Occasion (Optional)</label>
+                  <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">
+                    4. Occasion (Optional)
+                  </label>
                   <LuxurySelect
                     value={form.occasion}
                     onChange={(val) => updateField("occasion", val)}
