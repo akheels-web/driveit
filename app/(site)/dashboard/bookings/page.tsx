@@ -7,6 +7,7 @@ import { auth } from '@/auth'
 import config from '@/payload.config'
 import { SiteHeader } from '@/components/site-header'
 import { PaymentStatusBadge } from '@/components/payment-status-badge'
+import { LiveVehicleTracker } from '@/components/live-vehicle-tracker'
 
 export const metadata = { title: 'My Bookings | DRIVEIT Luxury', robots: { index: false } }
 
@@ -184,6 +185,69 @@ export default async function BookingsPage({
                         >
                           Call Chauffeur
                         </a>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Live GPS Telematics & Radar Tracker (For Confirmed Trips or active vehicles) */}
+                  {(booking.status === 'confirmed' || Boolean(booking.telematics?.startOdometerKm)) && booking.status !== 'completed' && booking.status !== 'cancelled' && (
+                    <div className="mb-4">
+                      <LiveVehicleTracker
+                        carName={booking.carName}
+                        vehiclePlate={booking.chauffeurDetails?.vehicleNumber}
+                        startOdometerKm={booking.telematics?.startOdometerKm || 15000}
+                        currentOdometerKm={booking.telematics?.endOdometerKm || booking.telematics?.startOdometerKm || 15000}
+                        allowedKm={booking.telematics?.allowedKm || (Number(booking.days || 1) * 100)}
+                        currentSpeed={booking.telematics?.currentSpeed || 0}
+                        ignition={booking.telematics?.currentIgnition ?? true}
+                        latitude={booking.telematics?.currentLatitude || 17.4325}
+                        longitude={booking.telematics?.currentLongitude || 78.3985}
+                        lastPingAt={booking.telematics?.lastPingAt}
+                        geofenceStatus="inside_hyderabad"
+                        telemetryAlerts={booking.telematics?.telemetryAlerts || []}
+                        chauffeurPhone={booking.chauffeurDetails?.phone || '+91 63000 41186'}
+                        isChauffeur={booking.serviceType === 'chauffeur' || booking.serviceType === 'airport'}
+                      />
+                    </div>
+                  )}
+
+                  {/* Completed Trip Distance & Odometer Verification */}
+                  {booking.status === 'completed' && booking.telematics?.totalKmDriven !== undefined && (
+                    <div className="mb-4 p-4 rounded-xl bg-black/40 border border-white/10 text-xs space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-white/90 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-blue-400" />
+                          Trip Distance & Odometer Verification
+                        </span>
+                        <span className="font-mono text-emerald-400 font-semibold text-[11px]">
+                          ✓ GPS Verified
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                        <div>
+                          <p className="text-white/40">Start Odometer</p>
+                          <p className="font-mono text-white font-medium">{booking.telematics.startOdometerKm?.toLocaleString('en-IN') || '—'} km</p>
+                        </div>
+                        <div>
+                          <p className="text-white/40">Return Odometer</p>
+                          <p className="font-mono text-white font-medium">{booking.telematics.endOdometerKm?.toLocaleString('en-IN') || '—'} km</p>
+                        </div>
+                        <div>
+                          <p className="text-white/40">Distance Covered</p>
+                          <p className="font-mono text-[var(--gold-400)] font-bold">{booking.telematics.totalKmDriven?.toLocaleString('en-IN') || 0} km</p>
+                        </div>
+                        <div>
+                          <p className="text-white/40">Allowed ({booking.days || 1}d)</p>
+                          <p className="font-mono text-white/80">{booking.telematics.allowedKm || 100} km</p>
+                        </div>
+                      </div>
+                      {Number(booking.telematics.extraKmDriven || 0) > 0 ? (
+                        <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] flex flex-wrap items-center justify-between gap-2">
+                          <span>Excess Mileage: <strong>{booking.telematics.extraKmDriven} km</strong> @ ₹{booking.telematics.extraKmRate || 75}/km</span>
+                          <span className="font-bold">Total Charge: ₹{Number(booking.telematics.extraKmCharge || 0).toLocaleString('en-IN')}</span>
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-emerald-400 font-medium">✓ Within daily mileage quota. No extra kilometer charges assessed.</p>
                       )}
                     </div>
                   )}

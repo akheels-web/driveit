@@ -4,6 +4,7 @@ import { adminOnly } from '@/lib/access'
 import { onBookingStatusChange, stampBookingTransitions } from '@/lib/loyalty'
 import { AWAITING_VERIFICATION, PAYMENT_STATUS_OPTIONS, stampPaymentVerification } from '@/lib/payments'
 import { onBookingEmailNotifications, stampBookingEmailGuards } from '@/lib/booking-email-hooks'
+import { stampBookingTelematics } from '@/lib/booking-telematics-hooks'
 
 export const Bookings: CollectionConfig = {
   slug: 'bookings',
@@ -32,7 +33,7 @@ export const Bookings: CollectionConfig = {
   hooks: {
     // Data-only stamping happens in the same write (see lib/loyalty.ts for why a
     // nested same-row update deadlocks on Postgres).
-    beforeChange: [stampBookingTransitions, stampPaymentVerification, stampBookingEmailGuards],
+    beforeChange: [stampBookingTransitions, stampPaymentVerification, stampBookingEmailGuards, stampBookingTelematics],
     afterChange: [onBookingStatusChange, onBookingEmailNotifications],
   },
   fields: [
@@ -182,6 +183,31 @@ export const Bookings: CollectionConfig = {
       type: 'date',
       label: 'Deposit Refunded At',
       admin: { date: { pickerAppearance: 'dayAndTime' } },
+    },
+    {
+      name: 'telematics',
+      type: 'group',
+      label: 'Trip Telematics & GPS Tracking',
+      fields: [
+        { name: 'startOdometerKm', type: 'number', label: 'Trip Start Odometer (km)' },
+        { name: 'endOdometerKm', type: 'number', label: 'Trip Return Odometer (km)' },
+        { name: 'totalKmDriven', type: 'number', label: 'Total Distance Covered (km)' },
+        { name: 'allowedKm', type: 'number', label: 'Included KM Allowance' },
+        { name: 'extraKmDriven', type: 'number', label: 'Extra KM Driven' },
+        { name: 'extraKmRate', type: 'number', label: 'Extra KM Rate (₹ / km)' },
+        { name: 'extraKmCharge', type: 'number', label: 'Extra KM Charge (₹)' },
+        { name: 'currentLatitude', type: 'number', label: 'Current Vehicle Latitude' },
+        { name: 'currentLongitude', type: 'number', label: 'Current Vehicle Longitude' },
+        { name: 'currentSpeed', type: 'number', label: 'Current Speed (km/h)' },
+        { name: 'currentIgnition', type: 'checkbox', label: 'Engine Ignition Status' },
+        { name: 'lastPingAt', type: 'date', label: 'Last GPS Ping Timestamp' },
+        {
+          name: 'telemetryAlerts',
+          type: 'array',
+          label: 'Trip Safety & Speed Alerts',
+          fields: [{ name: 'alert', type: 'text', label: 'Alert Message' }],
+        },
+      ],
     },
     {
       name: 'chauffeurDetails',

@@ -264,3 +264,25 @@
   - **Lucide Icons**: Use `<IndianRupee />` from `lucide-react` across feature cards, consignment pages, and service sections. Never use `<DollarSign />`.
   - **Number Formatting**: Format all numeric currencies using Indian locale: `.toLocaleString('en-IN')` (e.g. `₹1,50,000`, `₹75,000`).
   - **Deployment & Server Estimates**: All VPS and infrastructure cost projections in documentation must be quoted in Indian Rupees (e.g. `~₹650 - ₹1,100 / month`).
+
+## 16. GPS Telematics, Automated Odometer & Extra-KM Billing Engine
+- **Hardware Integration (Zero Monthly Subscriptions)**:
+  - Supports standard Indian 2G/4G SIM trackers (Concox, Jimi IoT, Coban, Sinotrack, Onelap, AIS-140, Teltonika) equipped with Airtel, Jio, or Vi SIMs.
+  - Universal ping endpoint: [`app/api/telematics/ping/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/telematics/ping/route.ts) accepts both HTTP GET query strings (direct from tracker microcontrollers) and HTTP POST JSON payloads (from fleet aggregators like LocoNav, TrackSolid, Traccar, or Fleetx).
+  - Validates optional `TELEMATICS_SECRET` for tamper protection.
+- **Core Telematics Engine ([`lib/telematics.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/telematics.ts))**:
+  - `calculateHaversineDistanceKm`: Precise coordinate distance computation.
+  - `checkHyderabadGeofence`: 65 km radius geofence centered on Hyderabad Secretariat (`HYDERABAD_CENTER = { lat: 17.4065, lng: 78.4772 }`) covering the entire Outer Ring Road (ORR), Shamshabad RGIA, Sangareddy, and Medchal.
+  - `parseGpsPayload`: Normalizes varied hardware schemas (speed, latitude, longitude, odometer in meters or km, ignition status, battery voltage).
+  - `calculateTripKilometers`: Computes trip distance, daily allowance, excess distance, and financial extra-km charge.
+- **Automated Trip Lifecycle Hooks ([`lib/booking-telematics-hooks.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/booking-telematics-hooks.ts))**:
+  - Attached to [`collections/Bookings.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/Bookings.ts) `beforeChange`.
+  - **Trip Start (`confirmed`)**: Automatically snapshots vehicle's cumulative `currentOdometerKm` into `booking.telematics.startOdometerKm` and sets `allowedKm = days * 100`.
+  - **Trip Return (`completed`)**: Automatically snapshots vehicle's `currentOdometerKm` into `booking.telematics.endOdometerKm`, calculates `totalKmDriven`, detects excess mileage, and auto-populates `depositRefundDeductionReason` (e.g. `Excess mileage: 45 km @ ₹75/km = ₹3,375`) so admin can deduct it directly from the security deposit before sending the refund UTR.
+- **Customer Live Telematics Tracker ([`components/live-vehicle-tracker.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/live-vehicle-tracker.tsx))**:
+  - Integrated into [`app/(site)/dashboard/bookings/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/dashboard/bookings/page.tsx).
+  - Displays dark luxury animated radar map, live speed gauge, engine ignition status, geofence security badge, allowance progress bar, and 1-tap Google Maps directions.
+  - For completed trips, displays an audited GPS-verified mileage certificate and transparent excess fee breakdown.
+- **Fleet Summary API ([`app/api/telematics/fleet/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/telematics/fleet/route.ts))**:
+  - Provides a single JSON endpoint returning real-time GPS locations, speed, ignition, and odometer readings for all vehicles in the fleet.
+

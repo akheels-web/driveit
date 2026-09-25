@@ -155,6 +155,61 @@ export const Cars: CollectionConfig = {
       defaultValue: 'Free cancellation up to 48 hours before pickup.',
       label: 'Cancellation Policy',
     },
+    // GPS Tracker & Telematics
+    {
+      name: 'gpsDeviceId',
+      type: 'text',
+      index: true,
+      label: 'GPS Device IMEI / Tracker ID',
+      admin: {
+        description: 'Unique IMEI or tracker ID of the Indian SIM GPS unit installed in this vehicle.',
+      },
+    },
+    {
+      name: 'currentOdometerKm',
+      type: 'number',
+      defaultValue: 15000,
+      min: 0,
+      label: 'Current Cumulative Odometer (km)',
+      admin: {
+        description: 'Updated automatically via GPS SIM tracker pings or CAN-bus OBD telemetry.',
+      },
+    },
+    {
+      name: 'extraKmRate',
+      type: 'number',
+      defaultValue: 75,
+      min: 0,
+      label: 'Extra KM Charge Rate (₹ / km)',
+      admin: {
+        description: 'Billed per km when customer exceeds daily 100km allowance (e.g. ₹50 for sedans, ₹100 for luxury SUVs).',
+      },
+    },
+    {
+      name: 'currentTelemetry',
+      type: 'group',
+      label: 'Live Telematics & GPS Snapshot',
+      fields: [
+        { name: 'latitude', type: 'number', label: 'Latitude' },
+        { name: 'longitude', type: 'number', label: 'Longitude' },
+        { name: 'speedKmH', type: 'number', label: 'Speed (km/h)' },
+        { name: 'ignition', type: 'checkbox', label: 'Engine Ignition ON' },
+        { name: 'batteryVoltage', type: 'number', label: 'Battery Voltage (V)' },
+        { name: 'lastPingAt', type: 'date', label: 'Last Ping Timestamp' },
+        {
+          name: 'geofenceStatus',
+          type: 'select',
+          defaultValue: 'inside_hyderabad',
+          options: [
+            { label: 'Inside Hyderabad Outer Ring Road (Authorized)', value: 'inside_hyderabad' },
+            { label: 'Outstation Zone (Alert/Verified)', value: 'outstation_zone' },
+            { label: 'Geofence Breach', value: 'geofence_breach' },
+          ],
+          label: 'Geofence Security Status',
+        },
+        { name: 'lastAlert', type: 'text', label: 'Latest Telematics Alert' },
+      ],
+    },
     {
       name: 'sortOrder',
       type: 'number',

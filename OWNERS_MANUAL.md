@@ -22,6 +22,7 @@
    - [5.6 Updating Website Content, Phone Numbers, Logos & Videos](#56-updating-website-content-phone-numbers-logos--videos)
    - [5.7 Managing Coupons & Seasonal Discounts](#57-managing-coupons--seasonal-discounts)
    - [5.8 Reviewing Consignment Partner Applications](#58-reviewing-consignment-partner-applications)
+   - [5.9 Managing GPS Trackers, Odometer Snapshots & Extra-KM Billing](#59-managing-gps-trackers-odometer-snapshots--extra-km-billing)
 6. [Automated Omnichannel Notifications (Brevo, WhatsApp & Telegram)](#6-automated-omnichannel-notifications-brevo-whatsapp--telegram)
 7. [SEO, LLMs & AI Engine Discoverability](#7-seo-llms--ai-engine-discoverability)
 8. [Summary Reference & Emergency Contact Points](#8-summary-reference--emergency-contact-points)
@@ -149,6 +150,13 @@ Your platform comes fully loaded with enterprise-grade features out of the box:
 ### E. Fleet Partner Consignment Program (`/partner/list-fleet`)
 - Allows high-net-worth vehicle owners in Hyderabad to list their idle luxury cars (Rolls-Royce, Mercedes, Porsche, Fortuner) into your fleet on a 70/30 revenue share.
 - Captures manufacturing year, odometer reading, registration number, and owner contact details.
+
+### F. Live GPS Telematics, Automated Odometer & Kilometers Tracking
+- **Compatible with All Indian SIM GPS Hardware:** Works with Concox, Jimi, Coban, Sinotrack, Onelap, AIS-140, or Teltonika trackers equipped with Airtel, Jio, or Vi SIM cards.
+- **Automated Odometer Snapshots:** Automatically snapshots starting odometer when booking is marked `confirmed`, snapshots return odometer when marked `completed`, and calculates total trip distance.
+- **Automated Extra-KM Billing & Deposit Reconciliation:** Automatically calculates excess distance over the daily allowance (e.g. 100 km/day) and appends the exact billing deduction into the security deposit settlement note.
+- **Real-Time Customer Radar Map:** Customers view their vehicle's live speed, engine ignition status, coordinates, and distance allowance progress bar inside `/dashboard/bookings`.
+- **Safety Geofencing & Overspeed Alerts:** Automatically detects when a vehicle crosses the 65 km Hyderabad Outer Ring Road (ORR) perimeter or exceeds 120 km/h, alerting your operations team.
 
 ---
 
@@ -373,6 +381,78 @@ When luxury car owners apply to consign their vehicles (`/partner/list-fleet`):
 1. In the CMS, click **Partner Applications**.
 2. View the applicant's name, phone, email, vehicle model, manufacturing year, and odometer reading.
 3. Call the owner to inspect the vehicle and sign the consignment agreement.
+
+---
+
+### 5.9 Managing GPS Trackers, Odometer Snapshots & Extra-KM Billing
+
+DRIVEIT Luxury includes an **in-house telematics engine**. You do **not** need to pay monthly SaaS subscriptions (₹300–₹500/car/month) to third-party fleet portals. Your platform communicates directly with the GPS SIM trackers installed in your vehicles.
+
+#### A. Compatible GPS Hardware in India
+Your system supports standard 2G/4G GPS SIM trackers readily available in India:
+- **Devices:** Concox (GT06N, WeTrack2), Jimi IoT (JM-VL03), Coban (GPS103, TK103B), Sinotrack (ST-901, ST-906), Onelap, AIS-140 certified units, or Teltonika (FMB920).
+- **SIM Card:** Any standard IoT or prepaid SIM from Airtel, Jio, or Vodafone Idea (Vi) with an inexpensive data plan (even 100 MB per month is more than enough).
+
+#### B. 2-Minute SMS Tracker Configuration
+Send these 3 quick SMS commands to the phone number of the SIM card inside the GPS device:
+
+1. **Configure Cellular APN:**
+   - *Airtel:* Send `APN,airtelgprs.com#`
+   - *Jio:* Send `APN,jionet#`
+   - *Vi:* Send `APN,www#`
+
+2. **Point Tracker to Your DRIVEIT Server:**
+   - Send `SERVER,1,driveitluxury.com,80,api/telematics/ping#`  
+     *(or use your Contabo VPS public IP address: `SERVER,1,YOUR_VPS_IP,80,api/telematics/ping#`)*
+   - *Note for Fleet Portals (LocoNav, TrackSolid, Traccar):* If you already use an aggregator dashboard, simply add a Webhook pointing to:  
+     `https://driveitluxury.com/api/telematics/ping`
+
+3. **Set Ping Frequency:**
+   - Send `TIMER,30,60#`  
+     *(The tracker will report coordinates and speed every 30 seconds when driving, and every 60 seconds when parked).*
+
+#### C. Linking the Vehicle in Payload CMS (`/admin`)
+1. In the CMS sidebar, click **Cars** → select the vehicle.
+2. Scroll to the **Telematics & GPS Tracking** section:
+   - **GPS Device IMEI / Tracker ID:** Enter the 15-digit IMEI number printed on the tracker (e.g. `865432049182345`).
+   - **Current Cumulative Odometer (km):** Enter the vehicle's actual odometer reading (e.g. `15400`).
+   - **Extra KM Charge Rate (₹ / km):** Set your billing rate for excess kilometers (e.g. `₹50` for Fortuner, `₹75` for BMW/Mercedes, `₹100` for Range Rover).
+3. Click **Save Changes**.
+
+#### D. The 100% Automated Trip Lifecycle & Deposit Deduction
+No more guessing or arguing with customers about kilometers driven:
+
+```
+[ Step 1: Vehicle Handover (Status -> Confirmed) ]
+Admin changes booking status to "Confirmed" in CMS.
+The system automatically snapshots starting odometer (e.g. 15,400 km) and calculates allowed quota (e.g. 2 days = 200 km).
+                 ▼
+[ Step 2: During Trip (Live Customer Dashboard) ]
+Customer opens /dashboard/bookings to view:
+  • Live dark luxury radar map with exact vehicle coordinates
+  • Current speed (km/h) and engine ignition status
+  • Interactive "View in Google Maps" navigation button
+  • Real-time distance allowance bar (e.g. 142 km / 200 km used - 71%)
+                 ▼
+[ Step 3: Vehicle Return (Status -> Completed) ]
+Customer returns the car. Admin changes booking status to "Completed".
+The system automatically snapshots final GPS odometer (e.g. 15,645 km).
+Total Distance = 15,645 - 15,400 = 245 km.
+Allowed Quota = 200 km.
+Excess Mileage = 45 km.
+Extra KM Charge = 45 km × ₹75/km = ₹3,375.
+                 ▼
+[ Step 4: Automatic Deposit Deduction Note ]
+The system automatically records into the Booking record:
+  "Excess mileage: 45 km @ ₹75/km = ₹3,375"
+Admin deducts ₹3,375 from the ₹25,000 security deposit:
+Net Refund = ₹21,625 dispatched via UPI.
+Bank UTR is saved in the record, and the customer sees the full audited calculation in their dashboard.
+```
+
+#### E. Geofence & Speed Alert Protections
+- **Hyderabad Outer Ring Road (65 km Perimeter):** The system continuously verifies vehicle coordinates against the Greater Hyderabad Metropolitan zone. If a vehicle leaves the authorized zone into outstation territory, a geofence warning is stamped.
+- **Overspeed Protection (>120 km/h):** Speeds exceeding 120 km/h trigger an instant high-speed flag logged against the trip.
 
 ---
 

@@ -343,6 +343,8 @@ RESEND_API_KEY=
 # ── UPI Payment Details ──
 NEXT_PUBLIC_UPI_ID=yourupi@bank
 NEXT_PUBLIC_UPI_NAME=DRIVEIT Luxury
+# ── GPS Telematics & Fleet Monitoring (Optional Secret for GPS SIM pings) ──
+TELEMATICS_SECRET=PASTE_OPTIONAL_TELEMATICS_SECRET_OR_LEAVE_BLANK
 
 # ── First Deploy Bootstrapping Flag ──
 # Set to 'true' only on your very first boot so Payload creates database tables.
@@ -1008,6 +1010,7 @@ sudo tail -f /var/log/nginx/access.log
 | `EMAIL_FROM_NAME` | Optional | `DriveIt Luxury Concierge` | Sender name shown in customer email inboxes |
 | `NEXT_PUBLIC_UPI_ID` | ⚠️ Recommended | `yourcompany@upi` | UPI VPA displayed on the QR checkout modal |
 | `NEXT_PUBLIC_UPI_NAME` | ⚠️ Recommended | `DRIVEIT Luxury` | Name displayed on customer UPI payment app |
+| `TELEMATICS_SECRET` | ⚠️ Optional | 64-char hex | Shared secret authorizing direct GPS SIM tracker pings at `/api/telematics/ping` |
 
 ---
 
