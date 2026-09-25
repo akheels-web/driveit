@@ -8,6 +8,8 @@ import { LocationSearchInput } from './location-search-input'
 import { UpiPayment } from './upi-payment'
 import { createBooking, updatePaymentStatus } from '@/lib/actions/bookings'
 import type { BookingFormData } from '@/lib/types'
+import { LuxurySelect } from '@/components/luxury-select'
+import { LuxuryDatePicker } from '@/components/luxury-date-picker'
 
 interface CarBookingModalProps {
   isOpen: boolean
@@ -228,25 +230,24 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Service Type</label>
-                          <div className="relative">
-                            <select value={form.serviceType} onChange={(e) => updateField('serviceType', e.target.value)}
-                              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-3 text-white text-sm appearance-none cursor-pointer hover:border-[var(--gold-400)]/30 focus:border-[var(--gold-400)]/50 focus:outline-none transition-colors"
-                            >
-                              {serviceTypes.map((s) => <option key={s.value} value={s.value} className="bg-[#111]">{s.label}</option>)}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
-                          </div>
+                          <LuxurySelect
+                            value={form.serviceType}
+                            onChange={(val) => updateField('serviceType', val)}
+                            options={serviceTypes.map((s) => ({ value: s.value, label: s.label }))}
+                            triggerClassName="bg-white/[0.03] border-white/10"
+                          />
                         </div>
                         <div>
                           <label className="block text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Duration (days)</label>
-                          <div className="relative">
-                            <select value={form.days} onChange={(e) => updateField('days', parseInt(e.target.value))}
-                              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-3 text-white text-sm appearance-none cursor-pointer hover:border-[var(--gold-400)]/30 focus:border-[var(--gold-400)]/50 focus:outline-none transition-colors"
-                            >
-                              {[1,2,3,4,5,6,7,10,14,30].map((d) => <option key={d} value={d} className="bg-[#111]">{d} {d === 1 ? 'day' : 'days'}</option>)}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
-                          </div>
+                          <LuxurySelect
+                            value={String(form.days)}
+                            onChange={(val) => updateField('days', parseInt(val) || 1)}
+                            options={[1, 2, 3, 4, 5, 6, 7, 10, 14, 30].map((d) => ({
+                              value: String(d),
+                              label: `${d} ${d === 1 ? 'day' : 'days'}`,
+                            }))}
+                            triggerClassName="bg-white/[0.03] border-white/10"
+                          />
                         </div>
                       </div>
 
@@ -277,26 +278,24 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Date *</label>
-                          <div className="relative">
-                            <input type="date" value={form.date} onChange={(e) => updateField('date', e.target.value)}
-                              min={new Date().toISOString().split('T')[0]}
-                              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm cursor-pointer hover:border-[var(--gold-400)]/30 focus:border-[var(--gold-400)]/50 focus:outline-none transition-colors [color-scheme:dark]"
-                            />
-                            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--gold-400)]/50" />
-                          </div>
+                          <LuxuryDatePicker
+                            value={form.date}
+                            onChange={(val) => updateField('date', val)}
+                            min={new Date().toISOString().split('T')[0]}
+                            placeholder="Select date"
+                            triggerClassName="bg-white/[0.03] border-white/10"
+                          />
                         </div>
                         <div>
                           <label className="block text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Time *</label>
-                          <div className="relative">
-                            <select value={form.time} onChange={(e) => updateField('time', e.target.value)}
-                              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm appearance-none cursor-pointer hover:border-[var(--gold-400)]/30 focus:border-[var(--gold-400)]/50 focus:outline-none transition-colors"
-                            >
-                              <option value="" className="bg-[#111]">Time...</option>
-                              {timeSlots.map((t) => <option key={t} value={t} className="bg-[#111]">{t}</option>)}
-                            </select>
-                            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--gold-400)]/50" />
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
-                          </div>
+                          <LuxurySelect
+                            value={form.time}
+                            onChange={(val) => updateField('time', val)}
+                            placeholder="Time..."
+                            icon={<Clock className="w-3.5 h-3.5 text-[var(--gold-400)]/70" />}
+                            options={timeSlots.map((t) => ({ value: t, label: t }))}
+                            triggerClassName="bg-white/[0.03] border-white/10"
+                          />
                         </div>
                       </div>
 

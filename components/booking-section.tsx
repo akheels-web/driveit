@@ -5,6 +5,7 @@ import { motion, useInView } from 'motion/react'
 import { Car, MapPin, CalendarDays, Clock, User, Phone, Mail, ArrowRight, CheckCircle, ChevronDown, Info, ShieldCheck, Users, PartyPopper, Plane, Fuel } from 'lucide-react'
 import { useFleet } from '@/hooks/use-fleet'
 import { LuxurySelect } from '@/components/luxury-select'
+import { LuxuryDatePicker } from '@/components/luxury-date-picker'
 
 const popularLocations = [
   "RGIA Airport (Shamshabad)",
@@ -230,10 +231,12 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
                   <div className="space-y-4">
                     <label className="block text-xs text-white/40 uppercase tracking-wider">Pickup Date & Time *</label>
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="relative">
-                        <input type="date" value={form.pickupDate} onChange={(e) => updateField("pickupDate", e.target.value)} min={new Date().toISOString().split("T")[0]} className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm focus:outline-none focus:border-[var(--gold-400)]/50 transition [color-scheme:dark]" />
-                        <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--gold-400)]/50" />
-                      </div>
+                      <LuxuryDatePicker
+                        value={form.pickupDate}
+                        onChange={(val) => updateField("pickupDate", val)}
+                        min={new Date().toISOString().split("T")[0]}
+                        placeholder="Pickup date..."
+                      />
                       <LuxurySelect
                         value={form.pickupTime}
                         onChange={(val) => updateField("pickupTime", val)}
@@ -248,10 +251,12 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
                     <div className="space-y-4 animate-in fade-in slide-in-from-top-4">
                       <label className="block text-xs text-white/40 uppercase tracking-wider">Return Date & Time *</label>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="relative">
-                          <input type="date" value={form.returnDate} onChange={(e) => updateField("returnDate", e.target.value)} min={form.pickupDate || new Date().toISOString().split("T")[0]} className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm focus:outline-none focus:border-[var(--gold-400)]/50 transition [color-scheme:dark]" />
-                          <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--gold-400)]/50" />
-                        </div>
+                        <LuxuryDatePicker
+                          value={form.returnDate}
+                          onChange={(val) => updateField("returnDate", val)}
+                          min={form.pickupDate || new Date().toISOString().split("T")[0]}
+                          placeholder="Return date..."
+                        />
                         <LuxurySelect
                           value={form.returnTime}
                           onChange={(val) => updateField("returnTime", val)}

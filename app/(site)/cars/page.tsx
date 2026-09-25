@@ -11,6 +11,7 @@ import { SiteFooter } from "@/components/site-footer"
 import { CarCard } from "@/components/car-card"
 import { CompareModal } from "@/components/compare-modal"
 import { useFleet } from "@/hooks/use-fleet"
+import { LuxurySelect } from "@/components/luxury-select"
 import {
   Pagination,
   PaginationContent,
@@ -173,20 +174,20 @@ export default function CarsPage() {
                   className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-white/20 hover:border-[var(--gold-400)]/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors"
                 />
               </div>
-              <div className="relative">
-                <select
+              <div className="w-full sm:w-56 shrink-0">
+                <LuxurySelect
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 pr-9 text-white text-sm appearance-none cursor-pointer hover:border-[var(--gold-400)]/20 focus:border-[var(--gold-400)]/40 focus:outline-none transition-colors [color-scheme:dark]"
-                >
-                  <option value="name" className="bg-[#121214] text-white">Sort: Name A-Z</option>
-                  <option value="booked" className="bg-[#121214] text-white">Most Booked</option>
-                  <option value="rating" className="bg-[#121214] text-white">Best Rated</option>
-                  <option value="new" className="bg-[#121214] text-white">Newly Added</option>
-                  <option value="price-low" className="bg-[#121214] text-white">Price: Low → High</option>
-                  <option value="price-high" className="bg-[#121214] text-white">Price: High → Low</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+                  onChange={(val) => setSortBy(val as SortOption)}
+                  options={[
+                    { value: "name", label: "Sort: Name A-Z" },
+                    { value: "booked", label: "Most Booked" },
+                    { value: "rating", label: "Best Rated" },
+                    { value: "new", label: "Newly Added" },
+                    { value: "price-low", label: "Price: Low → High" },
+                    { value: "price-high", label: "Price: High → Low" },
+                  ]}
+                  triggerClassName="bg-white/[0.03] border-white/10"
+                />
               </div>
             </div>
 

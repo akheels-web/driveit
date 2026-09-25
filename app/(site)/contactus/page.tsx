@@ -3,10 +3,13 @@ import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Phone, Car, Plane, Anchor } from "lucide-react";
+import { LuxurySelect } from "@/components/luxury-select";
 
 export default function ContactForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [service, setService] = useState('');
+  const [location, setLocation] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -114,37 +117,39 @@ export default function ContactForm() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <select
+                <LuxurySelect
                   name="service"
-                  required
-                  className="p-3.5 rounded-xl bg-zinc-800/90 border border-zinc-700 text-white focus:border-[var(--gold-400)] focus:ring-2 focus:ring-[var(--gold-400)]/20 outline-none transition text-sm cursor-pointer"
-                >
-                  <option value="" className="bg-[#18181b] text-white">Select Service</option>
-                  <option value="Luxury Car Rental" className="bg-[#18181b] text-white">Luxury Car Rental</option>
-                  <option value="Private Jet Services" className="bg-[#18181b] text-white">Private Jet Services</option>
-                  <option value="Yacht Services" className="bg-[#18181b] text-white">Yacht Services</option>
-                  <option value="Wedding Cars" className="bg-[#18181b] text-white">Wedding Cars</option>
-                  <option value="Corporate Events" className="bg-[#18181b] text-white">Corporate Events</option>
-                  <option value="Airport Transfer" className="bg-[#18181b] text-white">Airport Transfer</option>
-                  <option value="Chauffeur Service" className="bg-[#18181b] text-white">Chauffeur Service</option>
-                </select>
-                <select
+                  value={service}
+                  onChange={setService}
+                  placeholder="Select Service"
+                  options={[
+                    { value: "Luxury Car Rental", label: "Luxury Car Rental" },
+                    { value: "Private Jet Services", label: "Private Jet Services" },
+                    { value: "Yacht Services", label: "Yacht Services" },
+                    { value: "Wedding Cars", label: "Wedding Cars" },
+                    { value: "Corporate Events", label: "Corporate Events" },
+                    { value: "Airport Transfer", label: "Airport Transfer" },
+                    { value: "Chauffeur Service", label: "Chauffeur Service" },
+                  ]}
+                />
+                <LuxurySelect
                   name="location"
-                  required
-                  className="p-3.5 rounded-xl bg-zinc-800/90 border border-zinc-700 text-white focus:border-[var(--gold-400)] focus:ring-2 focus:ring-[var(--gold-400)]/20 outline-none transition text-sm cursor-pointer"
-                >
-                  <option value="" className="bg-[#18181b] text-white">Pickup Location</option>
-                  <option className="bg-[#18181b] text-white">Gachibowli</option>
-                  <option className="bg-[#18181b] text-white">Madhapur</option>
-                  <option className="bg-[#18181b] text-white">Hitech City</option>
-                  <option className="bg-[#18181b] text-white">Kokapet</option>
-                  <option className="bg-[#18181b] text-white">Jubilee Hills</option>
-                  <option className="bg-[#18181b] text-white">Kondapur</option>
-                  <option className="bg-[#18181b] text-white">Nanakramguda</option>
-                  <option className="bg-[#18181b] text-white">Hyderabad Airport</option>
-                  <option className="bg-[#18181b] text-white">Secunderabad</option>
-                  <option className="bg-[#18181b] text-white">Others</option>
-                </select>
+                  value={location}
+                  onChange={setLocation}
+                  placeholder="Pickup Location"
+                  options={[
+                    { value: "Gachibowli", label: "Gachibowli" },
+                    { value: "Madhapur", label: "Madhapur" },
+                    { value: "Hitech City", label: "Hitech City" },
+                    { value: "Kokapet", label: "Kokapet" },
+                    { value: "Jubilee Hills", label: "Jubilee Hills" },
+                    { value: "Kondapur", label: "Kondapur" },
+                    { value: "Nanakramguda", label: "Nanakramguda" },
+                    { value: "Hyderabad Airport", label: "Hyderabad Airport" },
+                    { value: "Secunderabad", label: "Secunderabad" },
+                    { value: "Others", label: "Others" },
+                  ]}
+                />
               </div>
 
               {error && (

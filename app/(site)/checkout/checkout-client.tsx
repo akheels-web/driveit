@@ -20,6 +20,7 @@ import {
 
 import type { InitResponse, QuoteBreakdown } from '@/lib/types'
 import { useCountdown, useFleet, useSavedProfile } from '@/hooks/use-fleet'
+import { LuxurySelect } from '@/components/luxury-select'
 
 type Step = 'details' | 'payment' | 'success'
 
@@ -377,21 +378,19 @@ export function CheckoutClient() {
               />
 
               {savedAddresses.length > 0 && (
-                <select
-                  onChange={(event) => {
-                    const value = event.target.value
-                    if (value) setForm((previous) => ({ ...previous, pickupLocation: value }))
+                <LuxurySelect
+                  value=""
+                  onChange={(val) => {
+                    if (val) setForm((prev) => ({ ...prev, pickupLocation: val }))
                   }}
-                  className="bg-[#121214] border border-white/10 rounded-xl px-3 py-2 text-xs text-white/80 [color-scheme:dark]"
-                  defaultValue=""
-                >
-                  <option value="" className="bg-[#121214] text-zinc-300">Use a saved address…</option>
-                  {savedAddresses.map(([key, label]) => (
-                    <option key={key} value={profile?.[key] ?? ''} className="bg-[#121214] text-white">
-                      {label}: {profile?.[key]}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Use a saved address…"
+                  size="sm"
+                  options={savedAddresses.map(([key, label]) => ({
+                    value: profile?.[key] ?? '',
+                    label: `${label}: ${profile?.[key]}`,
+                  }))}
+                  triggerClassName="bg-black border-white/10"
+                />
               )}
 
               <div className="relative">

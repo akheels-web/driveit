@@ -11,10 +11,13 @@ import { Send } from 'lucide-react'
  * shipped a live credential to every visitor. The request now goes to
  * /api/contact, which validates it, rate limits it and calls Telegram server-side.
  */
+import { LuxurySelect } from '@/components/luxury-select'
+
 export function ContactForm() {
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+  const [service, setService] = useState('')
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -30,7 +33,7 @@ export function ContactForm() {
         body: JSON.stringify({
           name: formData.get('name'),
           phone: formData.get('phone'),
-          service: formData.get('service'),
+          service: formData.get('service') || service,
           message: formData.get('message'),
           company: formData.get('company'),
         }),
@@ -40,6 +43,7 @@ export function ContactForm() {
 
       if (response.ok) {
         setSent(true)
+        setService('')
         event.currentTarget.reset()
       } else {
         setError(data.error || 'We could not send your message. Please call us instead.')
@@ -88,18 +92,19 @@ export function ContactForm() {
             placeholder="Phone number *"
             className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm placeholder:text-white/25 focus:border-[var(--gold-400)]/40 focus:outline-none"
           />
-          <select
+          <LuxurySelect
             name="service"
-            defaultValue=""
-            className="w-full bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white/80 focus:border-[var(--gold-400)]/40 focus:outline-none [color-scheme:dark]"
-          >
-            <option value="" className="bg-[#121214] text-zinc-300">Service of interest</option>
-            <option value="Luxury car rental" className="bg-[#121214] text-white">Luxury car rental</option>
-            <option value="Airport transfer" className="bg-[#121214] text-white">Airport transfer</option>
-            <option value="Wedding cars" className="bg-[#121214] text-white">Wedding cars</option>
-            <option value="Corporate travel" className="bg-[#121214] text-white">Corporate travel</option>
-            <option value="Private jet / yacht" className="bg-[#121214] text-white">Private jet / yacht</option>
-          </select>
+            value={service}
+            onChange={setService}
+            placeholder="Service of interest"
+            options={[
+              { value: 'Luxury car rental', label: 'Luxury car rental' },
+              { value: 'Airport transfer', label: 'Airport transfer' },
+              { value: 'Wedding cars', label: 'Wedding cars' },
+              { value: 'Corporate travel', label: 'Corporate travel' },
+              { value: 'Private jet / yacht', label: 'Private jet / yacht' },
+            ]}
+          />
           <textarea
             name="message"
             required

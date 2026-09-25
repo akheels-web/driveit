@@ -18,9 +18,12 @@ interface LuxurySelectProps {
   placeholder?: string
   icon?: React.ReactNode
   className?: string
+  triggerClassName?: string
   disabled?: boolean
   id?: string
+  name?: string
   ariaLabel?: string
+  size?: 'sm' | 'md'
 }
 
 export function LuxurySelect({
@@ -30,9 +33,12 @@ export function LuxurySelect({
   placeholder = 'Select an option...',
   icon,
   className,
+  triggerClassName,
   disabled = false,
   id,
+  name,
   ariaLabel,
+  size = 'md',
 }: LuxurySelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -125,6 +131,7 @@ export function LuxurySelect({
 
   return (
     <div className={cn('relative w-full', className)}>
+      {name && <input type="hidden" name={name} value={value} />}
       <button
         ref={triggerRef}
         type="button"
@@ -139,12 +146,14 @@ export function LuxurySelect({
           }
         }}
         className={cn(
-          'w-full bg-[#111] border rounded-xl px-4 py-3 text-sm text-left transition-all duration-200 cursor-pointer flex items-center justify-between outline-none min-h-[46px]',
-          icon ? 'pl-10' : 'pl-4',
+          'w-full bg-[#111] border rounded-xl text-left transition-all duration-200 cursor-pointer flex items-center justify-between outline-none',
+          size === 'sm' ? 'px-3 py-2 text-xs min-h-[38px]' : 'px-4 py-3 text-sm min-h-[46px]',
+          icon ? (size === 'sm' ? 'pl-8' : 'pl-10') : (size === 'sm' ? 'pl-3' : 'pl-4'),
           isOpen
             ? 'border-[var(--gold-400)]/80 shadow-[0_0_15px_rgba(212,175,55,0.25)] ring-1 ring-[var(--gold-400)]/40'
             : 'border-white/10 hover:border-white/20 focus:border-[var(--gold-400)]/50',
-          disabled && 'opacity-40 cursor-not-allowed pointer-events-none'
+          disabled && 'opacity-40 cursor-not-allowed pointer-events-none',
+          triggerClassName
         )}
       >
         {icon && (

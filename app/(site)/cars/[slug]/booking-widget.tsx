@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { CalendarDays, ShieldCheck, Info, ArrowRight } from 'lucide-react'
 import type { CarDetails } from '@/lib/cars'
+import { LuxuryDatePicker } from '@/components/luxury-date-picker'
 
 export function CarBookingWidget({ car }: { car: CarDetails }) {
   const router = useRouter()
@@ -93,29 +94,23 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
          <div className="grid grid-cols-2 gap-3">
             <div>
                <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Pickup</label>
-               <div className="relative">
-                 <input 
-                   type="date" 
-                   value={pickupDate}
-                   onChange={(e) => setPickupDate(e.target.value)}
-                   min={new Date().toISOString().split("T")[0]}
-                   className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm focus:border-[var(--gold-400)]/50 focus:outline-none transition [color-scheme:dark]" 
-                 />
-                 <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-               </div>
+               <LuxuryDatePicker
+                 value={pickupDate}
+                 onChange={setPickupDate}
+                 min={new Date().toISOString().split("T")[0]}
+                 placeholder="Pickup date"
+                 triggerClassName="bg-white/5 border-white/10"
+               />
             </div>
             <div>
                <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Return</label>
-               <div className="relative">
-                 <input 
-                   type="date" 
-                   value={returnDate}
-                   onChange={(e) => setReturnDate(e.target.value)}
-                   min={pickupDate || new Date().toISOString().split("T")[0]}
-                   className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 pl-9 text-white text-sm focus:border-[var(--gold-400)]/50 focus:outline-none transition [color-scheme:dark]" 
-                 />
-                 <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-               </div>
+               <LuxuryDatePicker
+                 value={returnDate}
+                 onChange={setReturnDate}
+                 min={pickupDate || new Date().toISOString().split("T")[0]}
+                 placeholder="Return date"
+                 triggerClassName="bg-white/5 border-white/10"
+               />
             </div>
          </div>
 
