@@ -610,10 +610,34 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
                 </div>
               )}
 
+              {!canSubmit && (
+                <div className="mt-4 p-3 rounded-xl border border-white/10 bg-white/[0.02] text-xs text-white/50">
+                  <span className="text-[var(--gold-400)] font-medium block mb-1.5">To unlock reservation, please complete:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      !form.carId && 'Select Vehicle',
+                      !form.pickup && 'Pickup Location',
+                      !form.pickupDate && 'Pickup Date',
+                      !form.pickupTime && 'Pickup Time',
+                      form.tripType === 'Round-Trip' && !form.returnDate && 'Return Date',
+                      form.tripType === 'Round-Trip' && !form.returnTime && 'Return Time',
+                      !form.name.trim() && 'Full Name',
+                      !form.phone.trim() && 'Phone Number',
+                    ]
+                      .filter(Boolean)
+                      .map((item) => (
+                        <span key={item as string} className="px-2 py-0.5 rounded bg-white/5 text-white/70 text-[11px]">
+                          • {item}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              )}
+
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className="w-full mt-8 flex justify-center items-center gap-2 px-8 py-4 rounded-xl font-bold text-black disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] active:scale-95"
+                className="w-full mt-6 flex justify-center items-center gap-2 px-8 py-4 rounded-xl font-bold text-black disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] active:scale-95"
                 style={{
                   background: canSubmit ? 'linear-gradient(135deg, var(--gold-300), var(--gold-400), var(--gold-500))' : 'rgba(255,255,255,0.1)',
                   color: canSubmit ? 'black' : 'rgba(255,255,255,0.3)',

@@ -215,5 +215,33 @@
   - **Passenger Capacity Filter**: Selecting `4 Passengers` strictly displays 4/5-seater sedans & SUVs (hiding 7-seaters like Fortuner, Vellfire, Crysta, GLS, Q7). Selecting `7 Passengers` filters to 7-seater luxury SUVs & MPVs.
   - **Bidirectional Auto-Sync**: Selecting `Toyota Fortuner` (or any 7-seater) automatically sets `passengers` to `"7"`. Selecting a 4-passenger filter automatically clears any previously selected 7-seater car so only valid vehicles are shown.
 
+## 13. Universal Form Validation, Feedback & Message System
+- **Zero Browser Alerts**: Replaced all blocking native `alert()` calls across the entire codebase with modern obsidian-gold, emerald, and rose notification cards.
+- **Checkout & Payment Flow ([`app/(site)/checkout/checkout-client.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/checkout/checkout-client.tsx))**:
+  - **Step 1 Reservation Error**: Prominent rose alert card with `AlertCircle`, title, and error message.
+  - **Missing Fields Guidance**: Live pill checklist highlighting missing fields (`Full Name`, `Email`, `Phone`, `Pickup Location`) before allowing checkout progression.
+  - **Step 2 Verification Banner**: Rose payment verification alert with 24/7 concierge phone fallback (`+91 63000 41186`).
+  - **Hold Expiry Warning**: Amber banner warning user when the 10-minute hold has expired, with a 1-tap re-reservation button.
+  - **Promo Codes**: Green check for applied coupons, rose banner for invalid codes.
+- **Instant Booking Modal ([`components/car-booking-modal.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/car-booking-modal.tsx))**:
+  - Replaced native `alert()` calls in booking creation, "Pay at Pickup" confirmation, and payment verification with inline obsidian-rose banners.
+  - Added live required fields checklist ("Required to continue: Pickup Location • Date • Time • Full Name • Phone") when submit button is disabled.
+- **Authentication & Sign-In/Sign-Up ([`app/(site)/login/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/login/page.tsx), [`app/(site)/signup/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/signup/page.tsx))**:
+  - Intercepts NextAuth URL query parameters (`error`, `loggedOut`, `reason`) and renders styled luxury notifications:
+    - `loggedOut=true`: Emerald banner confirming secure sign-out.
+    - `reason=auth_required`: Gold banner explaining why sign-in is required to view customer dashboard.
+    - `error=OAuth*`: Rose banner explaining Google authentication cancellation or permission failure.
+    - `error=Configuration`: Concierge emergency callout at `+91 63000 41186`.
+- **Customer Profile & KYC Document Vault ([`components/profile-form.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/profile-form.tsx))**:
+  - Profile save: Upgraded to animated emerald badge with `CheckCircle2` on success, or rose alert card with `AlertTriangle` on error.
+  - KYC Document Uploads: Live feedback card for Driving License and Aadhaar uploads confirming secure reception.
+- **Fleet Partner Consignment Form ([`app/(site)/partner/list-fleet/partner-form.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/partner/list-fleet/partner-form.tsx))**:
+  - Replaced plain text error with a structured obsidian-rose alert card containing `AlertCircle`, detailed reason, and direct link to fleet acquisitions concierge.
+- **Contact & Inquiry Forms ([`components/contact-form.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/contact-form.tsx))**:
+  - Enhanced inquiry dispatch screen with animated gold icon, 15-minute response guarantee, and option to submit another request.
+  - Upgraded failure banner with direct 1-tap phone link to 24/7 concierge.
+- **Homepage & Vehicle Booking Widgets ([`components/booking-section.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/booking-section.tsx), [`app/(site)/cars/[slug]/booking-widget.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/cars/[slug]/booking-widget.tsx))**:
+  - Informative missing field indicators showing exactly what dates, times, vehicle or contacts are required before checkout can proceed.
+
 
 

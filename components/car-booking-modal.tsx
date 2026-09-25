@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { X, Car, MapPin, CalendarDays, Clock, User, Phone, Mail, ArrowRight, CheckCircle, ChevronDown, CreditCard, Timer } from 'lucide-react'
+import { X, Car, MapPin, CalendarDays, Clock, User, Phone, Mail, ArrowRight, CheckCircle, ChevronDown, CreditCard, Timer, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 import { LocationSearchInput } from './location-search-input'
 import { UpiPayment } from './upi-payment'
@@ -54,6 +54,7 @@ const serviceTypes = [
 export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) {
   const [step, setStep] = useState(1) // 1: details, 2: payment, 3: success
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [bookingRef, setBookingRef] = useState('')
   const [bookingId, setBookingId] = useState('')
   // Proof that this browser created the hold — required to confirm the payment.
@@ -75,10 +76,11 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
   const totalAmount = car.pricePerDay * form.days
 
   const updateField = (field: string, value: string | number) => {
+    if (error) setError(null)
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  const canSubmit = form.pickup && form.date && form.time && form.name && form.phone
+  const canSubmit = Boolean(form.pickup && form.date && form.time && form.name.trim() && form.phone.trim())
 
   // Reset when the modal opens. Adjusting state during render is React's
   // documented pattern for "state that depends on a prop change" — it avoids the
@@ -92,6 +94,7 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
       setBookingRef('')
       setBookingId('')
       setHoldToken('')
+      setError(null)
     }
   }
 
@@ -108,6 +111,7 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
   const handleSubmitBooking = async (paymentMethod: 'upi' | 'pay_later') => {
     if (!canSubmit) return
     setLoading(true)
+    setError(null)
 
     const data: BookingFormData = {
       carId: car.id,
@@ -119,45 +123,57 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
       bookingDate: form.date,
       bookingTime: form.time,
       durationDays: form.days,
-      customerName: form.name,
-      customerPhone: form.phone,
-      customerEmail: form.email || undefined,
-      notes: form.notes || undefined,
+      customerName: form.name.trim(),
+      customerPhone: form.phone.trim(),
+      customerEmail: form.email.trim() || undefined,
+      notes: form.notes.trim() || undefined,
       totalAmount,
       paymentMethod,
     }
 
-    const result = await createBooking(data)
+    try {
+      const result = await createBooking(data)
 
-    if (result.success) {
-      setBookingRef(result.reference)
-      setBookingId(result.bookingId)
-      setHoldToken(result.holdToken)
-      if (paymentMethod === 'upi') {
-        setStep(2)
-      } else {
-        const confirmed = await updatePaymentStatus(result.bookingId, 'pay_at_pickup', result.holdToken)
-        if (!confirmed.success) {
-          alert(confirmed.error || 'Could not confirm booking. Please try again.')
-          setLoading(false)
-          return
+      if (result.success) {
+        setBookingRef(result.reference)
+        setBookingId(result.bookingId)
+        setHoldToken(result.holdToken)
+        if (paymentMethod === 'upi') {
+          setStep(2)
+        } else {
+          const confirmed = await updatePaymentStatus(result.bookingId, 'pay_at_pickup', result.holdToken)
+          if (!confirmed.success) {
+            setError(confirmed.error || 'Could not confirm Pay at Pickup. Please contact concierge support at +91 63000 41186.')
+            setLoading(false)
+            return
+          }
+          setStep(3)
         }
-        setStep(3)
+      } else {
+        setError(result.error || 'Error creating reservation hold. Please try again or call our 24/7 concierge at +91 63000 41186.')
       }
-    } else {
-      alert(result.error || 'Error creating booking. Please try again or call +91 63000 41186')
+    } catch {
+      setError('A network error occurred. Please check your internet connection or call +91 63000 41186.')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   const handlePaymentConfirmed = async (txnId: string) => {
-    const result = await updatePaymentStatus(bookingId, txnId, holdToken)
-    if (!result.success) {
-      alert(result.error || 'Could not confirm the payment. Please contact support.')
-      return
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await updatePaymentStatus(bookingId, txnId, holdToken)
+      if (!result.success) {
+        setError(result.error || 'Could not verify payment reference. Please double-check your transaction ID or reach out to our concierge.')
+        return
+      }
+      setStep(3)
+    } catch {
+      setError('Network communication failed during payment verification. Please call +91 63000 41186.')
+    } finally {
+      setLoading(false)
     }
-    setStep(3)
   }
 
   return (
@@ -327,6 +343,36 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
                         </div>
                       </div>
 
+                      {/* Validation & Error Messaging */}
+                      {error && (
+                        <div className="p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs flex items-start gap-2.5 mt-4">
+                          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="font-semibold text-rose-200">Unable to Reserve Vehicle</p>
+                            <p className="text-rose-300/80 mt-0.5">{error}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {!canSubmit && (
+                        <div className="p-2.5 rounded-lg border border-white/5 bg-white/[0.02] text-[11px] text-white/40 mt-4 flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[var(--gold-400)] font-medium">Required to continue:</span>
+                          {[
+                            !form.pickup && 'Pickup Location',
+                            !form.date && 'Date',
+                            !form.time && 'Time',
+                            !form.name.trim() && 'Full Name',
+                            !form.phone.trim() && 'Phone',
+                          ]
+                            .filter(Boolean)
+                            .map((item, idx) => (
+                              <span key={item as string} className="bg-white/5 px-2 py-0.5 rounded text-white/60">
+                                {item}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+
                       {/* Total & Actions */}
                       <div className="border-t border-white/5 pt-4 mt-4">
                         <div className="flex justify-between items-center mb-4">
@@ -348,7 +394,7 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
                             whileTap={canSubmit ? { scale: 0.98 } : {}}
                           >
                             <CreditCard className="w-4 h-4" />
-                            {loading ? 'Booking...' : 'Pay & Book'}
+                            {loading ? 'Reserving...' : 'Pay & Book'}
                           </motion.button>
 
                           <motion.button
@@ -375,18 +421,34 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                   >
+                    {error && (
+                      <div className="p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs flex items-start gap-2.5 mb-4">
+                        <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="font-semibold text-rose-200">Payment Confirmation Notice</p>
+                          <p className="text-rose-300/80 mt-0.5">{error}</p>
+                        </div>
+                      </div>
+                    )}
+
                     <UpiPayment
                       amount={totalAmount}
                       bookingRef={bookingRef}
                       onPaymentConfirmed={handlePaymentConfirmed}
                       onPayLater={async () => {
                         setLoading(true)
-                        const confirmed = await updatePaymentStatus(bookingId, 'pay_at_pickup', holdToken)
-                        setLoading(false)
-                        if (confirmed.success) {
-                          setStep(3)
-                        } else {
-                          alert(confirmed.error || 'Could not confirm booking. Please contact support.')
+                        setError(null)
+                        try {
+                          const confirmed = await updatePaymentStatus(bookingId, 'pay_at_pickup', holdToken)
+                          if (confirmed.success) {
+                            setStep(3)
+                          } else {
+                            setError(confirmed.error || 'Could not confirm Pay at Pickup. Please contact concierge support at +91 63000 41186.')
+                          }
+                        } catch {
+                          setError('Network error confirming booking. Please contact our 24/7 concierge at +91 63000 41186.')
+                        } finally {
+                          setLoading(false)
                         }
                       }}
                     />

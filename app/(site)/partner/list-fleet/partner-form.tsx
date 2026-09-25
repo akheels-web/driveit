@@ -14,6 +14,7 @@ import {
   Mail,
   User,
   MapPin,
+  AlertCircle,
 } from 'lucide-react'
 
 export function PartnerConsignmentForm() {
@@ -237,7 +238,21 @@ export function PartnerConsignmentForm() {
         </div>
       </div>
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && (
+        <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs flex items-start gap-3">
+          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-1">
+            <p className="font-semibold text-rose-200">Unable to Submit Vehicle Consignment</p>
+            <p className="text-rose-300/80">{error}</p>
+            <p className="text-white/40 text-[11px] pt-1">
+              Need assistance? Call our fleet acquisitions concierge at{' '}
+              <a href="tel:+916300041186" className="text-[var(--gold-400)] underline">
+                +91 63000 41186
+              </a>
+            </p>
+          </div>
+        </div>
+      )}
 
       <button
         type="submit"

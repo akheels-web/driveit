@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react'
 import { motion } from 'motion/react'
-import { Send } from 'lucide-react'
+import { Send, AlertCircle } from 'lucide-react'
 
 /**
  * Contact form.
@@ -67,14 +67,22 @@ export function ContactForm() {
       {sent ? (
         <div className="py-12 text-center">
           <motion.div
-            className="w-14 h-14 rounded-full bg-[var(--gold-400)] flex items-center justify-center mx-auto mb-5"
+            className="w-14 h-14 rounded-full bg-[var(--gold-400)] flex items-center justify-center mx-auto mb-5 shadow-[0_0_30px_rgba(212,175,55,0.3)]"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
           >
             <Send className="w-6 h-6 text-black" />
           </motion.div>
-          <h3 className="text-lg font-semibold mb-2">Message sent</h3>
-          <p className="text-sm text-white/50">Our concierge team will get back to you shortly.</p>
+          <h3 className="text-xl font-bold text-white mb-2">Inquiry Dispatched Successfully</h3>
+          <p className="text-sm text-white/60 max-w-sm mx-auto mb-6 leading-relaxed">
+            Our luxury fleet concierge has received your request and will connect with you via phone or WhatsApp within 15 minutes.
+          </p>
+          <button
+            onClick={() => setSent(false)}
+            className="px-6 py-2.5 rounded-xl text-xs font-semibold text-[var(--gold-400)] border border-[var(--gold-400)]/30 hover:bg-[var(--gold-400)]/10 transition cursor-pointer"
+          >
+            Send Another Inquiry
+          </button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -125,9 +133,19 @@ export function ContactForm() {
           />
 
           {error && (
-            <p className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-              {error}
-            </p>
+            <div className="p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <p className="font-semibold text-rose-200">Unable to Send Message</p>
+                <p className="text-rose-300/80 leading-relaxed">{error}</p>
+                <p className="text-white/40 text-[11px]">
+                  You can also call our 24/7 concierge directly at{' '}
+                  <a href="tel:+916300041186" className="text-[var(--gold-400)] underline">
+                    +91 63000 41186
+                  </a>
+                </p>
+              </div>
+            </div>
           )}
 
           <button

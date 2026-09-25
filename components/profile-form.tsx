@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Upload,
   FileCheck2,
+  CheckCircle2,
 } from 'lucide-react'
 
 import type { CustomerProfile } from '@/lib/types'
@@ -34,7 +35,7 @@ export function ProfileForm({ email, initial }: { email: string; initial: Custom
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
   const [uploadMsg, setUploadMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const update = (field: keyof typeof form, value: string) =>
     setForm((previous) => ({ ...previous, [field]: value }))
@@ -50,12 +51,16 @@ export function ProfileForm({ email, initial }: { email: string; initial: Custom
         body: JSON.stringify(form),
       })
       const data = await response.json()
-      setMessage(response.ok ? 'Saved!' : data.error || 'Could not save your details.')
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Profile changes saved successfully! Your details will be pre-filled on your next reservation.' })
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Could not save profile details. Please try again.' })
+      }
     } catch {
-      setMessage('Network error — please try again.')
+      setMessage({ type: 'error', text: 'Network connection error. Please verify your internet and try again.' })
     } finally {
       setSaving(false)
-      setTimeout(() => setMessage(null), 4000)
+      setTimeout(() => setMessage(null), 6000)
     }
   }
 
@@ -237,11 +242,20 @@ export function ProfileForm({ email, initial }: { email: string; initial: Custom
             </div>
 
             {uploadMsg && (
-              <p
-                className={`text-xs ${uploadMsg.type === 'success' ? 'text-emerald-400' : 'text-amber-400'}`}
+              <div
+                className={`p-3 rounded-xl border flex items-center gap-2.5 text-xs transition-all ${
+                  uploadMsg.type === 'success'
+                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                    : 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+                }`}
               >
-                {uploadMsg.text}
-              </p>
+                {uploadMsg.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                )}
+                <span className="font-medium">{uploadMsg.text}</span>
+              </div>
             )}
           </div>
         )}
@@ -357,7 +371,25 @@ export function ProfileForm({ email, initial }: { email: string; initial: Custom
           </div>
 
           {message && (
-            <p className={`text-xs ${message === 'Saved!' ? 'text-green-400' : 'text-amber-300'}`}>{message}</p>
+            <div
+              className={`p-3.5 rounded-xl border flex items-start gap-2.5 text-xs transition-all ${
+                message.type === 'success'
+                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                  : 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+              }`}
+            >
+              {message.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              )}
+              <div className="flex-1">
+                <p className="font-semibold text-white">
+                  {message.type === 'success' ? 'Profile Updated' : 'Action Failed'}
+                </p>
+                <p className="mt-0.5 text-white/80">{message.text}</p>
+              </div>
+            </div>
           )}
 
           <button

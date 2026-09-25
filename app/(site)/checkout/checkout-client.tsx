@@ -16,6 +16,7 @@ import {
   Lock,
   MapPin,
   Clock,
+  AlertCircle,
 } from 'lucide-react'
 
 import type { InitResponse, QuoteBreakdown } from '@/lib/types'
@@ -467,6 +468,40 @@ export function CheckoutClient() {
                 </details>
               </div>
 
+              {/* Error Banner */}
+              {error && (
+                <div
+                  className="p-4 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-200 text-xs flex items-start gap-3 shadow-[0_0_20px_rgba(244,63,94,0.1)] animate-in fade-in"
+                  role="alert"
+                >
+                  <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-semibold text-rose-300">Reservation Notice</p>
+                    <p className="leading-relaxed">{error}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Incomplete Fields Guidance */}
+              {!canContinue && (
+                <div className="text-[11px] text-amber-400/90 bg-amber-400/5 border border-amber-400/20 rounded-xl p-3 flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-medium text-amber-300">Required to proceed: </span>
+                    <span className="text-white/70">
+                      {[
+                        form.name.trim().length < 2 && 'Full Name',
+                        !form.email.includes('@') && 'Valid Email',
+                        form.phone.trim().length < 6 && 'Phone Number',
+                        form.pickupLocation.trim().length < 2 && 'Pickup Location',
+                      ]
+                        .filter(Boolean)
+                        .join(', ')}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <button
                 onClick={startHold}
                 disabled={!canContinue || busy}
@@ -522,19 +557,68 @@ export function CheckoutClient() {
                       Pay ₹{Number(quote.totalPrice).toLocaleString('en-IN')} by scanning the code, then confirm
                       below.
                     </p>
-                    <input
-                      type="text"
-                      placeholder="UPI reference / transaction id (optional)"
-                      value={upiReference}
-                      onChange={(event) => setUpiReference(event.target.value)}
-                      className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-sm"
-                    />
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] text-white/50 uppercase tracking-wider">
+                        UPI Transaction / UTR Reference
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 425618992144 (12-digit UPI Ref)"
+                        value={upiReference}
+                        onChange={(event) => setUpiReference(event.target.value)}
+                        className="w-full bg-black border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-[var(--gold-400)]/60 focus:outline-none"
+                      />
+                      <p className="text-[10px] text-white/40">
+                        Entering your UTR speeds up automatic payment verification under 15 minutes.
+                      </p>
+                    </div>
+
+                    {/* Step 2 Error Banner */}
+                    {error && (
+                      <div
+                        className="p-3.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-200 text-xs flex items-start gap-2.5 shadow-[0_0_20px_rgba(244,63,94,0.1)] animate-in fade-in"
+                        role="alert"
+                      >
+                        <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                        <div className="space-y-0.5">
+                          <p className="font-semibold text-rose-300">Payment Issue</p>
+                          <p className="leading-relaxed">{error}</p>
+                          <p className="text-[11px] text-white/60 pt-1">
+                            Contact concierge 24/7 at <a href="tel:+916300041186" className="text-[var(--gold-400)] underline font-medium">+91 63000 41186</a>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Hold Expired Alert */}
+                    {countdown?.expired && (
+                      <div
+                        className="p-3.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-200 text-xs flex items-start gap-2.5 animate-in fade-in"
+                        role="alert"
+                      >
+                        <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                        <div className="space-y-0.5">
+                          <p className="font-semibold text-amber-300">Vehicle Hold Expired</p>
+                          <p className="leading-relaxed">
+                            Your 10-minute hold window expired. Please re-initiate booking to secure this car.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setStep('details')}
+                            className="text-[11px] text-[var(--gold-400)] font-semibold underline pt-1"
+                          >
+                            Return to Step 1 & Refresh
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <button
                       onClick={confirmPayment}
                       disabled={busy || countdown?.expired}
-                      className="w-full py-3 bg-[var(--gold-400)] text-black font-bold rounded-lg disabled:opacity-40"
+                      className="w-full py-3.5 bg-[var(--gold-400)] text-black font-bold rounded-xl disabled:opacity-40 cursor-pointer transition hover:scale-[1.01]"
                     >
-                      {busy ? 'Confirming…' : 'I have completed the payment'}
+                      {busy ? 'Confirming with accounting…' : 'I have completed the payment'}
                     </button>
                   </div>
                 </div>
@@ -627,7 +711,8 @@ export function CheckoutClient() {
                   </button>
                 </div>
                 {promoMessage && (
-                  <p className={`text-xs mt-2 ${estimatedDiscount > 0 ? 'text-green-400' : 'text-white/50'}`}>
+                  <p className={`text-xs mt-2 flex items-center gap-1.5 ${estimatedDiscount > 0 ? 'text-emerald-400 font-medium' : 'text-rose-400'}`}>
+                    {estimatedDiscount > 0 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                     {promoMessage}
                   </p>
                 )}

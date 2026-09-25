@@ -212,6 +212,12 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
             </div>
          )}
 
+         {(!pickupDate || !returnDate) && (
+           <p className="text-[11px] text-white/40 text-center py-1">
+             Please select pickup and return dates to unlock checkout
+           </p>
+         )}
+
          <button 
            onClick={handleCheckout}
            disabled={!pickupDate || !returnDate}

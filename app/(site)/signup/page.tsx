@@ -1,20 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'motion/react'
-import { ArrowRight, Chrome, Crown, X } from 'lucide-react'
+import { ArrowRight, Chrome, Crown, X, AlertCircle } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 
 import { SiteHeader } from '@/components/site-header'
 
-/**
- * Accounts are created automatically the first time somebody signs in with
- * Google (a `customers` record is created on their first confirmed booking).
- * The previous page posted a password to a `credentials` provider that never
- * existed, so signup silently failed.
- */
-export default function SignupPage() {
+function SignupForm() {
+  const searchParams = useSearchParams()
+  const errorParam = searchParams.get('error')
   const [loading, setLoading] = useState(false)
 
   return (
@@ -37,7 +34,7 @@ export default function SignupPage() {
               <X className="w-5 h-5" />
             </Link>
 
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <div className="w-14 h-14 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center mx-auto mb-4 border border-[var(--gold-400)]/20">
                 <Crown className="w-6 h-6 text-[var(--gold-400)]" />
               </div>
@@ -49,13 +46,25 @@ export default function SignupPage() {
               </p>
             </div>
 
+            {errorParam && (
+              <div className="p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs flex items-start gap-2.5 mb-6 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-rose-200">Sign Up Could Not Complete</p>
+                  <p className="mt-0.5 text-rose-300/80 leading-relaxed">
+                    Google authorization was interrupted or cancelled. Please try again.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <button
               onClick={() => {
                 setLoading(true)
                 void signIn('google', { callbackUrl: '/dashboard' })
               }}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl text-sm font-semibold bg-white text-black hover:bg-white/90 transition disabled:opacity-60"
+              className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl text-sm font-semibold bg-white text-black hover:bg-white/90 transition disabled:opacity-60 cursor-pointer"
             >
               <Chrome className="w-4 h-4" />
               {loading ? 'Redirecting…' : 'Sign up with Google'}
@@ -78,5 +87,13 @@ export default function SignupPage() {
         </motion.div>
       </section>
     </>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading…</div>}>
+      <SignupForm />
+    </Suspense>
   )
 }
