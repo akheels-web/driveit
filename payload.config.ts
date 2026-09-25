@@ -60,6 +60,9 @@ export default buildConfig({
           Component: '@/components/cms/DashboardView#DashboardView',
         },
       },
+      afterLogin: [
+        '@/components/cms/AfterLogin#AfterLogin',
+      ],
     },
   },
   // Every collection gets cache revalidation on save so ISR pages stay fresh.

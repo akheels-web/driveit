@@ -315,3 +315,727 @@ td, [class*="table__cell"] {
 [class*="no-results"] h2, [class*="empty-state"] h2 {
   color: #d4af37 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   10. DRIVEIT LUXURY — 2-SECTION EXECUTIVE ATELIER LOGIN PAGE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Minimal Template Shell (Page Container) ── */
+.template-minimal,
+[class*="template-minimal"] {
+  min-height: 100vh !important;
+  width: 100% !important;
+  background-color: #050505 !important;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(212, 175, 55, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 88% 82%, rgba(212, 175, 55, 0.10) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(18, 18, 24, 0.8) 0%, #050505 100%),
+    radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 2.5rem 1.25rem !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
+/* Atmospheric Ambient Gold Top Bar */
+.template-minimal::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, #aa8c2c 25%, #f5d770 50%, #d4af37 75%, transparent 100%);
+  z-index: 100;
+  opacity: 0.9;
+}
+
+/* ── The 2-Section Executive Atelier Card Container ── */
+.template-minimal__wrap,
+[class*="template-minimal__wrap"] {
+  max-width: 1160px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  grid-template-columns: 1.15fr 1fr !important;
+  background: rgba(14, 14, 18, 0.92) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  border-radius: 28px !important;
+  box-shadow:
+    0 40px 100px -20px rgba(0, 0, 0, 0.98),
+    0 0 70px rgba(212, 175, 55, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* ── Left Column: Prestige Executive Atelier Showcase ── */
+.login__brand,
+[class*="login__brand"] {
+  grid-column: 1 !important;
+  grid-row: 1 / span 3 !important;
+  background: linear-gradient(165deg, rgba(22, 22, 28, 0.97) 0%, rgba(12, 12, 16, 0.99) 100%) !important;
+  border-right: 1px solid rgba(212, 175, 55, 0.22) !important;
+  padding: 3.5rem 3rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  position: relative !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+}
+
+/* Ambient Radial Glow in Top Left of Showcase */
+.login__brand::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  left: -80px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Right Column: Form Header & Login Fields ── */
+.login__form,
+[class*="login__form"] {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  padding: 3.5rem 3.25rem 1.5rem 3.25rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.25rem !important;
+  position: relative !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+/* Executive Authentication Section Title (Above Inputs) */
+.login__form::before {
+  content: 'Executive Access';
+  display: block;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  line-height: 1.2;
+}
+
+.login__form::after {
+  content: 'Sign in with your verified operations credentials to access the fleet control console.';
+  display: block;
+  font-size: 0.85rem;
+  color: #a1a1aa;
+  line-height: 1.5;
+  margin-top: -0.65rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Inputs Wrap */
+.login__form__inputWrap,
+[class*="login__form__inputWrap"] {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.25rem !important;
+}
+
+/* Field Labels */
+.login__form label,
+.login__form [class*="field-label"] {
+  color: #f4f4f5 !important;
+  font-size: 0.825rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 0.4rem !important;
+  display: block !important;
+}
+
+/* Input Fields (Email & Password) */
+.login__form input[type="email"],
+.login__form input[type="password"],
+.login__form input[type="text"],
+.login__form input {
+  background-color: #151518 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+  font-size: 0.95rem !important;
+  padding: 13px 16px !important;
+  height: 48px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+.login__form input:focus {
+  border-color: #d4af37 !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+  background-color: #1a1a20 !important;
+  outline: none !important;
+}
+
+/* Forgot Password Link */
+.login__form a[href*="forgot"],
+.login__form [class*="forgot"] {
+  color: #d4af37 !important;
+  font-size: 0.825rem !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  align-self: flex-end !important;
+  margin-top: -0.25rem !important;
+  margin-bottom: 0.5rem !important;
+  transition: color 0.15s ease !important;
+}
+
+.login__form a[href*="forgot"]:hover {
+  color: #f5d770 !important;
+  text-decoration: underline !important;
+}
+
+/* Submit Button ("Login") */
+.login__form button[type="submit"],
+.login__form .btn--style-primary,
+.login__form [class*="btn--style-primary"] {
+  width: 100% !important;
+  height: 50px !important;
+  background: linear-gradient(135deg, #f5d770 0%, #d4af37 50%, #b89326 100%) !important;
+  color: #09090b !important;
+  font-weight: 800 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 6px 22px rgba(212, 175, 55, 0.38) !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.login__form button[type="submit"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.55) !important;
+  background: linear-gradient(135deg, #fae28c 0%, #deb73f 50%, #c49d2c 100%) !important;
+  color: #000000 !important;
+}
+
+/* ── Right Column: AfterLogin Component (Admin Security & Navigation) ── */
+.driveit-after-login {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  padding: 0 3.25rem 3.5rem 3.25rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.25rem !important;
+  background: transparent !important;
+}
+
+/* Security Notice Card */
+.driveit-admin-security-card {
+  background: rgba(22, 22, 28, 0.65);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 14px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.driveit-security-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f5d770;
+}
+
+.driveit-shield-icon {
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+.driveit-security-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #f4f4f5;
+}
+
+.driveit-security-text {
+  font-size: 0.78rem;
+  color: #a1a1aa;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Navigation & Return Links */
+.driveit-admin-nav-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0.5rem 0;
+}
+
+.driveit-admin-back-link {
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.driveit-admin-back-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.driveit-dot-divider {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.75rem;
+}
+
+.driveit-admin-customer-link {
+  color: #d4af37;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.driveit-admin-customer-link:hover {
+  color: #f5d770;
+  text-decoration: underline;
+}
+
+/* Staff Support Row */
+.driveit-admin-support-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.driveit-admin-support-label {
+  font-size: 0.75rem;
+  color: #71717a;
+}
+
+.driveit-admin-wa-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #4ade80;
+  text-decoration: none;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.driveit-admin-wa-link:hover {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+}
+
+/* ── Left Column: Interior Element Styles (from Logo.tsx) ── */
+.driveit-brand-root {
+  width: 100%;
+  height: 100%;
+}
+
+/* Sidebar Logo Styling (Inside Nav) */
+.driveit-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.driveit-nav-crest {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #f5d770, #d4af37, #aa8c2c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #050505;
+  font-size: 20px;
+  font-family: 'Playfair Display', Georgia, serif;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.4);
+}
+
+.driveit-nav-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.driveit-nav-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+  line-height: 1.1;
+}
+
+.driveit-nav-subtitle {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #d4af37;
+  font-weight: 600;
+}
+
+/* Mode Isolation: Nav vs Login */
+.nav__brand .driveit-login-showcase,
+[class*="nav__brand"] .driveit-login-showcase {
+  display: none !important;
+}
+
+.nav__brand .driveit-nav-logo,
+[class*="nav__brand"] .driveit-nav-logo {
+  display: flex !important;
+}
+
+.login__brand .driveit-nav-logo,
+[class*="login__brand"] .driveit-nav-logo {
+  display: none !important;
+}
+
+.login__brand .driveit-login-showcase,
+[class*="login__brand"] .driveit-login-showcase {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 100% !important;
+  gap: 2.25rem !important;
+}
+
+/* Showcase Top */
+.driveit-showcase-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.driveit-showcase-crest-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.driveit-showcase-crest {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f5d770 0%, #d4af37 60%, #997c23 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #050505;
+  font-size: 26px;
+  font-family: 'Playfair Display', Georgia, serif;
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.45);
+  animation: pulseGoldCrest 3.5s infinite ease-in-out;
+}
+
+@keyframes pulseGoldCrest {
+  0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+  50% { box-shadow: 0 0 24px 6px rgba(212, 175, 55, 0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+}
+
+.driveit-showcase-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.driveit-showcase-brand {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.driveit-showcase-brand em {
+  color: #d4af37;
+  font-style: normal;
+}
+
+.driveit-showcase-tag {
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  font-weight: 500;
+}
+
+.driveit-showcase-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.driveit-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #34d399;
+  box-shadow: 0 0 8px #34d399;
+  animation: statusBlink 2s infinite ease-in-out;
+}
+
+@keyframes statusBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.driveit-status-label {
+  font-size: 0.7rem;
+  font-family: monospace;
+  color: #d4af37;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Showcase Center */
+.driveit-showcase-center {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  z-index: 2;
+}
+
+.driveit-showcase-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: #f5d770;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.driveit-showcase-heading {
+  font-size: 2.2rem;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  margin: 0;
+}
+
+.driveit-gold-gradient-text {
+  background: linear-gradient(135deg, #fae28c 0%, #d4af37 60%, #aa8c2c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.driveit-showcase-desc {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Feature Capability Cards */
+.driveit-showcase-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.driveit-showcase-feat-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 12px 14px;
+  transition: all 0.2s ease;
+}
+
+.driveit-showcase-feat-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(212, 175, 55, 0.25);
+  transform: translateX(4px);
+}
+
+.driveit-feat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  shrink: 0;
+}
+
+.feat-icon-gold {
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.feat-icon-emerald {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.feat-icon-blue {
+  background: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+.driveit-feat-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 2px 0;
+}
+
+.driveit-feat-subtitle {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Showcase Bottom Status / Metric Ticker */
+.driveit-showcase-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 14px;
+  padding: 12px 18px;
+  position: relative;
+  z-index: 2;
+}
+
+.driveit-footer-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.driveit-footer-stat-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #f5d770;
+  font-family: monospace;
+}
+
+.driveit-footer-stat-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #71717a;
+  font-weight: 600;
+}
+
+.driveit-footer-stat-sep {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Mobile Responsive Viewport (< 960px) ── */
+@media (max-width: 960px) {
+  .template-minimal,
+  [class*="template-minimal"] {
+    padding: 1.25rem 0.75rem !important;
+  }
+
+  .template-minimal__wrap,
+  [class*="template-minimal__wrap"] {
+    display: flex !important;
+    flex-direction: column !important;
+    max-width: 540px !important;
+    border-radius: 20px !important;
+  }
+
+  .login__brand,
+  [class*="login__brand"] {
+    border-right: none !important;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+    padding: 2.25rem 1.75rem !important;
+  }
+
+  .driveit-showcase-heading {
+    font-size: 1.65rem !important;
+  }
+
+  .driveit-showcase-desc {
+    font-size: 0.825rem !important;
+  }
+
+  .login__form,
+  [class*="login__form"] {
+    padding: 2.25rem 1.75rem 1.25rem 1.75rem !important;
+  }
+
+  .driveit-after-login {
+    padding: 0 1.75rem 2.25rem 1.75rem !important;
+  }
+
+  .driveit-auth-buttons-row {
+    flex-direction: column;
+  }
+
+  .driveit-auth-btn-primary,
+  .driveit-auth-btn-secondary {
+    width: 100%;
+  }
+}
+

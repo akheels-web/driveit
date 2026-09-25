@@ -24,6 +24,7 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { CustomNav as CustomNav_bf8059541e24472026c28867c616716d } from '@/components/cms/CustomNav'
 import { Icon as Icon_6ec64ea986b8cf91645e3c860ceebbed } from '@/components/cms/Icon'
 import { Logo as Logo_f6adb8db7b3bbc79acfaf2411bc45bce } from '@/components/cms/Logo'
+import { AfterLogin as AfterLogin_034d62fa8a728db3278f8692dc63155d } from '@/components/cms/AfterLogin'
 import { DashboardView as DashboardView_a6833cfd87c4002f7b6b266caae397b1 } from '@/components/cms/DashboardView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -55,6 +56,7 @@ export const importMap = {
   "@/components/cms/CustomNav#CustomNav": CustomNav_bf8059541e24472026c28867c616716d,
   "@/components/cms/Icon#Icon": Icon_6ec64ea986b8cf91645e3c860ceebbed,
   "@/components/cms/Logo#Logo": Logo_f6adb8db7b3bbc79acfaf2411bc45bce,
+  "@/components/cms/AfterLogin#AfterLogin": AfterLogin_034d62fa8a728db3278f8692dc63155d,
   "@/components/cms/DashboardView#DashboardView": DashboardView_a6833cfd87c4002f7b6b266caae397b1,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
