@@ -1,9 +1,17 @@
+import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { parseGpsPayload, checkHyderabadGeofence, SPEED_LIMIT_KMH } from '@/lib/telematics'
 
 export const dynamic = 'force-dynamic'
+
+function safeTokenMatches(expected: string, provided: string | null | undefined): boolean {
+  if (!provided) return false
+  const a = Buffer.from(expected)
+  const b = Buffer.from(provided)
+  return a.length === b.length && crypto.timingSafeEqual(a, b)
+}
 
 /**
  * Universal Telematics & GPS Ping Receiver
@@ -14,13 +22,23 @@ export const dynamic = 'force-dynamic'
  */
 
 async function processGpsTelemetry(rawParams: Record<string, any>, req: NextRequest) {
-  // 1. Verify Secret Token if configured
-  const configuredSecret = process.env.TELEMATICS_SECRET
+  // 1. Verify Secret Token (Fail-Closed: unauthenticated pings are rejected)
+  const configuredSecret = process.env.TELEMATICS_SECRET || process.env.CRON_SECRET
   if (configuredSecret) {
     const authHeader = req.headers.get('x-telematics-secret') || req.headers.get('authorization')?.replace('Bearer ', '')
     const querySecret = rawParams.secret || rawParams.token || rawParams.key
-    if (authHeader !== configuredSecret && querySecret !== configuredSecret) {
+    if (!safeTokenMatches(configuredSecret, authHeader) && !safeTokenMatches(configuredSecret, querySecret)) {
       return NextResponse.json({ error: 'Unauthorized telematics ping.' }, { status: 401 })
+    }
+  } else {
+    // If no secret configured, require staff auth to prevent unauthorized GPS tampering
+    const payload = await getPayload({ config })
+    const { user } = await payload.auth({ headers: req.headers })
+    if (!user) {
+      return NextResponse.json(
+        { error: 'TELEMATICS_SECRET is not configured. Direct unauthenticated telemetry pings are disabled for security.' },
+        { status: 401 }
+      )
     }
   }
 

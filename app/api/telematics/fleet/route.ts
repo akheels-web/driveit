@@ -1,16 +1,39 @@
+import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 
 export const dynamic = 'force-dynamic'
 
+function safeTokenMatches(expected: string, provided: string | null | undefined): boolean {
+  if (!provided) return false
+  const a = Buffer.from(expected)
+  const b = Buffer.from(provided)
+  return a.length === b.length && crypto.timingSafeEqual(a, b)
+}
+
 /**
- * Fleet Telematics Summary Endpoint
+ * Fleet Telematics Summary Endpoint (Staff & Dispatch Only)
  * Returns live GPS status for all vehicles
  */
 export async function GET(req: NextRequest) {
   try {
     const payload = await getPayload({ config })
+
+    // Verify Staff or Authorized Service Token (prevents public tracking of VIP vehicles)
+    const { user } = await payload.auth({ headers: req.headers })
+    const isStaff = Boolean(user)
+
+    const configuredSecret = process.env.TELEMATICS_SECRET || process.env.CRON_SECRET
+    const authHeader = req.headers.get('x-telematics-secret') || req.headers.get('authorization')?.replace('Bearer ', '')
+    const hasValidSecret = configuredSecret ? safeTokenMatches(configuredSecret, authHeader) : false
+
+    if (!isStaff && !hasValidSecret) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Fleet telematics access requires staff credentials or authorized token.' },
+        { status: 401 }
+      )
+    }
 
     const carsRes = await payload.find({
       collection: 'cars',

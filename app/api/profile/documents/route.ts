@@ -37,7 +37,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'File size must be under 8MB.' }, { status: 400 })
     }
 
-    if (!['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type)) {
+    const MIME_TO_EXT: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'application/pdf': 'pdf',
+    }
+    const safeExt = MIME_TO_EXT[file.type]
+    if (!safeExt) {
       return NextResponse.json({ error: 'Only JPG, PNG, WEBP or PDF files are accepted.' }, { status: 400 })
     }
 
@@ -52,15 +59,17 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
+    const safeDocType = ['dl_front', 'dl_back', 'id_proof'].includes(docType) ? docType : 'id_proof'
+
     const mediaDoc = await payload.create({
       collection: 'media',
       data: {
-        alt: `${session.user.email} KYC Document - ${docType}`,
+        alt: `KYC Document - ${customer.id} - ${safeDocType}`,
       },
       file: {
         data: buffer,
         mimetype: file.type,
-        name: `${session.user.email.replace(/[^a-z0-9]/gi, '_')}_${docType}_${Date.now()}.${file.name.split('.').pop() || 'jpg'}`,
+        name: `kyc_${customer.id}_${safeDocType}_${Date.now()}.${safeExt}`,
         size: file.size,
       },
       overrideAccess: true,

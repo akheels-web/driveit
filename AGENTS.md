@@ -392,3 +392,22 @@
   - Integrated authentic Meta WhatsApp vector icon (`FaWhatsapp` from `react-icons/fa`) across both the top VIP Concierge CTA button and the bottom social channels bar.
   - Matches the exact official WhatsApp icon with zero distortion.
 
+## 24. Security Audit, IDOR Protection & API Hardening
+- **Customer Data Isolation & IDOR Protection**:
+  - `app/(site)/dashboard/invoices/[id]/page.tsx`: Strict ownership verification against `session.user.email.toLowerCase()`; unauthorized attempts redirect to `/dashboard/bookings`.
+  - `app/(site)/dashboard/bookings/page.tsx`: Scoped by `customerEmail: { equals: email }`.
+  - `app/(site)/dashboard/page.tsx`: Scoped by session email for profile and recent bookings.
+  - `app/api/profile/route.ts`: Both GET and PATCH strictly bound to authenticated `session.user.email`. `PatchSchema` rejects any attempts to tamper with protected fields (`loyaltyPoints`, `loyaltyTier`, `kycStatus`, `email`).
+  - `app/api/bookings/count/route.ts` & `app/api/wishlist/route.ts`: Bound to session email; customers cannot inspect or modify other customers' data.
+- **Customer KYC Document Vault Hardening ([`collections/Media.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/Media.ts) & [`app/api/profile/documents/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/profile/documents/route.ts))**:
+  - Secured `Media.access.read: adminOnly` on the REST API so that unauthenticated visitors and customers cannot query `/api/media` to scrape driving licenses, Aadhaar proofs, or customer emails. Public vehicle assets continue to serve via CDN/static routing.
+  - `app/api/profile/documents/route.ts`: Whitelisted MIME types are strictly mapped to safe file extensions (`MIME_TO_EXT`), eliminating client-controlled extension spoofing (e.g. `.html` or `.svg`). Customer email removed from public filenames and alt metadata.
+- **Fleet Telematics & GPS Security Hardening ([`app/api/telematics/fleet/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/telematics/fleet/route.ts) & [`app/api/telematics/ping/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/telematics/ping/route.ts))**:
+  - `GET /api/telematics/fleet`: Previously unauthenticated, exposing real-time GPS coordinates, speed, and ignition states of all vehicles. Now strictly gated to authenticated staff users or authorized `TELEMATICS_SECRET` bearer tokens. Returns `401 Unauthorized` to public requests.
+  - `POST /api/telematics/ping`: Now fails closed using constant-time `crypto.timingSafeEqual`. Rejects unauthenticated telemetry pings to prevent spoofing vehicle odometer or GPS coordinates.
+- **Partner Applications Collection Hardening ([`collections/PartnerApplications.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/PartnerApplications.ts))**:
+  - Closed direct public creation (`access.create: adminOnly`). All public consignments must pass through the rate-limited, Zod-validated endpoint (`/api/partners/apply`).
+  - Field-level gating added (`create: adminFieldOnly, update: adminFieldOnly`) to `status` and `adminNotes` to prevent unauthorized status changes.
+- **Payment & Pricing Hardening ([`lib/pricing.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/pricing.ts))**:
+  - Capped percentage coupon discount calculations at 100% of subtotal to prevent any theoretical overflow or over-discounting.
+

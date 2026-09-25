@@ -10,7 +10,10 @@ export const Media: CollectionConfig = {
     description: '🖼️ Media library: upload car photos, logos and banners here, then attach them to any content.',
   },
   access: {
-    read: anyone,
+    // Staff-only read access on the REST API. Public site renders images directly
+    // from Cloudinary CDN or /public/media static routing. Customer KYC documents
+    // (driving licenses, ID proofs) are strictly protected and never queryable by customers or public.
+    read: adminOnly,
     create: adminOnly,
     update: adminOnly,
     delete: adminOnly,

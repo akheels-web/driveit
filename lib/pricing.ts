@@ -129,5 +129,5 @@ export function discountForCoupon(
   if (value <= 0) return 0
 
   if (coupon.discountType === 'fixed') return Math.min(value, subtotal)
-  return Math.round((subtotal * value) / 100)
+  return Math.min(subtotal, Math.round((subtotal * Math.min(100, value)) / 100))
 }

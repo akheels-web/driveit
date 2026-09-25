@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { adminOnly, anyone } from '@/lib/access'
+import { adminFieldOnly, adminOnly } from '@/lib/access'
 
 export const PartnerApplications: CollectionConfig = {
   slug: 'partner-applications',
@@ -10,7 +10,7 @@ export const PartnerApplications: CollectionConfig = {
   },
   access: {
     read: adminOnly,
-    create: anyone, // public submission via /partner/list-fleet
+    create: adminOnly, // public submissions are gated and validated through /api/partners/apply
     update: adminOnly,
     delete: adminOnly,
   },
@@ -28,6 +28,10 @@ export const PartnerApplications: CollectionConfig = {
       name: 'status',
       type: 'select',
       defaultValue: 'pending_inspection',
+      access: {
+        create: adminFieldOnly,
+        update: adminFieldOnly,
+      },
       options: [
         { label: 'Pending Inspection', value: 'pending_inspection' },
         { label: 'Inspection Scheduled', value: 'inspection_scheduled' },
@@ -36,6 +40,14 @@ export const PartnerApplications: CollectionConfig = {
       ],
       label: 'Application Status',
     },
-    { name: 'adminNotes', type: 'textarea', label: 'Internal Staff Notes' },
+    {
+      name: 'adminNotes',
+      type: 'textarea',
+      access: {
+        create: adminFieldOnly,
+        update: adminFieldOnly,
+      },
+      label: 'Internal Staff Notes',
+    },
   ],
 }
