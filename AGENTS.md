@@ -74,6 +74,7 @@
   - `PAYLOAD_SECRET` & `AUTH_SECRET`: Hard requirement; app refuses to boot without them.
   - `CLOUDINARY_*`: Automatically routes CMS uploads and fleet media to Cloudinary CDN.
 - **Detailed Step-by-Step Guide**: [`deployment_guide.md`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/deployment_guide.md) contains end-to-end instructions written for junior developers (freshers) on Contabo VPS (6 vCPU / 12 GB RAM) and Cloudflare DNS, including Cloudflare 15-year Origin CA SSL, Zoho Mail (5 free users), Brevo (transactional + marketing), Cloudinary CDN, Google OAuth 2.0, Nginx, smoke tests, and an 8-issue troubleshooting guide.
+- **Admin, Dashboard & WACRM Setup Guide**: Step 7 (Section 9) in [`deployment_guide.md`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/deployment_guide.md#9-step-7-seeding-initial-data--managing-administrators-cms-dashboard--wacrm) details CLI vs UI admin creation (`npm run create:admin`), role permissions (`admin` vs `editor`), customer dashboard vs CMS separation, and WhatsApp CRM (WACRM) agent onboarding & webhook bridge configuration.
 
 ## 5. Brevo Transactional Email & Notifications Architecture
 - **Client**: [`lib/brevo.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/brevo.ts) communicates via Brevo REST API (`POST https://api.brevo.com/v3/smtp/email`) and contacts API (`POST https://api.brevo.com/v3/contacts`). Fails soft (logs warning, never crashes checkout or background tasks if `BREVO_API_KEY` is unset).

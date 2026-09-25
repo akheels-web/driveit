@@ -34,7 +34,7 @@ Follow each phase sequentially. Do not skip steps. If you encounter any issue, r
 6. [Step 4: Cloning Code & Configuring Environment (.env)](#6-step-4-cloning-code--configuring-environment-env)
 7. [Step 5: Starting Services & Initial Database Setup](#7-step-5-starting-services--initial-database-setup)
 8. [Step 6: Setting Up Cloudinary (Free Fleet Asset CDN)](#8-step-6-setting-up-cloudinary-free-fleet-asset-cdn)
-9. [Step 7: Seeding Initial Data & Admin Account](#9-step-7-seeding-initial-data--admin-account)
+9. [Step 7: Seeding Initial Data & Managing Administrators (CMS, Dashboard & WaCRM)](#9-step-7-seeding-initial-data--managing-administrators-cms-dashboard--wacrm)
 10. [Step 8: Configuring Nginx Reverse Proxy](#10-step-8-configuring-nginx-reverse-proxy)
 11. [Step 9: Securing SSL (Cloudflare 15-Year Origin CA vs Let's Encrypt)](#11-step-9-securing-ssl-cloudflare-15-year-origin-ca-vs-lets-encrypt)
 12. [Step 10: Setting Up Zoho Mail (Free 5 Business Inboxes)](#12-step-10-setting-up-zoho-mail-free-5-business-inboxes)
@@ -454,9 +454,10 @@ All fleet assets are now securely hosted on the CDN!
 
 ---
 
-## 9. Step 7: Seeding Initial Data & Admin Account
+## 9. Step 7: Seeding Initial Data & Managing Administrators (CMS, Dashboard & WaCRM)
 
-Now populate the database with the initial cars, services, FAQs, and create your CMS administrator account:
+### 9.1 Initial Database Seeding
+Populate the database with the initial 28 fleet vehicles, luxury services, pricing models, FAQs, and the primary CMS super-administrator account:
 
 ```bash
 cd ~/driveit
@@ -484,6 +485,94 @@ Expected output:
 > # Change: PAYLOAD_SCHEMA_PUSH=
 > docker compose restart app
 > ```
+
+---
+
+### 9.2 Managing Administrators for the Executive Dashboard & CMS (`/admin`)
+
+The `/admin` portal is the **DRIVEIT Executive Portal** (`components/cms/DashboardView.tsx`), where authorized staff monitor live gross revenue, approve booking holds, verify UPI UTR payments, configure vehicle daily rates (With Driver vs Without Driver), issue promo coupons, review customer KYC documents, and update global branding.
+
+Staff accounts are managed in the `Users` collection (`collections/Users.ts`).
+
+#### Method A: Command-Line (CLI) — Adding Admins & Emergency Password Resets
+If you need to add an administrator directly from the server terminal (or if you are locked out):
+
+```bash
+cd ~/driveit
+
+# 1. Add a new Super Administrator:
+ADMIN_PASSWORD="YourSecurePassword123!" npm run create:admin -- --email manager@yourdomain.com
+
+# 2. Add a Content Editor (fleet & blog management only):
+ADMIN_PASSWORD="EditorPassword123!" npm run create:admin -- --email editor@yourdomain.com --role=editor
+
+# 3. Reset an existing Administrator's password:
+ADMIN_PASSWORD="BrandNewPassword123!" npm run create:admin -- --email admin@yourdomain.com --reset-password
+```
+
+#### Method B: Through the Web UI (For Adding Team Members)
+Once you are logged into the CMS:
+1. Navigate to **`https://yourdomain.com/admin`** (or `http://localhost:3000/admin`).
+2. In the left navigation menu under **Admin**, click **Users**.
+3. Click **Create New** (top right corner).
+4. Fill in:
+   - **Full Name:** e.g. `Rahul Sharma (Operations Lead)`
+   - **Email:** Staff member's official email (e.g. `rahul@yourdomain.com`).
+   - **Role:**
+     - **`Admin — full access`**: Complete control over revenue, fleet pricing, booking approval/cancellation, customer KYC documents, global site settings, and adding/removing other staff members.
+     - **`Editor — content only`**: Can add and edit vehicles, blog posts, and testimonials, but cannot modify site settings, staff roles, coupons, or user accounts (enforced via `lib/access.ts`).
+   - **Password:** Minimum 8 characters.
+5. Click **Save** / **Publish**. The team member can now sign in at `https://yourdomain.com/admin`.
+
+---
+
+### 9.3 How User Accounts Work for the Customer Dashboard (`/dashboard`)
+
+The customer-facing portal at `/dashboard` (`/dashboard/bookings`, `/dashboard/profile`, `/dashboard/wishlist`, `/dashboard/invoices/:id`) is strictly for clients to track reservations and invoices.
+
+* **Strict Architectural Separation:** Customers authenticate using NextAuth / Auth.js and their profiles are saved in the `Customers` collection (`collections/Customers.ts`). Customers **never** share credentials with or have access to `/admin`.
+* **Automatic Self-Registration:** Customers automatically get an account when they sign in with Google OAuth or register at `/signup` during booking checkout.
+* **Admin Management from CMS:** As an Administrator in `/admin` → **Customers**, you can:
+  - View all registered customers, booking counts, and loyalty tiers.
+  - Review submitted VIP Self-Drive documents (Driving License front/back, Aadhaar last 4) in the KYC Vault and set **KYC Status** to `verified` or `rejected`.
+  - Enter or edit customer corporate billing details (Company Name & GSTIN).
+
+---
+
+### 9.4 Adding Admins, Agents & Connecting WhatsApp CRM (WACRM)
+
+In the DRIVEIT architecture, the main booking platform and your WhatsApp CRM operate together through an authenticated webhook bridge (`lib/notifications.ts` and `app/api/webhooks/wacrm/route.ts`).
+
+#### A. Deploying & Accessing WACRM
+* **Subdomain Setup:** As configured in Nginx (Step 8) and Cloudflare DNS (Step 13), your WhatsApp CRM runs on its dedicated subdomain:
+  👉 `https://crm.yourdomain.com` (or `https://wa.yourdomain.com`)
+* Running on a subdomain keeps sales agents focused on chats without interfering with public booking traffic.
+
+#### B. Adding Admins & Concierge Sales Agents in WACRM
+To add staff members who handle live WhatsApp chats and lead pipelines:
+1. Log into your CRM dashboard at `https://crm.yourdomain.com/login` using your CRM Super Admin credentials.
+2. Navigate to **Settings** → **Users & Teams** (or **Agents / Staff**).
+3. Click **Add Agent** / **Invite Team Member**.
+4. Enter the agent's work email, mobile number, and role:
+   - **CRM Administrator:** Manages WhatsApp Cloud API templates, bot flows, agent assignment rules, and analytics.
+   - **Concierge Sales Agent:** Answers live incoming WhatsApp chats, responds to inquiries from the website booking widget, and shares customized vehicle quotation links.
+
+#### C. Connecting DriveIt Webhook to WACRM
+In your VPS `.env` file (`~/driveit/.env`), ensure the bridge variables are set:
+```env
+# Outbound webhook destination where DriveIt pushes hold & booking events
+WACRM_WEBHOOK_URL=https://crm.yourdomain.com/api/webhooks/driveit
+
+# Shared secret key used to HMAC-SHA256 sign all events for tamper-proof security
+WACRM_WEBHOOK_SECRET=your_wacrm_shared_secret_key
+```
+
+When a customer creates a hold or confirms a booking on the website, DriveIt pushes real-time events (`booking.hold_created`, `booking.confirmed`) directly into your WACRM dashboard so your concierge agents can immediately follow up on WhatsApp.
+
+#### D. Official Customer WhatsApp Support Number
+The central concierge WhatsApp number is configured in `globals/SiteSettings.ts`:
+* **Concierge WhatsApp:** `+91 63000 41186` (`wa.me/916300041186`)
+* Inquiries submitted from the homepage booking section and vehicle detail modals automatically open a prefilled WhatsApp chat directly with this number.
 
 ---
 
