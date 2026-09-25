@@ -451,3 +451,14 @@
   pointer-events: none;
   z-index: 2;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NO SCROLLBAR UTILITY
+   ═══════════════════════════════════════════════════════════════ */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
