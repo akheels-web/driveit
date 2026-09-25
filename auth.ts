@@ -37,7 +37,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: '/login',
   },
-  session: { strategy: 'jwt' },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days persistent session cookie
+  },
   trustHost: true,
   // Never falls back to a hardcoded secret — see lib/env.ts
   secret: requiredSecret('AUTH_SECRET', 'driveit-dev-only-insecure-auth-secret'),

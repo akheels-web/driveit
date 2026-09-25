@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'motion/react'
@@ -20,7 +20,7 @@ import {
   FileCheck,
   Zap,
 } from 'lucide-react'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 
 function GoogleIcon() {
   return (
@@ -55,6 +55,15 @@ function LoginForm() {
 
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // If already authenticated and not explicitly in signed-out state, smoothly redirect to dashboard
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user && loggedOutParam !== 'true') {
+      router.replace(redirectTo)
+    }
+  }, [status, session, redirectTo, router, loggedOutParam])
 
   // Map NextAuth error codes to user-friendly luxury messaging
   const getAuthNotification = () => {

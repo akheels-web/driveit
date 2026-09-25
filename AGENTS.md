@@ -411,3 +411,21 @@
 - **Payment & Pricing Hardening ([`lib/pricing.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/pricing.ts))**:
   - Capped percentage coupon discount calculations at 100% of subtotal to prevent any theoretical overflow or over-discounting.
 
+## 25. Authentication, 30-Day Session Persistence & Universal Logout Architecture
+- **Dual Dashboard Architecture & Logout Locations**:
+  - **Customer VIP Dashboard (`/dashboard`)**:
+    - Dedicated `<SignOutButton />` in [`app/(site)/dashboard/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/dashboard/page.tsx) at the top right of the welcome banner.
+    - Global session-aware navigation in [`components/site-header.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/site-header.tsx): When logged in, the header replaces the static "Login" link with a VIP user pill showing the user's name/initials, and a dropdown offering 1-click access to **Dashboard**, **My Bookings**, **Profile & KYC**, and **Sign Out**.
+    - Mobile drawer in [`components/site-header.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/site-header.tsx) displays a branded customer profile card with direct quick links to Dashboard, Bookings, and a dedicated **Sign Out** button.
+    - Users can now log out cleanly from **any page** on the website without needing to navigate back to the dashboard first.
+  - **Staff & Admin CMS Dashboard (`/admin`)**:
+    - Payload CMS built-in navigation provides an admin account menu with **Log out** at the bottom of the left sidebar.
+- **Session Caching & "Tomorrow" Login Behavior**:
+  - **NextAuth / Auth.js v5 Configuration ([`auth.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/auth.ts))**:
+    - Configured with `session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 }` (30 days).
+    - Sets an encrypted, `HttpOnly`, `SameSite=Lax`, `Secure` browser cookie (`authjs.session-token` or `__Secure-authjs.session-token`).
+    - **Persistence**: Because the cookie has an explicit 30-day `maxAge`, it is stored in the browser's persistent storage (not a temporary session-only cookie).
+    - **Returning Tomorrow**: A user returning tomorrow (or anytime within 30 days) is **instantly recognized without needing to log in again**. The browser presents the cookie, `proxy.ts` verifies the signature, and the dashboard/header loads their account immediately.
+    - **Smart Login Auto-Redirect**: If an already logged-in user visits [`app/(site)/login/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/login/page.tsx), it detects their active session and automatically redirects them to `/dashboard` (unless they just explicitly clicked "Sign Out").
+
+
