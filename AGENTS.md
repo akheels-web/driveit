@@ -331,8 +331,19 @@
     - Golden crown emblem with smooth tab switcher (`Sign In` vs `New VIP Account`).
     - Prominent Google 1-Tap button featuring official multicolor Google "G" SVG logo and animated arrow.
     - VIP perks checklist, direct concierge phone hotline (`+91 63000 41186`), and 256-bit SSL security badge.
-  - **Unified `/signup` Route ([`app/(site)/signup/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/signup/page.tsx))**:
-    - Automatically forwards to `/login?mode=signup`, pre-selecting the "New VIP Account" tab without code duplication.
+## 20. Automotive Cockpit 404 Page ("Off-Route // Engine Idle") & Portal Architecture
+- **Automotive Cockpit 404 Experience**:
+  - Implemented in [`components/car-not-found.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/car-not-found.tsx), mounted in both [`app/(site)/not-found.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/not-found.tsx) (with `SiteHeader` and `SiteFooter`) and global fallback [`app/not-found.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/not-found.tsx).
+  - Eliminates Next.js's stark white default 404 screen.
+  - **Speedometer Gauge HUD**: Circular digital tachometer dial displaying `404` as a large digital speedometer readout (`KM/H • GEAR: P (PARK) • ENGINE IDLE`).
+  - **Flashing Instrument Alert**: `⚠️ Telemetry Alert: Detour Detected • Route Unmapped`.
+  - **Cinematic Flagship Car**: Features Rolls-Royce Phantom Night Edition with glowing LED headlight overlays cutting across night asphalt and gold perspective road grid.
+  - **Interactive Garage Search**: Built-in search bar directly querying the fleet (`/cars?search=...`).
+  - **Quick Highway Controls**: 1-click `⚡ Return to Main Highway` (Home), `🏎️ Showroom Fleet (50+)`, and popular pitstops (VIP Chauffeur, Wedding Convoys, Private Jets, WhatsApp Concierge).
+  - **Sticky Header Clearance**: Top padding set to `pt-36 sm:pt-44` to ensure status telemetry badge and 404 speedometer clear the fixed `SiteHeader` (~112px height) with ample breathing space on all devices.
+- **Portal Separation & Copy Clarifications**:
+  - **Customer Portal (`/login` & `/signup`)**: Explicitly clarified as the **Customer Account Portal** for normal renters and clients. Removed confusing "VIP Member / Club" jargon; replaced with clear tabs `Customer Sign In` and `Create Customer Account` with 1-click Google OAuth. Added a clear callout redirecting luxury car owners to `/partner/list-fleet`.
+  - **CMS Admin Portal (`/admin/login`)**: Strictly for internal operations and staff. Redesigned with a 2-section executive atelier layout in `admin.css`, `Logo.tsx`, and `AfterLogin.tsx`, free from customer-facing booking prompts, with explicit restricted security warnings and return links.
 
 
 
