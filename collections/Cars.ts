@@ -6,7 +6,7 @@ export const Cars: CollectionConfig = {
   slug: 'cars',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'brand', 'category', 'pricePerDay', 'isActive'],
+    defaultColumns: ['name', 'brand', 'category', 'pricePerDay', 'selfDrivePricePerDay', 'isActive'],
     description:
       '🚗 Fleet catalogue: everything typed here drives the public fleet pages (/cars, /cars/[slug]) and checkout pricing.',
   },
@@ -49,8 +49,21 @@ export const Cars: CollectionConfig = {
       type: 'number',
       required: true,
       min: 0,
-      label: 'Rental Price Per Day (₹)',
-      admin: { description: 'Checkout prices are always recomputed server-side from this value.' },
+      label: 'Chauffeur Rental Price Per Day (With Driver) (₹)',
+      admin: {
+        description:
+          'Daily rental price with a professional uniformed chauffeur included. Used when "With Driver" is selected.',
+      },
+    },
+    {
+      name: 'selfDrivePricePerDay',
+      type: 'number',
+      min: 0,
+      label: 'Self-Drive Price Per Day (Without Driver) (₹)',
+      admin: {
+        description:
+          'Daily rental price when customer drives themselves (without driver). If left empty, defaults to 85% of with-driver price.',
+      },
     },
     { name: 'image', type: 'relationship', relationTo: 'media', label: 'Primary Image Asset' },
     { name: 'imageSrc', type: 'text', label: 'Static Image URL (fallback when no upload)' },

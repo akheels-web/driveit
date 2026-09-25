@@ -161,10 +161,21 @@ export function BookingSection() {
         carId: newCarId,
       }
     })
-  }
+  }  // Real-time Pricing Logic
+  const selectedCar = useMemo(() => carsData.find(c => c.id === form.carId), [carsData, form.carId])
 
-  // Real-time Pricing Logic
-  const selectedCar = useMemo(() => carsData.find(c => c.id === form.carId), [form.carId])
+  const isSelfDrive = useMemo(() => {
+    const opt = (form.driverOption || '').toLowerCase()
+    return opt.includes('without') || opt.includes('self')
+  }, [form.driverOption])
+
+  const effectiveDailyRate = useMemo(() => {
+    if (!selectedCar) return 0
+    if (isSelfDrive) {
+      return selectedCar.selfDrivePrice ?? Math.round(selectedCar.price * 0.85)
+    }
+    return selectedCar.price
+  }, [selectedCar, isSelfDrive])
   
   const priceEstimate = useMemo(() => {
     if (!selectedCar) return null
@@ -176,16 +187,17 @@ export function BookingSection() {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
       if (diffDays > 0) days = diffDays
     }
-    const basePrice = selectedCar.price * days
+    const basePrice = effectiveDailyRate * days
     // const gst = basePrice * 0.18 // 18% GST typical for car rental in India
     const gst = 0
     return {
+      dailyRate: effectiveDailyRate,
       base: basePrice,
       gst: gst,
       total: basePrice + gst,
       days
     }
-  }, [selectedCar, form.tripType, form.pickupDate, form.returnDate])
+  }, [selectedCar, effectiveDailyRate, form.tripType, form.pickupDate, form.returnDate])
 
   const canSubmit = form.carId && form.pickup && form.pickupDate && form.pickupTime && form.name && form.phone && (form.tripType === "One-Way" || (form.returnDate && form.returnTime))
 
@@ -194,14 +206,14 @@ export function BookingSection() {
 
 📋 *Trip Details (${form.tripType}):*
 • Vehicle: ${selectedCar?.name || form.carId}
-• Service: ${form.driverOption}
+• Service: ${form.driverOption} (${isSelfDrive ? 'Without Driver / Self-Drive' : 'With Driver / Chauffeur'})
+• Daily Rate: ₹${effectiveDailyRate.toLocaleString('en-IN')}/day
 • Pickup: ${form.pickup}
 • Drop-off: ${form.dropoff || "Not specified"}
 • Pickup Date/Time: ${form.pickupDate} at ${form.pickupTime}
-${form.tripType === "Round-Trip" ? `• Return Date/Time: ${form.returnDate} at ${form.returnTime}\n` : ""}
-• Passengers: ${form.passengers}
+${form.tripType === "Round-Trip" ? `• Return Date/Time: ${form.returnDate} at ${form.returnTime}\n` : ""}• Passengers: ${form.passengers}
 • Occasion: ${form.occasion || "Not specified"}
-${form.flightNumber ? `• Flight No: ${form.flightNumber} (${form.airportTerminal})\n` : ""}${form.driverOption === "Without Driver (Self Drive)" ? `• Self-Drive: Yes (Full-to-Full Fuel & FASTag equipped)\n` : ""}
+${form.flightNumber ? `• Flight No: ${form.flightNumber} (${form.airportTerminal})\n` : ""}${isSelfDrive ? `• Self-Drive: Yes (Full-to-Full Fuel & FASTag equipped)\n` : ""}
 👤 *Customer Details:*
 • Name: ${form.name}
 • Phone: ${form.phone}
@@ -209,8 +221,9 @@ ${form.email ? `• Email: ${form.email}` : ""}
 ${form.notes ? `• Special Requests: ${form.notes}` : ""}
 
 💰 *Estimate Summary:*
-${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
-• *Total Est.*: ₹${priceEstimate.total.toLocaleString()} for ${priceEstimate.days} day(s)` : "Pending Quote"}`
+${priceEstimate ? `• Daily Rate: ₹${effectiveDailyRate.toLocaleString('en-IN')}/day (${isSelfDrive ? 'Without Driver' : 'With Chauffeur'})
+• Estimated Base: ₹${priceEstimate.base.toLocaleString('en-IN')}
+• *Total Est.*: ₹${priceEstimate.total.toLocaleString('en-IN')} for ${priceEstimate.days} day(s)` : "Pending Quote"}`
 
     const whatsappUrl = `https://wa.me/916300041186?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
@@ -429,15 +442,20 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
                         : "Choose a vehicle..."
                     }
                     icon={<Car className="w-4 h-4 text-[var(--gold-400)]/70" />}
-                    options={filteredCars.map((car) => ({
-                      value: car.id,
-                      label: `${car.name} (${car.seats} Seats) - ${car.priceDisplay}`,
-                      sub: `${car.category.toUpperCase()} • ${car.transmission} • ${car.seats} Seats`,
-                    }))}
+                    options={filteredCars.map((car) => {
+                      const carRate = isSelfDrive
+                        ? (car.selfDrivePrice ?? Math.round(car.price * 0.85))
+                        : car.price
+                      return {
+                        value: car.id,
+                        label: `${car.name} (${car.seats} Seats) — ₹${carRate.toLocaleString('en-IN')}/day (${isSelfDrive ? 'Self-Drive' : 'With Driver'})`,
+                        sub: `${car.category.toUpperCase()} • ${car.transmission} • ${car.seats} Seats • ${isSelfDrive ? 'Without Driver / Self-Drive' : 'Chauffeur Included'}`,
+                      }
+                    })}
                   />
                   {selectedCar && (
                     <p className="text-[11px] text-[var(--gold-400)] mt-1.5 flex items-center gap-1.5 font-medium">
-                      <span>✓ {selectedCar.name} ({selectedCar.seats} seats)</span>
+                      <span>✓ {selectedCar.name} ({selectedCar.seats} seats) — ₹{effectiveDailyRate.toLocaleString('en-IN')}/day</span>
                       {selectedCar.seats === 7 && (
                         <span className="text-white/70 bg-[var(--gold-400)]/15 px-2 py-0.5 rounded-full text-[10px] border border-[var(--gold-400)]/30">
                           Auto-configured for 7 passengers
@@ -452,17 +470,53 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
 
                 {/* 3. SERVICE TYPE (THIRD) */}
                 <div>
-                  <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">
-                    3. Service Type *
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs text-white/40 uppercase tracking-wider">
+                      3. Service Type *
+                    </label>
+                    {selectedCar && (
+                      <span className="text-[11px] text-[var(--gold-400)] font-medium">
+                        {isSelfDrive ? 'Without Driver' : 'With Driver'}: ₹{effectiveDailyRate.toLocaleString('en-IN')}/day
+                      </span>
+                    )}
+                  </div>
                   <LuxurySelect
                     value={form.driverOption}
                     onChange={(val) => updateField("driverOption", val)}
                     options={[
-                      { value: "Chauffeur Driven", label: "With Driver (Chauffeur Driven)", sub: "Uniformed VIP driver, zero deposit liability" },
-                      { value: "Self Drive", label: "Without Driver (Self Drive)", sub: "Drive yourself with FASTag & full fuel" },
+                      {
+                        value: "Chauffeur Driven",
+                        label: selectedCar
+                          ? `With Driver (Chauffeur) — ₹${selectedCar.price.toLocaleString('en-IN')}/day`
+                          : "With Driver (Chauffeur Driven)",
+                        sub: "Uniformed VIP chauffeur, zero deposit liability",
+                      },
+                      {
+                        value: "Self Drive",
+                        label: selectedCar
+                          ? `Without Driver (Self-Drive) — ₹${(selectedCar.selfDrivePrice ?? Math.round(selectedCar.price * 0.85)).toLocaleString('en-IN')}/day`
+                          : "Without Driver (Self Drive)",
+                        sub: selectedCar && (selectedCar.selfDrivePrice ?? Math.round(selectedCar.price * 0.85)) !== selectedCar.price
+                          ? `Save ₹${Math.abs(selectedCar.price - (selectedCar.selfDrivePrice ?? Math.round(selectedCar.price * 0.85))).toLocaleString('en-IN')}/day • Drive yourself with full fuel`
+                          : "Drive yourself with FASTag & full fuel",
+                      },
                     ]}
                   />
+                  {selectedCar && (
+                    <div className="mt-2 text-xs flex items-center justify-between px-3 py-2 rounded-lg border border-white/10 bg-white/[0.03]">
+                      <span className="text-white/60">
+                        {isSelfDrive ? "Self-Drive rate active:" : "Chauffeur rate active:"}
+                      </span>
+                      <span className="text-[var(--gold-400)] font-semibold">
+                        ₹{effectiveDailyRate.toLocaleString('en-IN')}/day
+                        {isSelfDrive && selectedCar.selfDrivePrice && selectedCar.selfDrivePrice < selectedCar.price && (
+                          <span className="ml-1.5 text-[10px] text-emerald-400 font-normal">
+                            (₹{(selectedCar.price - selectedCar.selfDrivePrice).toLocaleString('en-IN')} less than chauffeur)
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* 4. OCCASION (FOURTH) */}
@@ -580,8 +634,8 @@ ${priceEstimate ? `• Estimated Base: ₹${priceEstimate.base.toLocaleString()}
               {priceEstimate ? (
                 <div className="space-y-4 text-sm animate-in fade-in">
                   <div className="flex justify-between text-white/60">
-                    <span>Vehicle Base Rate</span>
-                    <span>₹{selectedCar?.price.toLocaleString()}/day</span>
+                    <span>Vehicle Rate ({isSelfDrive ? 'Without Driver' : 'With Chauffeur'})</span>
+                    <span className="text-[var(--gold-400)] font-medium">₹{effectiveDailyRate.toLocaleString('en-IN')}/day</span>
                   </div>
                   <div className="flex justify-between text-white/60">
                     <span>Duration</span>

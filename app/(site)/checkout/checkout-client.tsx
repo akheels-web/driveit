@@ -101,6 +101,11 @@ export function CheckoutClient() {
   }
 
   // Display-only estimate; the server recomputes every number it charges.
+  const isSelfDrive = service === 'selfdrive'
+  const effectiveDailyRate = isSelfDrive
+    ? (car?.selfDrivePrice ?? Math.round((car?.price ?? 0) * 0.85))
+    : (car?.price ?? 0)
+
   const estimate = useMemo<QuoteBreakdown>(() => {
     const days = Math.max(
       1,
@@ -108,7 +113,7 @@ export function CheckoutClient() {
         (new Date(returnDate).getTime() - new Date(pickupDate).getTime()) / (1000 * 60 * 60 * 24),
       ) || 1,
     )
-    const base = (car?.price ?? 0) * days
+    const base = effectiveDailyRate * days
     return {
       days,
       basePrice: base,
@@ -117,7 +122,7 @@ export function CheckoutClient() {
       discount: estimatedDiscount,
       totalPrice: Math.max(0, base - estimatedDiscount),
     }
-  }, [car, pickupDate, returnDate, estimatedDiscount])
+  }, [effectiveDailyRate, pickupDate, returnDate, estimatedDiscount])
 
   const quote: QuoteBreakdown = hold ?? estimate
 
@@ -666,7 +671,7 @@ export function CheckoutClient() {
               </div>
               <div className="flex justify-between">
                 <span className="text-white/50">
-                  Base (₹{car.price.toLocaleString('en-IN')} × {quote.days})
+                  Base (₹{effectiveDailyRate.toLocaleString('en-IN')} × {quote.days})
                 </span>
                 <span>₹{quote.basePrice.toLocaleString('en-IN')}</span>
               </div>

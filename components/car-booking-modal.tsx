@@ -19,6 +19,7 @@ interface CarBookingModalProps {
     name: string
     image: string
     pricePerDay: number
+    selfDrivePricePerDay?: number
     priceDisplay: string
     category?: string
   }
@@ -73,7 +74,11 @@ export function CarBookingModal({ isOpen, onClose, car }: CarBookingModalProps) 
     notes: '',
   })
 
-  const totalAmount = car.pricePerDay * form.days
+  const isSelfDrive = form.serviceType === 'selfdrive'
+  const effectiveDailyRate = isSelfDrive
+    ? (car.selfDrivePricePerDay ?? Math.round(car.pricePerDay * 0.85))
+    : car.pricePerDay
+  const totalAmount = effectiveDailyRate * form.days
 
   const updateField = (field: string, value: string | number) => {
     if (error) setError(null)

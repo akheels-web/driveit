@@ -262,10 +262,9 @@ Done! `https://crm.yourdomain.com` is now live and fully protected by Cloudflare
 2. Fill in the vehicle profile:
    - **Vehicle Name:** e.g. `Mercedes-Maybach S-Class S680`
    - **Slug:** Auto-generated (e.g. `mercedes-maybach-s-class-s680`)
-   - **Category:** Select `Super Luxury`, `Luxury SUV`, or `Premium Sedan`.
-   - **Daily Rental Rate (₹):** Enter base rate per day (e.g. `75000`).
-   - **Display Price Text:** e.g. `₹75,000 / day`.
-   - **Seating Capacity:** Select `4 Seats`, `5 Seats`, or `7 Seats`.
+   - **Chauffeur Rental Price Per Day (With Driver) (₹):** Enter daily rate when booked with a professional chauffeur (e.g. `75000`).
+   - **Self-Drive Price Per Day (Without Driver) (₹):** Enter daily rate when customer drives themselves (e.g. `65000`). If left blank, system automatically defaults to 85% of with-driver rate.
+   - **Seating Capacity:** Select `2 Seats`, `4 Seats`, `5 Seats`, `7 Seats`, or `14+ Seats`.
    - **Transmission:** `Automatic` or `Manual`.
    - **Fuel Type:** `Petrol`, `Diesel`, `Hybrid`, or `Electric`.
    - **Security Deposit (₹):** Enter the refundable deposit for self-drive (e.g. `50000`). For chauffeur-only vehicles, enter `0`.

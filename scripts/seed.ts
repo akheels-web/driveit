@@ -61,6 +61,7 @@ async function main() {
         brand: car.brand,
         category: car.category,
         pricePerDay: car.price,
+        selfDrivePricePerDay: car.selfDrivePrice ?? Math.round(car.price * 0.85),
         imageSrc: car.src,
         gallery: [{ src: car.src }],
         transmission: car.transmission,

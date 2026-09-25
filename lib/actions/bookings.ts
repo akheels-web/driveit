@@ -64,8 +64,13 @@ export async function createBooking(data: BookingFormData) {
 
     const payload = await getPayload({ config: configPromise })
 
+    const isSelfDrive = data.serviceType === 'selfdrive'
+    const dailyRate = isSelfDrive
+      ? (car.selfDrivePrice ?? Math.round(car.price * 0.85))
+      : car.price
+
     const base = computeQuote({
-      pricePerDay: car.price,
+      pricePerDay: dailyRate,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
     })
@@ -87,7 +92,7 @@ export async function createBooking(data: BookingFormData) {
     }
 
     const quote = computeQuote({
-      pricePerDay: car.price,
+      pricePerDay: dailyRate,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       discount,

@@ -96,9 +96,12 @@ export async function POST(request: Request) {
   try {
     const payload = await getPayload({ config })
 
+    const isSelfDrive = input.serviceType === 'selfdrive'
+    const dailyRate = isSelfDrive ? (car.selfDrivePrice ?? Math.round(car.price * 0.85)) : car.price
+
     // Price the booking from the CMS, never from the request body.
     const priced = computeQuote({
-      pricePerDay: car.price,
+      pricePerDay: dailyRate,
       startDate: input.startDate,
       endDate: input.endDate,
       addons,
@@ -120,14 +123,13 @@ export async function POST(request: Request) {
     }
 
     const quote = computeQuote({
-      pricePerDay: car.price,
+      pricePerDay: dailyRate,
       startDate: input.startDate,
       endDate: input.endDate,
       addons,
       discount,
     })
 
-    const isSelfDrive = input.serviceType === 'selfdrive'
     const securityDepositAmount = isSelfDrive ? (car.securityDepositAmount ?? 25000) : 0
 
     const hold = await createBookingHold(payload, {
@@ -174,7 +176,9 @@ export async function POST(request: Request) {
         slug: car.slug,
         name: car.name,
         image: car.src,
-        pricePerDay: car.price,
+        pricePerDay: dailyRate,
+        chauffeurPrice: car.price,
+        selfDrivePrice: car.selfDrivePrice ?? Math.round(car.price * 0.85),
         securityDepositAmount,
         fuelPolicy: car.fuelPolicy,
         fastTagEquipped: car.fastTagEquipped,

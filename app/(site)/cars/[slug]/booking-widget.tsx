@@ -27,6 +27,10 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
     { id: 'vip_arrival', label: 'VIP Arrival', price: 10000, desc: 'Premium Decor + Champagne + Meet & Greet', icon: '🍾' },
   ]
 
+  const isSelfDrive = service === 'selfdrive'
+  const selfDriveRate = car.selfDrivePrice ?? Math.round(car.price * 0.85)
+  const effectiveDailyRate = isSelfDrive ? selfDriveRate : car.price
+
   const estimate = useMemo(() => {
     let days = 1
     if (pickupDate && returnDate) {
@@ -35,7 +39,7 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
       const diff = Math.ceil((r.getTime() - p.getTime()) / (1000 * 60 * 60 * 24))
       if (diff > 0) days = diff
     }
-    const base = car.price * days
+    const base = effectiveDailyRate * days
     
     // Addons calculation
     const addonsTotal = addons.reduce((sum, addonId) => {
@@ -47,7 +51,7 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
 
     const gst = 0
     return { days, base, addonsTotal: totalAddonsAndBundles, gst, total: base + totalAddonsAndBundles + gst }
-  }, [car.price, pickupDate, returnDate, addons, activeBundle])
+  }, [effectiveDailyRate, pickupDate, returnDate, addons, activeBundle])
 
   const handleCheckout = () => {
     if (!pickupDate) return
@@ -66,27 +70,32 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
   return (
     <div className="bg-[#111] rounded-2xl border border-[var(--gold-400)]/30 p-6 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
       <div className="flex items-end gap-2 mb-6 border-b border-white/10 pb-4">
-         <span className="text-3xl font-bold text-[var(--gold-400)]">₹{car.price.toLocaleString()}</span>
-         <span className="text-sm text-white/40 mb-1">/ day</span>
+         <span className="text-3xl font-bold text-[var(--gold-400)]">₹{effectiveDailyRate.toLocaleString('en-IN')}</span>
+         <span className="text-sm text-white/40 mb-1">/ day ({isSelfDrive ? 'Without Driver' : 'With Chauffeur'})</span>
       </div>
 
       <div className="space-y-5">
          <div>
-            <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Service Type</label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-xs text-white/40 uppercase tracking-wider">Service Type</label>
+              <span className="text-[11px] text-[var(--gold-400)] font-medium">
+                ₹{effectiveDailyRate.toLocaleString('en-IN')}/day
+              </span>
+            </div>
             <div className="flex bg-black/50 p-1 rounded-xl border border-white/5">
                <button 
                  onClick={() => setService('chauffeur')}
                  disabled={!car.services.includes('chauffeur')}
-                 className={`flex-1 py-2 text-sm rounded-lg transition-all ${service === 'chauffeur' ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/70'} disabled:opacity-20`}
+                 className={`flex-1 py-2 text-xs md:text-sm font-medium rounded-lg transition-all ${service === 'chauffeur' ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/70'} disabled:opacity-20`}
                >
-                  Chauffeur
+                  Chauffeur (₹{car.price.toLocaleString('en-IN')}/d)
                </button>
                <button 
                  onClick={() => setService('selfdrive')}
                  disabled={!car.services.includes('selfdrive')}
-                 className={`flex-1 py-2 text-sm rounded-lg transition-all ${service === 'selfdrive' ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/70'} disabled:opacity-20`}
+                 className={`flex-1 py-2 text-xs md:text-sm font-medium rounded-lg transition-all ${service === 'selfdrive' ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/70'} disabled:opacity-20`}
                >
-                  Self Drive
+                  Self Drive (₹{selfDriveRate.toLocaleString('en-IN')}/d)
                </button>
             </div>
          </div>

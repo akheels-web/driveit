@@ -47,6 +47,11 @@ function resolveImage(doc: CarDoc): string {
 
 export function mapCarDoc(doc: CarDoc): CarDetails {
   const price = Number(doc.pricePerDay ?? doc.price ?? 0)
+  const selfDrivePrice =
+    doc.selfDrivePricePerDay != null && doc.selfDrivePricePerDay !== ''
+      ? Number(doc.selfDrivePricePerDay)
+      : Math.round(price * 0.85)
+
   const gallery = Array.isArray(doc.gallery)
     ? (doc.gallery
         .map((entry: any) => resolveMediaUrl(entry?.image, typeof entry?.src === 'string' ? entry.src : ''))
@@ -62,6 +67,7 @@ export function mapCarDoc(doc: CarDoc): CarDetails {
     brand: doc.brand || 'Luxury',
     category: doc.category || 'sedan',
     price,
+    selfDrivePrice,
     priceDisplay: `₹${price.toLocaleString('en-IN')}/day`,
     seats: Number(doc.seats) || 5,
     transmission: doc.transmission || 'Automatic',

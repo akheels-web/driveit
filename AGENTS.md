@@ -22,6 +22,13 @@
 - **Booking Flow Unification (Fixed)**:
   - [`components/service-fleet-showcase.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/service-fleet-showcase.tsx) and [`components/car-card.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/car-card.tsx) now redirect directly to the unified `/checkout?carId=...` flow with promo codes, real-time quote calculation, and hold protection.
   - [`components/car-booking-modal.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/car-booking-modal.tsx) was fixed so "Pay at Pickup" confirms the booking on the backend (`updatePaymentStatus`), preventing the 10-minute hold sweep from cancelling it.
+- **CMS Dual Driver Pricing (With Driver vs Without Driver)**:
+  - Added `selfDrivePricePerDay` field to [`collections/Cars.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/Cars.ts) alongside `pricePerDay` (`Chauffeur Price Per Day (With Driver)`).
+  - Both rates are completely manageable by admins in Payload CMS per vehicle.
+  - Auto-fallback to 85% of with-driver rate if self-drive price is omitted.
+  - Fully integrated in [`components/booking-section.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/booking-section.tsx): vehicle selector and service type selector dynamically display rates matching the selected option, showing exact savings and active rate badges.
+  - Backend checkout engine ([`app/api/checkout/init/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/checkout/init/route.ts)) and [`app/(site)/cars/[slug]/booking-widget.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/cars/[slug]/booking-widget.tsx) recompute pricing based on `serviceType` (`selfdrive` vs `chauffeur`).
+  - Migration applied: `migrations/20260925_092926_add_self_drive_price.ts`.
 
 ## 3. Cashfree Payments Integration — Phase 2 Roadmap
 - Currently, checkout uses manual UPI reference input with status `awaiting_verification`.
