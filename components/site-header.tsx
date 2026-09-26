@@ -41,7 +41,17 @@ export function SiteHeader({
   const [servicesOpen, setServicesOpen] = useState(false)
   const [logoSrc, setLogoSrc] = useState(propLogoSrc || '/logo.png')
   const [siteName, setSiteName] = useState(propSiteName || 'DRIVEIT')
+  const [signingOut, setSigningOut] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
+
+  const handleQuickSignOut = async () => {
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await signOut({ redirect: false })
+    } catch {}
+    window.location.href = '/'
+  }
 
   useEffect(() => {
     if (propLogoSrc) setLogoSrc(propLogoSrc)
@@ -209,10 +219,12 @@ export function SiteHeader({
                   </Link>
                   <button
                     type="button"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors text-left mt-1 border-t border-white/5 pt-2 cursor-pointer whitespace-nowrap"
+                    onClick={handleQuickSignOut}
+                    disabled={signingOut}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors text-left mt-1 border-t border-white/5 pt-2 cursor-pointer whitespace-nowrap disabled:opacity-50"
                   >
-                    <LogOut className="w-3.5 h-3.5 shrink-0" /> Sign Out
+                    <LogOut className="w-3.5 h-3.5 shrink-0" />
+                    <span>{signingOut ? 'Signing out...' : 'Sign Out'}</span>
                   </button>
                 </div>
               </div>
@@ -365,11 +377,13 @@ export function SiteHeader({
                       type="button"
                       onClick={() => {
                         setOpen(false)
-                        signOut({ callbackUrl: '/' })
+                        handleQuickSignOut()
                       }}
-                      className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition cursor-pointer"
+                      disabled={signingOut}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition cursor-pointer disabled:opacity-50"
                     >
-                      <LogOut className="w-3.5 h-3.5" /> Sign Out
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>{signingOut ? 'Signing out...' : 'Sign Out'}</span>
                     </button>
                   </div>
                 ) : (

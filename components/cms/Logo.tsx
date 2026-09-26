@@ -7,29 +7,26 @@ export const Logo = () => {
           1. COMPACT LOGO (Displayed in Sidebar Navigation when logged in)
           ───────────────────────────────────────────────────────────── */}
       <div className="driveit-nav-logo">
-        <div className="driveit-nav-crest">
-          <span>D</span>
-        </div>
-        <div className="driveit-nav-text">
-          <span className="driveit-nav-title">DriveIt</span>
-          <span className="driveit-nav-subtitle">Executive Console</span>
-        </div>
+        <img
+          src="/logo.png"
+          alt="DRIVEIT Luxury"
+          className="driveit-admin-nav-logo-img"
+        />
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
           2. EXECUTIVE ATELIER SHOWCASE (Left Section of Admin Login)
           ───────────────────────────────────────────────────────────── */}
       <div className="driveit-login-showcase">
-        {/* Top: Brand Monogram & System Status */}
+        {/* Top: Brand Logo & System Status */}
         <div className="driveit-showcase-top">
           <div className="driveit-showcase-crest-wrap">
-            <div className="driveit-showcase-crest">
-              <span>D</span>
-            </div>
-            <div className="driveit-showcase-titles">
-              <span className="driveit-showcase-brand">DRIVEIT <em>LUXURY</em></span>
-              <span className="driveit-showcase-tag">Operations & Fleet Command</span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="DRIVEIT Luxury"
+              className="driveit-admin-showcase-logo-img"
+            />
+            <span className="driveit-showcase-tag">Operations &amp; Fleet Command</span>
           </div>
 
           <div className="driveit-showcase-status-badge">
