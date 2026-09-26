@@ -946,9 +946,9 @@ Paste the keys:
 AUTH_GOOGLE_ID=your_client_id.apps.googleusercontent.com
 AUTH_GOOGLE_SECRET=GOCSPX-your_client_secret
 ```
-Save (`Ctrl+O`, `Enter`, `Ctrl+X`) and restart the app:
+Save (`Ctrl+O`, `Enter`, `Ctrl+X`) and recreate the app container to load the new environment variables:
 ```bash
-docker compose restart app
+docker compose up -d --no-deps app
 ```
 
 ---
