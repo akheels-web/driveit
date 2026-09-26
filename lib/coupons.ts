@@ -41,29 +41,114 @@ export async function validateCoupon(
   })
 
   const coupon = docs[0] as Record<string, any> | undefined
-  if (!coupon) return invalid(code, 'That promo code is not recognised.')
+  if (!coupon) return invalid(code, `The promo code "${code}" is not recognised or has been removed.`)
 
-  if (!coupon.isActive) return invalid(code, 'That promo code is no longer active.')
+  if (!coupon.isActive) return invalid(code, `The promo code "${code}" is no longer active.`)
 
   if (coupon.validUntil && new Date(coupon.validUntil).getTime() < Date.now()) {
-    return invalid(code, 'That promo code has expired.')
+    return invalid(code, `The promo code "${code}" has expired.`)
   }
 
-  const usageLimit = Number(coupon.usageLimit ?? 1)
+  const usageLimit = Number(coupon.usageLimit ?? 0)
   const usageCount = Number(coupon.usageCount ?? 0)
   if (usageLimit > 0 && usageCount >= usageLimit) {
-    return invalid(code, 'That promo code has already been fully redeemed.')
+    return invalid(code, `The promo code "${code}" has reached its maximum global redemptions.`)
   }
 
-  if (
-    coupon.customerEmail &&
-    (!args.email || coupon.customerEmail.trim().toLowerCase() !== args.email.trim().toLowerCase())
-  ) {
-    return invalid(code, 'That promo code is not available for this account.')
+  const customerEmailArg = args.email ? args.email.trim().toLowerCase() : null
+
+  // 1. Customer-Specific Restriction: Exclusive to an assigned customer or email
+  let assignedEmail: string | null = null
+  if (coupon.customerEmail) {
+    assignedEmail = coupon.customerEmail.trim().toLowerCase()
+  } else if (coupon.assignedCustomer) {
+    if (typeof coupon.assignedCustomer === 'object' && coupon.assignedCustomer?.email) {
+      assignedEmail = coupon.assignedCustomer.email.trim().toLowerCase()
+    } else {
+      try {
+        const custDoc = (await payload.findByID({
+          collection: 'customers',
+          id: coupon.assignedCustomer,
+          overrideAccess: true,
+        })) as Record<string, any> | null
+        if (custDoc?.email) assignedEmail = custDoc.email.trim().toLowerCase()
+      } catch {}
+    }
+  }
+
+  if (assignedEmail) {
+    if (!customerEmailArg) {
+      return invalid(code, 'Please sign in to verify your eligibility for this exclusive promo code.')
+    }
+    if (assignedEmail !== customerEmailArg) {
+      return invalid(code, 'This exclusive promo code is assigned to a specific VIP customer account.')
+    }
+  }
+
+  // 2. First-Time Customers Only Restriction (e.g. WELCOME10)
+  if (coupon.firstTimeOnly) {
+    if (!customerEmailArg) {
+      return invalid(code, 'Please sign in to verify first-time customer discount eligibility.')
+    }
+
+    // Check if customer profile has completed bookings
+    const { docs: customerDocs } = await payload.find({
+      collection: 'customers',
+      where: { email: { equals: customerEmailArg } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    const customer = customerDocs[0] as Record<string, any> | undefined
+    if (customer && Number(customer.completedBookings) > 0) {
+      return invalid(
+        code,
+        'This welcome discount is valid only on first-time reservations. As an existing member, please explore your loyalty tier rewards.',
+      )
+    }
+
+    // Check if any existing confirmed or completed bookings exist in the database
+    const { docs: priorBookings } = await payload.find({
+      collection: 'bookings',
+      where: {
+        and: [
+          { customerEmail: { equals: customerEmailArg } },
+          { status: { in: ['confirmed', 'completed'] } },
+        ],
+      },
+      limit: 1,
+      overrideAccess: true,
+    })
+
+    if (priorBookings.length > 0) {
+      return invalid(
+        code,
+        'This welcome discount is valid only for first-time customers. Our records show an existing reservation for this account.',
+      )
+    }
+  }
+
+  // 3. Prevent Same Customer from Reusing the Code Across Multiple Bookings
+  if (coupon.oncePerCustomer !== false && customerEmailArg) {
+    const { docs: priorRedemptions } = await payload.find({
+      collection: 'bookings',
+      where: {
+        and: [
+          { customerEmail: { equals: customerEmailArg } },
+          { couponCode: { equals: code } },
+          { status: { in: ['confirmed', 'completed'] } },
+        ],
+      },
+      limit: 1,
+      overrideAccess: true,
+    })
+
+    if (priorRedemptions.length > 0) {
+      return invalid(code, `You have already redeemed promo code "${code}" on a previous reservation.`)
+    }
   }
 
   const discount = discountForCoupon(coupon, Math.max(0, args.subtotal))
-  if (discount <= 0) return invalid(code, 'That promo code has no value left to apply.')
+  if (discount <= 0) return invalid(code, 'That promo code provides no discount for this reservation subtotal.')
 
   return {
     valid: true,

@@ -6,7 +6,7 @@ export const Coupons: CollectionConfig = {
   slug: 'coupons',
   admin: {
     useAsTitle: 'code',
-    defaultColumns: ['code', 'discountType', 'discountValue', 'isActive', 'usageCount', 'usageLimit'],
+    defaultColumns: ['code', 'discountType', 'discountValue', 'isActive', 'firstTimeOnly', 'usageCount', 'usageLimit'],
     description:
       '🎟️ Discount coupons. Validation happens server-side in /api/coupons/validate — the browser never gets the coupon list.',
   },
@@ -53,6 +53,28 @@ export const Coupons: CollectionConfig = {
     },
     { name: 'isActive', type: 'checkbox', defaultValue: true, index: true, label: 'Is Active?' },
     {
+      name: 'firstTimeOnly',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      label: 'First-Time Customers Only?',
+      admin: {
+        description:
+          'If enabled, only customers making their very first booking can use this coupon. Existing customers will receive an error.',
+      },
+    },
+    {
+      name: 'oncePerCustomer',
+      type: 'checkbox',
+      defaultValue: true,
+      index: true,
+      label: 'Limit 1 Use Per Customer?',
+      admin: {
+        description:
+          'If enabled, the same customer cannot use this coupon code on multiple bookings.',
+      },
+    },
+    {
       name: 'validUntil',
       type: 'date',
       label: 'Valid Until (Expiration Date)',
@@ -64,7 +86,7 @@ export const Coupons: CollectionConfig = {
       defaultValue: 1,
       min: 1,
       label: 'Maximum Usage Limit',
-      admin: { description: 'Total redemptions allowed. 1 = single-use loyalty coupon.' },
+      admin: { description: 'Total global redemptions allowed across all customers. 1 = single-use coupon.' },
     },
     {
       name: 'usageCount',
@@ -74,11 +96,21 @@ export const Coupons: CollectionConfig = {
       admin: { readOnly: true },
     },
     {
+      name: 'assignedCustomer',
+      type: 'relationship',
+      relationTo: 'customers',
+      label: 'Assigned Customer Profile (Optional)',
+      admin: {
+        description:
+          'Select a registered customer. If set, only this customer can redeem this voucher.',
+      },
+    },
+    {
       name: 'customerEmail',
       type: 'text',
       index: true,
       label: 'Assigned Customer Email (Optional)',
-      admin: { description: 'If filled, only this email address can use the coupon.' },
+      admin: { description: 'Alternatively, enter a customer email. Only this email address will be able to use the coupon.' },
     },
   ],
 }

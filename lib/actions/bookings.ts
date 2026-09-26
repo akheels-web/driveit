@@ -100,10 +100,14 @@ export async function createBooking(data: BookingFormData) {
         email: data.customerEmail || session?.user?.email,
         subtotal: base.base + base.addonsTotal,
       })
-      if (coupon.valid) {
-        couponCode = coupon.code
-        discount = coupon.discount
+      if (!coupon.valid) {
+        return {
+          success: false as const,
+          error: `Promo code error: ${coupon.message}`,
+        }
       }
+      couponCode = coupon.code
+      discount = coupon.discount
     }
 
     const quote = computeQuote({

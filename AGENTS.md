@@ -500,4 +500,23 @@
   - Removed confusing redundant `[ Sign In ]` vs `[ Create Account ]` toggle tabs that triggered the same Google OAuth action.
   - Streamlined into an obsidian VIP "Customer Access Portal" with a single high-contrast "Continue with Google" button and clear value propositions.
 
+## 29. Voucher Security, Customer-Specific Assignment & First-Time Gating Architecture
+- **Strict Voucher Lifecycle Enforcement**:
+  - When an admin deletes a coupon or sets `isActive: false` in Payload CMS, it is immediately invalidated across all validation and booking endpoints ([`lib/coupons.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/coupons.ts), [`app/api/checkout/init/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/checkout/init/route.ts), [`lib/actions/bookings.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/actions/bookings.ts)).
+  - Replaced legacy silent coupon fallback (which previously stripped the discount but silently proceeded with hold creation) with an explicit HTTP 400 rejection: `Promo code error: The promo code "XYZ" is not recognised or has been removed.`. Customers can never book with an inactive or deleted code.
+- **Customer-Specific Vouchers (VIP & Concierge On-Demand Deals)**:
+  - Added `assignedCustomer` (relationship to `customers`) and `customerEmail` (text fallback) fields to [`collections/Coupons.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/Coupons.ts).
+  - Validation ensures that the checkout customer email strictly matches the assigned customer profile/email.
+  - Unauthorized users attempting to use a customer-specific code are blocked with an explicit error: `"This exclusive promo code is assigned to a specific VIP customer account."`.
+- **First-Time Customers Only Gating (`firstTimeOnly`)**:
+  - Added `firstTimeOnly` (boolean checkbox, default `false`, indexed) to [`collections/Coupons.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/collections/Coupons.ts).
+  - Validates against:
+    1. `customers.completedBookings > 0` on customer profile.
+    2. Any existing `confirmed` or `completed` bookings under `customerEmail` in the `bookings` collection.
+  - If prior reservations are found, throws an informative error: `"This welcome discount is valid only for first-time customers. Our records show an existing reservation for this account."`.
+- **Per-Customer Redemption Limits (`oncePerCustomer`)**:
+  - Added `oncePerCustomer` (boolean checkbox, default `true`, indexed) to prevent a customer from reusing multi-use global promo codes across separate reservations.
+  - Database schema migrated on VPS Postgres (`first_time_only`, `once_per_customer`, `assigned_customer_id` with foreign key and indexes).
+
+
 

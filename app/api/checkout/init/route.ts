@@ -131,10 +131,14 @@ export async function POST(request: Request) {
         email: input.customerEmail,
         subtotal: priced.base + priced.addonsTotal,
       })
-      if (coupon.valid) {
-        couponCode = coupon.code
-        discount = coupon.discount
+      if (!coupon.valid) {
+        return NextResponse.json(
+          { error: `Promo code error: ${coupon.message}` },
+          { status: 400 },
+        )
       }
+      couponCode = coupon.code
+      discount = coupon.discount
     }
 
     const quote = computeQuote({
