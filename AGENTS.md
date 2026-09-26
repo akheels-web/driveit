@@ -473,4 +473,31 @@
 - **DriveIt Integration Bridge**:
   - `lib/notifications.ts` (`sendWacrmEvent`) and `app/api/webhooks/wacrm/route.ts` provide authenticated webhook event dispatching for booking holds and confirmations.
 
+## 28. Customer Profile & KYC Booking Gate, Unified Authentication & CRM Auto-Upsert
+- **Customer CRM Auto-Upserting Pipeline (Fixed)**:
+  - Previously, customers who signed in with Google were never saved to Payload CMS `customers` collection unless they manually saved their profile, resulting in 0 records in `/admin/collections/customers`.
+  - Added `async signIn({ user })` callback to [`auth.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/auth.ts) with dynamic imports of `getPayload` and `upsertCustomer`. Every Google OAuth sign-in immediately creates/updates the customer record in Postgres and Payload CMS.
+  - Implemented multi-tier safety nets calling `upsertCustomer` in [`app/(site)/dashboard/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/dashboard/page.tsx), [`app/api/profile/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/profile/route.ts), [`app/api/profile/documents/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/profile/documents/route.ts), and [`app/(site)/dashboard/profile/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/dashboard/profile/page.tsx).
+- **Customer Profile & KYC Booking Gate**:
+  - Exported `isProfileAndKycComplete(customer)` and `KycValidationResult` in [`lib/customers.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/customers.ts).
+  - Validation requires:
+    1. Full Name (at least 2 characters).
+    2. Phone number (at least 10 valid digits).
+    3. Driving License Number (at least 5 characters).
+    4. KYC Document Status: must be `pending` or `verified` (rejects `unverified` and `rejected`).
+  - **Server-Side Enforcement**:
+    - [`app/api/checkout/init/route.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/api/checkout/init/route.ts) evaluates `isProfileAndKycComplete(customer)` before issuing a hold token; returns HTTP 403 with `code: 'KYC_INCOMPLETE'` and detailed missing reasons if incomplete.
+    - [`lib/actions/bookings.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/actions/bookings.ts) enforces the identical gate in `createBooking`.
+  - **Frontend UI & Guided Resolution**:
+    - [`app/(site)/checkout/checkout-client.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/checkout/checkout-client.tsx) renders dedicated status cards:
+      - Signed out: Gold alert "VIP Verification Required" prompting 1-tap sign-in with preserved query parameters.
+      - Incomplete Profile / KYC: Amber alert listing exact missing requirements with a prominent gold button: "Complete Profile & Upload Documents Now" linking to `/dashboard/profile?redirect=...`.
+      - Verified VIP: Emerald badge confirming ready-to-book status.
+    - Submit button is dynamically replaced with direct resolution buttons ("Sign In with Google to Unlock Reservation" / "Complete Profile & KYC to Unlock Reservation") when requirements are unmet.
+    - [`components/profile-form.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/profile-form.tsx) detects `redirect` query parameter, shows "Reservation In Progress" banner, and renders a "Return to Checkout with Saved Details" button below the save action.
+- **Login Portal Unification & Brand Integrity**:
+  - Replaced arbitrary monogram circle and Lucide `Crown` on [`app/(site)/login/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/login/page.tsx) with the authentic metallic gold DRIVEIT logo ([`/logo.png`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/public/logo.png)).
+  - Removed confusing redundant `[ Sign In ]` vs `[ Create Account ]` toggle tabs that triggered the same Google OAuth action.
+  - Streamlined into an obsidian VIP "Customer Access Portal" with a single high-contrast "Continue with Google" button and clear value propositions.
+
 
