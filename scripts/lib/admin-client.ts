@@ -17,7 +17,7 @@ export const BASE = (
   .trim()
   .replace(/\/+$/, '')
 
-export const ADMIN_EMAIL = (process.env.SEED_ADMIN_EMAIL || 'admin@driveitluxury.com').toLowerCase()
+export const ADMIN_EMAIL = (process.env.SEED_ADMIN_EMAIL || 'admin@driveitluxury.in').toLowerCase()
 export const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; body: any }

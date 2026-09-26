@@ -115,7 +115,7 @@ export default function PrivacyPolicyPage() {
                 <li>Any illegal activities, money laundering, and items (firearms, drugs, etc.) terminate trip.</li>
                 <li>Maximum: 12 hours or 300 km daily, whichever comes first.</li>
                 <li>Treat chauffeurs respectfully; violations may lead to legal action.</li>
-                <li>Contact: <a href="mailto:care@driveitluxury.com" className="underline">care@driveitluxury.com</a> or +91 63000 41186</li>
+                <li>Contact: <a href="mailto:care@driveitluxury.in" className="underline">care@driveitluxury.in</a> or +91 63000 41186</li>
               </ul>
             </div>
             <div>
@@ -261,7 +261,7 @@ export default function PrivacyPolicyPage() {
                 <li>Only booker should drive in self-drive service; if not, penalty applies.</li>
                 <li>DriveIt Luxury not liable for losses from service use or failure.</li>
               </ul>
-              <p className="text-zinc-400 leading-relaxed mt-2">Note: Terms updated regularly; latest apply. Contact <a href="mailto:care@driveitluxury.com" className="underline">care@driveitluxury.com</a>.</p>
+              <p className="text-zinc-400 leading-relaxed mt-2">Note: Terms updated regularly; latest apply. Contact <a href="mailto:care@driveitluxury.in" className="underline">care@driveitluxury.in</a>.</p>
             </div>
           </div>
         </div>

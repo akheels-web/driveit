@@ -58,7 +58,7 @@ export function renderTripCompletedReviewEmail(props: TripCompletedReviewEmailPr
       },
       secondaryButton: {
         label: 'Book Your Next Ride',
-        url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://driveitluxury.com',
+        url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://driveitluxury.in',
       },
     }),
   }

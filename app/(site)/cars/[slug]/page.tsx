@@ -63,7 +63,7 @@ export default async function CarDetailPage({ params }: { params: Promise<{ slug
 
   const gallery = car.gallery && car.gallery.length > 0 ? car.gallery : [car.src]
   const hasRatings = car.reviewsCount > 0 && car.rating > 0
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com').replace(/\/$/, '')
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in').replace(/\/$/, '')
   const carUrl = `${baseUrl}/cars/${car.slug}`
 
   const vehicleSchema = {

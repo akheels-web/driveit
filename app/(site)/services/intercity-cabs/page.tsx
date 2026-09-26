@@ -17,7 +17,7 @@ export default function IntercityCabsPage() {
     "provider": {
       "@type": "LocalBusiness",
       "name": "DRIVEIT Luxury",
-      "url": "https://www.driveitluxury.com"
+      "url": "https://www.driveitluxury.in"
     },
     "areaServed": {
       "@type": "State",

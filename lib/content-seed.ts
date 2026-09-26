@@ -42,7 +42,7 @@ export type FaqView = {
 export const SITE_DEFAULTS = {
   siteName: 'DriveIt Luxury Transportation',
   contactPhone: '+91 63000 41186',
-  contactEmail: 'info@driveitluxury.com',
+  contactEmail: 'info@driveitluxury.in',
   whatsappNumber: '+916300041186',
   address: 'Banjara Hills, Hyderabad, Telangana 500034',
   mapEmbedUrl:
@@ -183,6 +183,6 @@ export const faqSeed: FaqView[] = [
   },
   {
     q: 'How do I contact you for bookings?',
-    a: 'You can reach us 24/7 at +91 63000 41186, email us at info@driveitluxury.com, or use our contact form. Our team will assist you with all your luxury transportation needs.',
+    a: 'You can reach us 24/7 at +91 63000 41186, email us at info@driveitluxury.in, or use our contact form. Our team will assist you with all your luxury transportation needs.',
   },
 ]

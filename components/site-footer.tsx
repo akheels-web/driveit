@@ -58,7 +58,7 @@ export function SiteFooter({
       'Hyderabad’s premier luxury mobility atelier. Providing executive chauffeur-driven vehicles, exotic self-drive rentals, royal wedding convoys, VIP airport tarmac transfers, and private aviation charters across Telangana and Andhra Pradesh.',
   )
   const [phone, setPhone] = useState(propPhone || '+91 63000 41186')
-  const [email, setEmail] = useState(propEmail || 'concierge@driveitluxury.com')
+  const [email, setEmail] = useState(propEmail || 'concierge@driveitluxury.in')
   const [address, setAddress] = useState(propAddress || 'Road No. 36, Jubilee Hills & Banjara Hills, Hyderabad, Telangana 500034')
   const [whatsappNumber, setWhatsappNumber] = useState(propWhatsappNumber || '+916300041186')
   const [instagramUrl, setInstagramUrl] = useState(propInstagramUrl || 'https://instagram.com/driveitluxury')

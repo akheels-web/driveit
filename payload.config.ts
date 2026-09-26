@@ -102,7 +102,7 @@ export default buildConfig({
   sharp,
   email: process.env.RESEND_API_KEY
     ? resendAdapter({
-        defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'concierge@driveitluxury.com',
+        defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'concierge@driveitluxury.in',
         defaultFromName: process.env.EMAIL_FROM_NAME || 'DriveIt Luxury Concierge',
         apiKey: process.env.RESEND_API_KEY,
       })

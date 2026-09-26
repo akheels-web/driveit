@@ -80,11 +80,11 @@ export async function generateMetadata(): Promise<Metadata> {
       address: false,
       telephone: false,
     },
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com'),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in'),
     openGraph: {
       title,
       description,
-      url: 'https://www.driveitluxury.com',
+      url: 'https://www.driveitluxury.in',
       siteName,
       images: [
         {
@@ -160,7 +160,7 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": "LocalBusiness",
               "name": siteName,
-              "url": "https://www.driveitluxury.com",
+              "url": "https://www.driveitluxury.in",
               "telephone": phone,
               "email": email,
               "address": {

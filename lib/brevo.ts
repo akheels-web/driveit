@@ -41,7 +41,7 @@ const BREVO_API_URL = 'https://api.brevo.com/v3'
 
 function getBrevoConfig() {
   const apiKey = process.env.BREVO_API_KEY?.trim()
-  const senderEmail = process.env.BREVO_SENDER_EMAIL?.trim() || process.env.EMAIL_FROM_ADDRESS?.trim() || 'concierge@driveitluxury.com'
+  const senderEmail = process.env.BREVO_SENDER_EMAIL?.trim() || process.env.EMAIL_FROM_ADDRESS?.trim() || 'concierge@driveitluxury.in'
   const senderName = process.env.BREVO_SENDER_NAME?.trim() || process.env.EMAIL_FROM_NAME?.trim() || 'DriveIt Luxury Concierge'
   const marketingListId = process.env.BREVO_MARKETING_LIST_ID ? parseInt(process.env.BREVO_MARKETING_LIST_ID, 10) : undefined
 

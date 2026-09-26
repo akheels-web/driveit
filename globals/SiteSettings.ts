@@ -34,7 +34,7 @@ export const SiteSettings: GlobalConfig = {
       name: 'contactEmail',
       type: 'text',
       label: 'Primary Email Address',
-      defaultValue: 'concierge@driveitluxury.com',
+      defaultValue: 'concierge@driveitluxury.in',
     },
     {
       name: 'whatsappNumber',

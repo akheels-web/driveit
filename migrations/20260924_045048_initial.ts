@@ -295,7 +295,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"id" serial PRIMARY KEY NOT NULL,
   	"site_name" varchar DEFAULT 'DriveIt Luxury Transportation',
   	"contact_phone" varchar DEFAULT '+91 98765 43210',
-  	"contact_email" varchar DEFAULT 'concierge@driveitluxury.com',
+  	"contact_email" varchar DEFAULT 'concierge@driveitluxury.in',
   	"whatsapp_number" varchar DEFAULT '+919876543210',
   	"header_logo_id" integer,
   	"header_video_url" varchar,

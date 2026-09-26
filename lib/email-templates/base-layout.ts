@@ -21,7 +21,7 @@ export interface BaseEmailLayoutOptions {
  */
 export function renderBaseEmailLayout(options: BaseEmailLayoutOptions): string {
   const { title, preheader, contentHtml, actionButton, secondaryButton } = options
-  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://driveitluxury.com'
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://driveitluxury.in'
   const currentYear = new Date().getFullYear()
 
   return `<!DOCTYPE html>
@@ -208,7 +208,7 @@ export function renderBaseEmailLayout(options: BaseEmailLayoutOptions): string {
           <p style="margin: 0 0 16px 0;">
             Direct Concierge: <a href="tel:+916300041186">+91 63000 41186</a> &bull;
             WhatsApp: <a href="https://wa.me/916300041186" target="_blank">Chat with Concierge</a> &bull;
-            Email: <a href="mailto:concierge@driveitluxury.com">concierge@driveitluxury.com</a>
+            Email: <a href="mailto:concierge@driveitluxury.in">concierge@driveitluxury.in</a>
           </p>
           <p style="margin: 0; font-size: 11px; color: #475569;">
             &copy; ${currentYear} DriveIt Luxury. All rights reserved.<br>

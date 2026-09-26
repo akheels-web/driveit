@@ -255,7 +255,7 @@ async function main() {
   // the hold sweep, and staff password hashes are never exported, so these come
   // from the environment. One session is reused for all of them: logins are
   // throttled, and a smoke test that trips its own limiter is a bad smoke test.
-  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@driveitluxury.com'
+  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@driveitluxury.in'
   const adminPassword = process.env.SEED_ADMIN_PASSWORD
   const staffToken = await staffSession(adminEmail, adminPassword)
 

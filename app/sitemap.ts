@@ -6,7 +6,7 @@ import { getBlogPosts } from '@/lib/blog-seed'
 export const revalidate = 1800
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com').replace(/\/$/, '')
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in').replace(/\/$/, '')
   const now = new Date().toISOString()
 
   // High-priority core landing pages

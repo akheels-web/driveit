@@ -3,7 +3,7 @@
 > **Document Class:** Executive Operational Runbook & Business Guide  
 > **Audience:** Business Owner, Managing Director, Operations Manager, and Lead Concierge  
 > **Platform Version:** 2026.9 (Production Release)  
-> **Target Domain:** `driveitluxury.com` (or your registered domain)
+> **Target Domain:** `driveitluxury.in` (or your registered domain)
 
 ---
 
@@ -49,8 +49,8 @@ DRIVEIT Luxury is built as an **ultra-fast, unified luxury car rental platform**
                        │                                                     │
                        │   ┌──────────────────────────────────────────────┐  │
                        │   │ DRIVEIT UNIFIED APPLICATION (Next.js 16)     │  │
-                       │   │  • Public Luxury Website (driveitluxury.com) │  │
-                       │   │  • CMS Admin Panel (driveitluxury.com/admin) │  │
+                       │   │  • Public Luxury Website (driveitluxury.in)  │  │
+                       │   │  • CMS Admin Panel (driveitluxury.in/admin)  │  │
                        │   │  • Real-time Dynamic Quote & Hold Engine     │  │
                        │   └──────────────────────┬───────────────────────┘  │
                        │                          │                          │
@@ -401,10 +401,10 @@ Send these 3 quick SMS commands to the phone number of the SIM card inside the G
    - *Vi:* Send `APN,www#`
 
 2. **Point Tracker to Your DRIVEIT Server:**
-   - Send `SERVER,1,driveitluxury.com,80,api/telematics/ping#`  
+   - Send `SERVER,1,driveitluxury.in,80,api/telematics/ping#`  
      *(or use your Contabo VPS public IP address: `SERVER,1,YOUR_VPS_IP,80,api/telematics/ping#`)*
    - *Note for Fleet Portals (LocoNav, TrackSolid, Traccar):* If you already use an aggregator dashboard, simply add a Webhook pointing to:  
-     `https://driveitluxury.com/api/telematics/ping`
+     `https://driveitluxury.in/api/telematics/ping`
 
 3. **Set Ping Frequency:**
    - Send `TIMER,30,60#`  
@@ -487,12 +487,12 @@ Your platform is engineered to dominate Google Search and Generative AI engines 
 ## 8. Summary Reference & Emergency Contact Points
 
 ### Key Access Links
-- **Public Luxury Portal:** `https://driveitluxury.com`
-- **CMS Admin Command Center:** `https://driveitluxury.com/admin`
-- **Customer Account & KYC Vault:** `https://driveitluxury.com/dashboard`
-- **Fleet Consignment Portal:** `https://driveitluxury.com/partner/list-fleet`
+- **Public Luxury Portal:** `https://driveitluxury.in`
+- **CMS Admin Command Center:** `https://driveitluxury.in/admin`
+- **Customer Account & KYC Vault:** `https://driveitluxury.in/dashboard`
+- **Fleet Consignment Portal:** `https://driveitluxury.in/partner/list-fleet`
 - **WhatsApp Concierge Hotline:** `+91 63000 41186`
-- **Concierge Support Email:** `concierge@driveitluxury.com`
+- **Concierge Support Email:** `concierge@driveitluxury.in`
 
 ### Recommended Weekly Routine for the Owner / Operations Lead:
 1. **Monday Morning:** Open `/admin` → Check **Bookings** for the week → Ensure all vehicles scheduled for dispatch have completed maintenance checks.

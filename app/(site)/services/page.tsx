@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default async function ServicesPage() {
   const services = await getServicesFromCMS()
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com').replace(/\/$/, '')
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in').replace(/\/$/, '')
 
   const servicesSchema = {
     '@context': 'https://schema.org',

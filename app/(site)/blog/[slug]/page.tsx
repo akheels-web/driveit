@@ -62,7 +62,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const related = allPosts.filter((post) => post.slug !== slug).slice(0, 3)
 
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.com').replace(/\/$/, '')
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in').replace(/\/$/, '')
   const postUrl = `${baseUrl}/blog/${slug}`
   const imageUrl = coverImage.startsWith('http') ? coverImage : `${baseUrl}${coverImage}`
 
