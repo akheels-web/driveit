@@ -91,41 +91,41 @@ export function SiteHeader({
       }}
     >
       <PromoBanner />
-      <div className="mx-auto max-w-6xl w-full px-4 py-3 flex items-center justify-between text-zinc-100">
-        <Link href="/" className="flex items-center">
+      <div className="mx-auto max-w-[1400px] w-full px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between text-zinc-100 gap-3 xl:gap-6">
+        <Link href="/" className="flex items-center shrink-0">
           <Image
             src={logoSrc}
             alt={`${siteName} Logo`}
-            width={200}
-            height={80}
-            className="h-12 w-auto md:h-14"
+            width={160}
+            height={50}
+            className="h-8 sm:h-9 lg:h-10 xl:h-11 w-auto object-contain shrink-0"
             priority
             loading="eager"
             unoptimized={logoSrc.startsWith('http')}
           />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden lg:flex items-center gap-1.5 xl:gap-3.5 2xl:gap-5 shrink min-w-0">
           {nav.map((item) =>
             item.children ? (
-              <div key={item.href} className="relative group">
+              <div key={item.href} className="relative group shrink-0">
                 <div 
                   className={cn(
-                    "flex items-center gap-1 text-sm cursor-pointer py-2 transition-colors duration-300",
+                    "flex items-center gap-1 text-xs xl:text-sm cursor-pointer py-1.5 px-2 xl:px-2.5 rounded-lg transition-colors duration-300 whitespace-nowrap",
                     item.children.some(c => c.href === pathname)
-                      ? "text-[var(--gold-400)] font-medium"
-                      : "text-zinc-300 hover:text-[var(--gold-400)]"
+                      ? "text-[var(--gold-400)] font-medium bg-[var(--gold-400)]/10"
+                      : "text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/[0.04]"
                   )}
                 >
                   <span>{item.label}</span>
-                  <svg className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180 opacity-70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
 
                 {/* Dropdown Menu */}
-                <div className="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                  <div className="bg-[#0a0a0a]/98 backdrop-blur-xl border border-[var(--gold-400)]/30 rounded-xl shadow-2xl p-3 min-w-[220px]">
+                <div className="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 z-50">
+                  <div className="bg-[#0a0a0a]/98 backdrop-blur-xl border border-[var(--gold-400)]/30 rounded-xl shadow-2xl p-2.5 min-w-[220px]">
                     <ul className="grid gap-1">
                       {item.children.map((c) => {
                         const isChildActive = pathname === c.href
@@ -134,7 +134,7 @@ export function SiteHeader({
                             <Link
                               href={c.href}
                               className={cn(
-                                "block px-4 py-2.5 text-sm rounded-lg transition-all duration-300",
+                                "block px-3.5 py-2 text-xs xl:text-sm rounded-lg transition-all duration-300 whitespace-nowrap",
                                 isChildActive 
                                   ? "text-[var(--gold-400)] bg-[var(--gold-400)]/10 font-medium" 
                                   : "text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5"
@@ -154,32 +154,32 @@ export function SiteHeader({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-sm flex items-center gap-1.5 py-2 transition-colors duration-300",
+                  "text-xs xl:text-sm flex items-center gap-1.5 py-1.5 px-2 xl:px-2.5 rounded-lg transition-colors duration-300 whitespace-nowrap shrink-0",
                   pathname === item.href
-                    ? "text-[var(--gold-400)] font-medium"
-                    : "text-zinc-300 hover:text-[var(--gold-400)]"
+                    ? "text-[var(--gold-400)] font-medium bg-[var(--gold-400)]/10"
+                    : "text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/[0.04]"
                 )}
               >
-                {item.icon && <item.icon className="w-4 h-4" />}
-                {item.label}
+                {item.icon && <item.icon className="hidden xl:inline-block w-3.5 h-3.5 xl:w-4 xl:h-4 opacity-75 shrink-0" />}
+                <span>{item.label}</span>
               </Link>
             ),
           )}
         </nav>
 
         {/* Call to Action Button */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
           {session?.user ? (
-            <div className="relative group">
+            <div className="relative group shrink-0">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border border-[var(--gold-400)]/40 bg-[var(--gold-400)]/10 text-[var(--gold-300)] hover:bg-[var(--gold-400)]/20 transition-all shadow-sm"
+                className="flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 py-1.5 rounded-full text-xs font-semibold border border-[var(--gold-400)]/40 bg-[var(--gold-400)]/10 text-[var(--gold-300)] hover:bg-[var(--gold-400)]/20 transition-all shadow-sm shrink-0 whitespace-nowrap"
               >
-                <div className="w-5 h-5 rounded-full bg-[var(--gold-400)] text-black flex items-center justify-center font-bold text-[10px]">
+                <div className="w-5 h-5 rounded-full bg-[var(--gold-400)] text-black flex items-center justify-center font-bold text-[10px] shrink-0">
                   {(session.user.name?.[0] || session.user.email?.[0] || 'U').toUpperCase()}
                 </div>
-                <span>{session.user.name?.split(' ')[0] || 'Dashboard'}</span>
-                <ChevronDown className="w-3 h-3 opacity-60 group-hover:rotate-180 transition-transform duration-200" />
+                <span className="max-w-[75px] xl:max-w-[110px] truncate">{session.user.name?.split(' ')[0] || 'Account'}</span>
+                <ChevronDown className="w-3 h-3 opacity-60 group-hover:rotate-180 transition-transform duration-200 shrink-0" />
               </Link>
 
               {/* User Dropdown */}
@@ -191,28 +191,28 @@ export function SiteHeader({
                   </div>
                   <Link
                     href="/dashboard"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors whitespace-nowrap"
                   >
-                    <Crown className="w-3.5 h-3.5 text-[var(--gold-400)]" /> Dashboard
+                    <Crown className="w-3.5 h-3.5 text-[var(--gold-400)] shrink-0" /> Dashboard
                   </Link>
                   <Link
                     href="/dashboard/bookings"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors whitespace-nowrap"
                   >
-                    <CalendarDays className="w-3.5 h-3.5 text-[var(--gold-400)]" /> My Bookings
+                    <CalendarDays className="w-3.5 h-3.5 text-[var(--gold-400)] shrink-0" /> My Bookings
                   </Link>
                   <Link
                     href="/dashboard/profile"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors whitespace-nowrap"
                   >
-                    <User className="w-3.5 h-3.5 text-[var(--gold-400)]" /> Profile &amp; KYC
+                    <User className="w-3.5 h-3.5 text-[var(--gold-400)] shrink-0" /> Profile &amp; KYC
                   </Link>
                   <button
                     type="button"
                     onClick={() => signOut({ callbackUrl: '/' })}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors text-left mt-1 border-t border-white/5 pt-2 cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors text-left mt-1 border-t border-white/5 pt-2 cursor-pointer whitespace-nowrap"
                   >
-                    <LogOut className="w-3.5 h-3.5" /> Sign Out
+                    <LogOut className="w-3.5 h-3.5 shrink-0" /> Sign Out
                   </button>
                 </div>
               </div>
@@ -220,24 +220,24 @@ export function SiteHeader({
           ) : (
             <Link
               href="/login"
-              className="text-sm text-zinc-300 hover:text-[var(--gold-400)] font-medium transition-colors duration-300"
+              className="text-xs xl:text-sm text-zinc-300 hover:text-[var(--gold-400)] font-medium transition-colors duration-300 px-2 py-1.5 whitespace-nowrap"
             >
               Login
             </Link>
           )}
           <Link
             href="/cars"
-            className="flex items-center gap-2 text-black px-5 py-2.5 rounded-full text-sm font-medium bg-[var(--gold-400)] hover:bg-[var(--gold-300)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+            className="flex items-center gap-1.5 xl:gap-2 text-black px-3.5 py-1.5 xl:px-4.5 xl:py-2 rounded-full text-xs xl:text-sm font-semibold bg-[var(--gold-400)] hover:bg-[var(--gold-300)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] shrink-0 whitespace-nowrap"
           >
-            <Car className="w-4 h-4" />
-            Book Online
+            <Car className="w-3.5 h-3.5 xl:w-4 xl:h-4 shrink-0" />
+            <span>Book Online</span>
           </Link>
         </div>
 
         {/* Mobile menu button */}
         <button
           aria-label="Toggle Menu"
-          className="md:hidden inline-flex items-center justify-center rounded-lg border border-white/10 p-2.5 min-w-[44px] min-h-[44px] text-zinc-300 hover:text-[var(--gold-400)] transition-colors duration-300"
+          className="lg:hidden inline-flex items-center justify-center rounded-lg border border-white/10 p-2.5 min-w-[44px] min-h-[44px] text-zinc-300 hover:text-[var(--gold-400)] transition-colors duration-300 shrink-0"
           onClick={() => setOpen((v) => !v)}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -254,13 +254,13 @@ export function SiteHeader({
       <AnimatePresence>
         {open && (
           <motion.div
-            className="md:hidden border-t border-white/5 bg-[var(--luxury-bg)]/98 backdrop-blur-xl text-zinc-100"
+            className="lg:hidden border-t border-white/5 bg-[var(--luxury-bg)]/98 backdrop-blur-xl text-zinc-100"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <div className="mx-auto max-w-6xl px-4 py-4 grid gap-3 max-h-[calc(100dvh-5rem)] overflow-y-auto">
+            <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-4 grid gap-3 max-h-[calc(100dvh-5rem)] overflow-y-auto">
               {nav.map((item) =>
                 item.children ? (
                   <div key={item.href}>
