@@ -5,7 +5,7 @@ import { Award, CalendarDays, Car, CheckCircle, Clock, User } from 'lucide-react
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
-import { findCustomerByEmail } from '@/lib/customers'
+import { upsertCustomer } from '@/lib/customers'
 import { GOLD_THRESHOLD, PLATINUM_THRESHOLD } from '@/lib/loyalty'
 import { SiteHeader } from '@/components/site-header'
 import { SignOutButton } from '@/components/sign-out-button'
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
   const payload = await getPayload({ config })
 
   const [customer, recent] = await Promise.all([
-    findCustomerByEmail(payload, email),
+    upsertCustomer(payload, { email, name: session.user.name ?? null }),
     payload.find({
       collection: 'bookings',
       where: { customerEmail: { equals: email } },

@@ -51,9 +51,7 @@ function LoginForm() {
   const errorParam = searchParams.get('error')
   const loggedOutParam = searchParams.get('loggedOut')
   const reasonParam = searchParams.get('reason')
-  const initialMode = searchParams.get('mode') === 'signup' || searchParams.get('tab') === 'signup' ? 'signup' : 'signin'
 
-  const [mode, setMode] = useState<'signin' | 'signup'>(initialMode)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const { data: session, status } = useSession()
@@ -150,17 +148,14 @@ function LoginForm() {
         {/* Top Header: Brand Monogram & Live Status */}
         <div className="relative z-10 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--gold-600)] via-[var(--gold-400)] to-[var(--gold-200)] flex items-center justify-center text-black font-extrabold text-base shadow-[0_0_20px_rgba(212,175,55,0.4)] group-hover:scale-105 transition-transform duration-300">
-              D
-            </div>
-            <div>
-              <span className="text-sm font-[family-name:var(--font-playfair)] tracking-[0.25em] uppercase font-bold text-white block">
-                DRIVEIT <span className="text-[var(--gold-400)]">LUXURY</span>
-              </span>
-              <span className="text-[10px] tracking-[0.2em] uppercase text-white/50 block">
-                Hyderabad Private Fleet
-              </span>
-            </div>
+            <Image
+              src="/logo.png"
+              alt="DRIVEIT Luxury"
+              width={160}
+              height={48}
+              className="h-9 sm:h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              priority
+            />
           </Link>
 
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 border border-[var(--gold-400)]/30 backdrop-blur-md">
@@ -281,48 +276,29 @@ function LoginForm() {
 
         {/* Center: Interactive Login Card */}
         <div className="my-auto max-w-sm w-full mx-auto space-y-6">
-          {/* Golden Crown Emblem */}
+          {/* Authentic DRIVEIT Logo Header */}
           <div className="text-center space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-[var(--gold-400)]/20 to-black border border-[var(--gold-400)]/40 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(212,175,55,0.2)]">
-              <Crown className="w-8 h-8 text-[var(--gold-400)]" />
+            <div className="flex justify-center">
+              <Link href="/" className="inline-block group">
+                <Image
+                  src="/logo.png"
+                  alt="DRIVEIT Luxury"
+                  width={180}
+                  height={54}
+                  className="h-10 sm:h-12 w-auto object-contain drop-shadow-[0_0_25px_rgba(212,175,55,0.3)] transition-transform duration-300 group-hover:scale-105"
+                  priority
+                />
+              </Link>
             </div>
 
             <div>
               <h1 className="text-2xl sm:text-3xl font-[family-name:var(--font-playfair)] font-bold text-white">
-                {mode === 'signin' ? 'Customer Sign In' : 'Create Customer Account'}
+                Customer Access Portal
               </h1>
-              <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
-                {mode === 'signin'
-                  ? 'Sign in to access your bookings, live chauffeur radar, and GST invoices.'
-                  : 'Create your customer account with Google in 1 click to book vehicles.'}
+              <p className="text-xs text-white/50 mt-1.5 leading-relaxed max-w-xs mx-auto">
+                Sign in or create your customer account with Google in 1 click to manage reservations, track live dispatch, and book vehicles.
               </p>
             </div>
-          </div>
-
-          {/* Interactive Mode Switcher Tabs */}
-          <div className="p-1 rounded-xl bg-black/60 border border-white/10 flex items-center gap-1 text-xs">
-            <button
-              type="button"
-              onClick={() => setMode('signin')}
-              className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all duration-300 cursor-pointer ${
-                mode === 'signin'
-                  ? 'bg-[var(--gold-400)] text-black shadow-md'
-                  : 'text-white/50 hover:text-white'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('signup')}
-              className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all duration-300 cursor-pointer ${
-                mode === 'signup'
-                  ? 'bg-[var(--gold-400)] text-black shadow-md'
-                  : 'text-white/50 hover:text-white'
-              }`}
-            >
-              Create Account
-            </button>
           </div>
 
           {/* Status & Error Notification Banner */}
@@ -360,39 +336,33 @@ function LoginForm() {
             >
               <div className="flex items-center gap-3">
                 <GoogleIcon />
-                <span>
-                  {loading
-                    ? 'Connecting Securely…'
-                    : mode === 'signin'
-                    ? 'Continue with Google'
-                    : 'Sign Up with Google (1-Click)'}
-                </span>
+                <span>{loading ? 'Connecting Securely…' : 'Continue with Google'}</span>
               </div>
               <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform duration-300" />
             </button>
 
             <p className="text-center text-[11px] text-white/40 leading-relaxed">
-              Zero passwords to remember. One-tap secure login with Google.
+              Single Sign-On • Instant Account Creation • Zero Passwords
             </p>
           </div>
 
           {/* Customer Features Checklist */}
           <div className="pt-4 border-t border-white/10 space-y-2.5">
             <p className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">
-              {mode === 'signin' ? 'Your Customer Account Includes:' : 'New Account Benefits:'}
+              Customer Account Benefits:
             </p>
             <ul className="space-y-2 text-xs text-white/70">
               <li className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-emerald-400/10 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 </div>
-                <span>One-click car booking with saved customer profile</span>
+                <span>One-click vehicle reservations & 10-minute hold lock</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[var(--gold-400)]" />
                 </div>
-                <span>Live GPS radar tracking & Chauffeur Dossier</span>
+                <span>VIP Document Vault & express KYC verification</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-emerald-400/10 flex items-center justify-center shrink-0">
@@ -404,7 +374,7 @@ function LoginForm() {
                 <div className="w-4 h-4 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[var(--gold-400)]" />
                 </div>
-                <span>10% welcome discount on your first rental (WELCOME10)</span>
+                <span>10% welcome voucher on your first rental (WELCOME10)</span>
               </li>
             </ul>
           </div>

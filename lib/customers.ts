@@ -112,3 +112,72 @@ export async function updateCustomerProfile(
     overrideAccess: true,
   })
 }
+
+export interface KycValidationResult {
+  complete: boolean
+  reasons: string[]
+  isProfileMissing: boolean
+  isKycMissing: boolean
+  isRejected: boolean
+}
+
+/**
+ * Validates whether the customer has completed their personal profile and KYC verification.
+ * Booking is restricted if profile details or KYC documents are missing or rejected.
+ */
+export function isProfileAndKycComplete(
+  customer: Record<string, any> | null | undefined,
+): KycValidationResult {
+  if (!customer) {
+    return {
+      complete: false,
+      reasons: ['Customer account not found. Please sign in with your customer account.'],
+      isProfileMissing: true,
+      isKycMissing: true,
+      isRejected: false,
+    }
+  }
+
+  const reasons: string[] = []
+  let isProfileMissing = false
+  let isKycMissing = false
+  let isRejected = false
+
+  const name = typeof customer.name === 'string' ? customer.name.trim() : ''
+  if (!name || name.length < 2) {
+    reasons.push('Full name is required in your profile.')
+    isProfileMissing = true
+  }
+
+  const phoneDigits = typeof customer.phone === 'string' ? customer.phone.replace(/\D/g, '') : ''
+  if (!phoneDigits || phoneDigits.length < 10) {
+    reasons.push('A valid 10-digit mobile phone number is required.')
+    isProfileMissing = true
+  }
+
+  const dlNumber =
+    typeof customer.drivingLicenseNumber === 'string'
+      ? customer.drivingLicenseNumber.trim()
+      : ''
+  if (!dlNumber || dlNumber.length < 5) {
+    reasons.push('Driving license number is required.')
+    isKycMissing = true
+  }
+
+  const kycStatus = (customer.kycStatus as string) || 'unverified'
+  if (kycStatus === 'unverified') {
+    reasons.push('KYC documents (Driving License front/back) have not been uploaded.')
+    isKycMissing = true
+  } else if (kycStatus === 'rejected') {
+    reasons.push('Your previous KYC submission was rejected. Please re-upload valid documents.')
+    isRejected = true
+  }
+
+  return {
+    complete: reasons.length === 0,
+    reasons,
+    isProfileMissing,
+    isKycMissing,
+    isRejected,
+  }
+}

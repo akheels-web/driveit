@@ -8,6 +8,7 @@ import QRCode from 'qrcode'
 import { motion } from 'motion/react'
 import {
   ShieldCheck,
+  ShieldAlert,
   CheckCircle2,
   ChevronLeft,
   CreditCard,
@@ -17,10 +18,13 @@ import {
   MapPin,
   Clock,
   AlertCircle,
+  AlertTriangle,
+  ArrowRight,
 } from 'lucide-react'
 
 import type { InitResponse, QuoteBreakdown } from '@/lib/types'
 import { useCountdown, useFleet, useSavedProfile } from '@/hooks/use-fleet'
+import { isProfileAndKycComplete } from '@/lib/customers'
 import { LuxurySelect } from '@/components/luxury-select'
 
 type Step = 'details' | 'payment' | 'success'
@@ -91,7 +95,7 @@ export function CheckoutClient() {
     setForm((previous) => ({
       name: previous.name || profile.name || '',
       phone: previous.phone || profile.phone || '',
-      email: previous.email,
+      email: previous.email || profile.email || '',
       pickupLocation: previous.pickupLocation,
       dropoffLocation: previous.dropoffLocation,
       flightNumber: previous.flightNumber,
@@ -99,6 +103,9 @@ export function CheckoutClient() {
       gstin: previous.gstin || (profile as any).gstin || '',
     }))
   }
+
+  const kycCheck = useMemo(() => isProfileAndKycComplete(profile), [profile])
+  const isProfileAndKycValid = Boolean(profile && kycCheck.complete)
 
   // Display-only estimate; the server recomputes every number it charges.
   const isSelfDrive = service === 'selfdrive'
@@ -306,7 +313,9 @@ export function CheckoutClient() {
     )
   }
 
-  const canContinue = Boolean(form.name && form.phone && form.email && form.pickupLocation)
+  const canContinue = Boolean(
+    isProfileAndKycValid && form.name && form.phone && form.email && form.pickupLocation,
+  )
   const savedAddresses = profile
     ? [
         ['homeAddress', 'Home'] as const,
@@ -357,6 +366,76 @@ export function CheckoutClient() {
               className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 md:p-8 space-y-5"
             >
               <h2 className="text-xl font-semibold">Guest Details</h2>
+
+              {/* VIP & KYC Verification Status Card */}
+              {!profile ? (
+                <div className="p-4 sm:p-5 rounded-2xl bg-[var(--gold-400)]/10 border border-[var(--gold-400)]/30 text-white space-y-3">
+                  <div className="flex items-start gap-3">
+                    <ShieldAlert className="w-5 h-5 text-[var(--gold-400)] shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-white">VIP Verification Required</h4>
+                      <p className="text-xs text-white/70 leading-relaxed">
+                        Fleet reservations are strictly restricted to registered members with verified profiles and approved KYC documents. Please sign in with Google to unlock booking.
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <Link
+                      href={`/login?redirect=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/checkout')}`}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-zinc-100 text-black text-xs font-bold transition shadow-md group cursor-pointer"
+                    >
+                      <span>Sign In with Google to Continue</span>
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
+                </div>
+              ) : !isProfileAndKycValid ? (
+                <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-white space-y-3">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-bold text-amber-300">Complete Profile & KYC Required</h4>
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          Action Required
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/70 leading-relaxed">
+                        Our fleet insurance requires a completed profile (full name, phone, driving license number) and submitted KYC documents before reserving:
+                      </p>
+                      <ul className="text-xs text-amber-200/90 space-y-1 pl-1">
+                        {kycCheck.reasons.map((reason, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                            <span>{reason}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="pt-1">
+                    <Link
+                      href={`/dashboard/profile?redirect=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/checkout')}`}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--gold-400)] hover:bg-[var(--gold-300)] text-black text-xs font-bold transition shadow-lg shadow-[var(--gold-400)]/20 group cursor-pointer"
+                    >
+                      <span>Complete Profile & Upload Documents</span>
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-white flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 text-xs text-emerald-300">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>
+                      Signed in as <strong className="text-white">{profile.name || profile.email}</strong> • Profile & KYC Verified VIP
+                    </span>
+                  </div>
+                  <span className="text-[10px] tracking-wider uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    Verified
+                  </span>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <input
@@ -507,13 +586,29 @@ export function CheckoutClient() {
                 </div>
               )}
 
-              <button
-                onClick={startHold}
-                disabled={!canContinue || busy}
-                className="w-full py-4 rounded-xl font-bold bg-[var(--gold-400)] text-black disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition hover:scale-[1.01]"
-              >
-                {busy ? 'Reserving vehicle…' : 'Continue to Payment'}
-              </button>
+              {!profile ? (
+                <Link
+                  href={`/login?redirect=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/checkout')}`}
+                  className="w-full py-4 rounded-xl font-bold bg-white text-black hover:bg-zinc-100 transition shadow-lg flex items-center justify-center gap-2 cursor-pointer text-sm"
+                >
+                  <Lock className="w-4 h-4" /> Sign In with Google to Unlock Reservation
+                </Link>
+              ) : !isProfileAndKycValid ? (
+                <Link
+                  href={`/dashboard/profile?redirect=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/checkout')}`}
+                  className="w-full py-4 rounded-xl font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition shadow-lg flex items-center justify-center gap-2 cursor-pointer text-sm"
+                >
+                  <Lock className="w-4 h-4" /> Complete KYC & Profile to Unlock Reservation
+                </Link>
+              ) : (
+                <button
+                  onClick={startHold}
+                  disabled={!canContinue || busy}
+                  className="w-full py-4 rounded-xl font-bold bg-[var(--gold-400)] text-black disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition hover:scale-[1.01]"
+                >
+                  {busy ? 'Reserving vehicle…' : 'Continue to Payment'}
+                </button>
+              )}
               <p className="text-[11px] text-white/40 flex items-center gap-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-green-400" />
                 Continuing reserves this car for 10 minutes with guaranteed availability.

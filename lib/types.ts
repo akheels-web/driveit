@@ -104,11 +104,20 @@ export interface FleetCar {
 }
 
 export interface SavedProfile {
+  email?: string | null
   name: string | null
   phone: string | null
   homeAddress: string | null
   officeAddress: string | null
   airportAddress: string | null
+  gstin?: string | null
+  companyName?: string | null
+  kycStatus?: 'unverified' | 'pending' | 'verified' | 'rejected'
+  drivingLicenseNumber?: string | null
+  aadhaarLast4?: string | null
+  loyaltyPoints?: number
+  loyaltyTier?: 'silver' | 'gold' | 'platinum'
+  completedBookings?: number
 }
 
 export interface QuoteBreakdown {

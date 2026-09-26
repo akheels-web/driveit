@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
-import { findCustomerByEmail } from '@/lib/customers'
+import { upsertCustomer } from '@/lib/customers'
 import { SiteHeader } from '@/components/site-header'
 import { ProfileForm } from '@/components/profile-form'
 import type { CustomerProfile } from '@/lib/types'
@@ -17,7 +17,10 @@ export default async function ProfilePage() {
   if (!session?.user?.email) redirect('/login?redirect=/dashboard/profile')
 
   const payload = await getPayload({ config })
-  const customer = (await findCustomerByEmail(payload, session.user.email)) as Record<string, any> | null
+  const customer = (await upsertCustomer(payload, {
+    email: session.user.email,
+    name: session.user.name ?? null,
+  })) as Record<string, any> | null
 
   const initial: CustomerProfile = {
     name: customer?.name ?? null,

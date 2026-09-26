@@ -18,6 +18,7 @@ import { computeQuote, QuoteError } from '@/lib/pricing'
 import type { Booking, BookingFormData } from '@/lib/types'
 import { bookingAlertText, sendTelegramAlert } from '@/lib/telegram'
 import { notifyBookingConfirmed, notifyBookingHoldCreated } from '@/lib/booking-notifications'
+import { findCustomerByEmail, isProfileAndKycComplete } from '@/lib/customers'
 
 const toBooking = (doc: Record<string, any>): Booking => ({
   id: String(doc.id),
@@ -63,6 +64,20 @@ export async function createBooking(data: BookingFormData) {
     const endDate = new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000)
 
     const payload = await getPayload({ config: configPromise })
+
+    const customerEmail = data.customerEmail || session?.user?.email
+    if (!customerEmail) {
+      return { success: false as const, error: 'Please sign in or provide your registered email to book.' }
+    }
+
+    const customer = await findCustomerByEmail(payload, customerEmail)
+    const kycCheck = isProfileAndKycComplete(customer)
+    if (!kycCheck.complete) {
+      return {
+        success: false as const,
+        error: `Booking blocked: ${kycCheck.reasons.join(' ')} Please complete your profile and KYC in your dashboard.`,
+      }
+    }
 
     const isSelfDrive = data.serviceType === 'selfdrive'
     const dailyRate = isSelfDrive

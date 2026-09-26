@@ -20,6 +20,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     /**
+     * Creates or updates the customer record in Payload CMS immediately upon Google sign-in.
+     */
+    async signIn({ user }) {
+      if (user?.email) {
+        try {
+          const { getPayload } = await import('payload')
+          const config = (await import('@/payload.config')).default
+          const { upsertCustomer } = await import('@/lib/customers')
+          const payload = await getPayload({ config })
+          await upsertCustomer(payload, {
+            email: user.email,
+            name: user.name ?? null,
+          })
+        } catch (err) {
+          console.error('[auth] Failed to upsert customer on signIn callback:', err)
+        }
+      }
+      return true
+    },
+    /**
      * Consumed by `proxy.ts` — returning false makes NextAuth redirect the
      * request to the sign-in page, so protected routes are enforced on the
      * server instead of only in client-side effects.

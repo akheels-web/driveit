@@ -8,6 +8,7 @@ import { BookingConflictError, BookingInputError, createBookingHold } from '@/li
 import { validateCoupon } from '@/lib/coupons'
 import { computeQuote, QuoteError } from '@/lib/pricing'
 import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
+import { findCustomerByEmail, isProfileAndKycComplete } from '@/lib/customers'
 
 export const dynamic = 'force-dynamic'
 
@@ -95,6 +96,20 @@ export async function POST(request: Request) {
 
   try {
     const payload = await getPayload({ config })
+
+    // Strict Gate: Profile and KYC verification must be complete before creating a booking hold
+    const customer = await findCustomerByEmail(payload, input.customerEmail)
+    const kycCheck = isProfileAndKycComplete(customer)
+    if (!kycCheck.complete) {
+      return NextResponse.json(
+        {
+          error: `Booking blocked: ${kycCheck.reasons.join(' ')} Please complete your profile and KYC in your dashboard before booking.`,
+          code: 'KYC_INCOMPLETE',
+          reasons: kycCheck.reasons,
+        },
+        { status: 403 },
+      )
+    }
 
     const isSelfDrive = input.serviceType === 'selfdrive'
     const dailyRate = isSelfDrive ? (car.selfDrivePrice ?? Math.round(car.price * 0.85)) : car.price

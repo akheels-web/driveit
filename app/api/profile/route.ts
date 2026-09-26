@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
-import { findCustomerByEmail, updateCustomerProfile } from '@/lib/customers'
+import { updateCustomerProfile, upsertCustomer } from '@/lib/customers'
 import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
@@ -24,6 +24,7 @@ const PatchSchema = z.object({
 const publicProfile = (customer: Record<string, any> | null) =>
   customer
     ? {
+        email: customer.email ?? null,
         name: customer.name ?? null,
         phone: customer.phone ?? null,
         homeAddress: customer.homeAddress ?? null,
@@ -45,7 +46,10 @@ export async function GET() {
   if (!session?.user?.email) return NextResponse.json({ profile: null }, { status: 401 })
 
   const payload = await getPayload({ config })
-  const customer = await findCustomerByEmail(payload, session.user.email)
+  const customer = await upsertCustomer(payload, {
+    email: session.user.email,
+    name: session.user.name ?? null,
+  })
 
   return NextResponse.json({ profile: publicProfile(customer as Record<string, any> | null) })
 }

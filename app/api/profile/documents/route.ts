@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
-import { findCustomerByEmail } from '@/lib/customers'
+import { upsertCustomer } from '@/lib/customers'
 import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
@@ -49,10 +49,13 @@ export async function POST(request: Request) {
     }
 
     const payload = await getPayload({ config })
-    const customer = await findCustomerByEmail(payload, session.user.email)
+    const customer = await upsertCustomer(payload, {
+      email: session.user.email,
+      name: session.user.name ?? null,
+    })
 
     if (!customer) {
-      return NextResponse.json({ error: 'Customer profile not found.' }, { status: 404 })
+      return NextResponse.json({ error: 'Could not create or find customer profile.' }, { status: 500 })
     }
 
     // Convert file to buffer for Payload media creation

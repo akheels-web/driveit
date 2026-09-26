@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   Mail,
   Phone,
@@ -9,16 +11,21 @@ import {
   Building2,
   Receipt,
   ShieldCheck,
+  ShieldAlert,
   Clock,
   AlertTriangle,
   Upload,
   FileCheck2,
   CheckCircle2,
+  ArrowRight,
 } from 'lucide-react'
 
 import type { CustomerProfile } from '@/lib/types'
 
 export function ProfileForm({ email, initial }: { email: string; initial: CustomerProfile | null }) {
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get('redirect')
+
   const [form, setForm] = useState({
     name: initial?.name ?? '',
     phone: initial?.phone ?? '',
@@ -103,6 +110,27 @@ export function ProfileForm({ email, initial }: { email: string; initial: Custom
 
   return (
     <div className="space-y-6">
+      {redirectUrl && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-[var(--gold-400)]/15 border border-[var(--gold-400)]/40 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 text-[var(--gold-400)] shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-[var(--gold-300)] text-sm">Vehicle Reservation In Progress</p>
+              <p className="text-white/70 text-xs mt-0.5 leading-relaxed">
+                Please ensure your Full Name, Phone, and Driving License Number are filled, and DL documents uploaded.
+              </p>
+            </div>
+          </div>
+          <Link
+            href={redirectUrl}
+            className="px-4 py-2 rounded-xl bg-[var(--gold-400)] hover:bg-[var(--gold-300)] text-black font-bold text-xs transition shrink-0 inline-flex items-center gap-1.5 shadow-md cursor-pointer"
+          >
+            <span>Return to Checkout</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
+
       {/* 1. VIP Document Vault & KYC Status */}
       <div
         className="rounded-2xl p-6 relative overflow-hidden"
@@ -404,6 +432,16 @@ export function ProfileForm({ email, initial }: { email: string; initial: Custom
               </>
             )}
           </button>
+
+          {redirectUrl && (
+            <Link
+              href={redirectUrl}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/15 border border-white/20 transition cursor-pointer"
+            >
+              <span>Return to Checkout with Saved Details</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[var(--gold-400)]" />
+            </Link>
+          )}
         </div>
       </div>
     </div>
