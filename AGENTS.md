@@ -453,4 +453,18 @@
   - Moved desktop navigation switch from `md` (768px) to `lg` (1024px) with safe `gap-3 xl:gap-6` and `shrink-0` bounds, preventing overlap between logo, nav links, and logged-in account pill on medium-sized displays (1024px-1366px laptops).
   - Scaled logo to `h-8 sm:h-9 lg:h-10 xl:h-11` and added `max-w-[75px] xl:max-w-[110px] truncate` to user's first name in the profile pill.
 
+## 27. WhatsApp CRM (Chatwoot) & wa.driveitluxury.in Subdomain Architecture
+- **Platform Choice**: Chatwoot (`chatwoot/chatwoot:latest`) deployed as an isolated Docker stack under `/root/chatwoot`.
+- **Subdomain Routing & Wildcard SSL**:
+  - `wa.driveitluxury.in` (and `crm.driveitluxury.in`) configured in `/etc/nginx/sites-available/driveit`.
+  - Reuses the 15-year Cloudflare Wildcard Origin CA SSL certificate (`/etc/ssl/cloudflare/cert.pem`).
+  - Proxies to Puma Rails on `127.0.0.1:3001` with WebSocket support.
+- **Chatwoot Docker Stack**:
+  - `chatwoot-web`: Puma Rails application server running on `127.0.0.1:3001:3000`.
+  - `chatwoot-worker`: Sidekiq background job processor for asynchronous message routing.
+  - `chatwoot-postgres`: Dedicated `pgvector/pgvector:pg16` database container with persistent data at `/root/chatwoot/data/postgres`.
+  - `chatwoot-redis`: Dedicated `redis:alpine` container with persistent data at `/root/chatwoot/data/redis`.
+- **DriveIt Integration Bridge**:
+  - `lib/notifications.ts` (`sendWacrmEvent`) and `app/api/webhooks/wacrm/route.ts` provide authenticated webhook event dispatching for booking holds and confirmations.
+
 
