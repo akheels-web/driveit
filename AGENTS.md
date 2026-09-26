@@ -518,5 +518,15 @@
   - Added `oncePerCustomer` (boolean checkbox, default `true`, indexed) to prevent a customer from reusing multi-use global promo codes across separate reservations.
   - Database schema migrated on VPS Postgres (`first_time_only`, `once_per_customer`, `assigned_customer_id` with foreign key and indexes).
 
+## 30. Production VPS Update & Deployment Standard Operating Procedure (SOP)
+- **Deployment SOP Document**: [`vps_update_guide.md`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/vps_update_guide.md) documents end-to-end standard operating procedures, best practices, and emergency runbooks for deploying code, modifying `.env` secrets, updating Payload schemas, managing Nginx configurations, and performing 10-second rollbacks.
+- **Automated Deployment Script**: [`deploy.sh`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/deploy.sh) (`sudo /root/driveit/deploy.sh`) provides 1-command zero-downtime deployments:
+  1. Checks git hash against `origin/main` and pulls latest commits.
+  2. Runs `docker compose build app` using layer caching.
+  3. Recreates and starts the target container with `--no-deps`.
+  4. Waits 3 seconds and verifies boot health via container logs.
+- **The Golden Rule**: Local machine (`npm run typecheck`) → Git push → Server git pull → Container build & restart. Never edit files directly inside the production container.
+
+
 
 
