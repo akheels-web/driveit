@@ -426,6 +426,28 @@
     - Sets an encrypted, `HttpOnly`, `SameSite=Lax`, `Secure` browser cookie (`authjs.session-token` or `__Secure-authjs.session-token`).
     - **Persistence**: Because the cookie has an explicit 30-day `maxAge`, it is stored in the browser's persistent storage (not a temporary session-only cookie).
     - **Returning Tomorrow**: A user returning tomorrow (or anytime within 30 days) is **instantly recognized without needing to log in again**. The browser presents the cookie, `proxy.ts` verifies the signature, and the dashboard/header loads their account immediately.
-    - **Smart Login Auto-Redirect**: If an already logged-in user visits [`app/(site)/login/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/login/page.tsx), it detects their active session and automatically redirects them to `/dashboard` (unless they just explicitly clicked "Sign Out").
+
+## 26. Production VPS Deployment, Official Domain (driveitluxury.in) & Cloudflare SSL Setup
+- **Server Specifications & Environment**:
+  - Host: `13.140.56.180` (Contabo VPS, Ubuntu 24.04 LTS).
+  - Deploy user: `driveit` (with passwordless sudo configured in `/etc/sudoers.d/driveit` and added to `docker` group).
+  - Codebase Path: `/root/driveit`.
+- **Domain Standardization (`driveitluxury.in`)**:
+  - The official production domain is strictly **`driveitluxury.in`** (not `.com`).
+  - Updated all 33 codebase surfaces: OpenGraph metadata, JSON-LD schemas, XML sitemap, `robots.txt`, RSS feeds, `llms.txt`, transactional email templates, CMS defaults, manuals, and `docker-compose.yml`.
+  - Super Admin seeded: `admin@driveitluxury.in` / `DriveIt@Admin2026!`.
+- **Docker Compose Stack Health**:
+  - All 5 production containers running healthy:
+    1. `driveit-app`: Next.js 16 + Payload 3 standalone container (`127.0.0.1:3000`).
+    2. `driveit-postgres`: Postgres 16 Alpine with 24 schema tables migrated and full seed applied.
+    3. `driveit-redis`: Redis 7 Alpine.
+    4. `driveit-backup`: Automated daily database dump cron.
+    5. `driveit-scheduler`: Automated 15-minute booking hold expiration sweeper.
+- **Nginx Reverse Proxy & Cloudflare Origin SSL**:
+  - Active configuration: `/etc/nginx/sites-available/driveit` (symlinked in `sites-enabled`).
+  - Listens on Port 80 (HTTP) and Port 443 (HTTPS with HTTP/2 and modern ciphers).
+  - SSL Certificate path: `/etc/ssl/cloudflare/cert.pem`
+  - SSL Private Key path: `/etc/ssl/cloudflare/key.pem`
+  - Upstream: Reverse proxies to `http://127.0.0.1:3000` with WebSockets and proxy headers preserved.
 
 
