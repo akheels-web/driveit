@@ -447,7 +447,10 @@
   - Active configuration: `/etc/nginx/sites-available/driveit` (symlinked in `sites-enabled`).
   - Listens on Port 80 (HTTP) and Port 443 (HTTPS with HTTP/2 and modern ciphers).
   - SSL Certificate path: `/etc/ssl/cloudflare/cert.pem`
-  - SSL Private Key path: `/etc/ssl/cloudflare/key.pem`
-  - Upstream: Reverse proxies to `http://127.0.0.1:3000` with WebSockets and proxy headers preserved.
+- **Navigation Header Collision & Responsive Layout Fix**:
+  - Expanded container from `max-w-6xl` to `max-w-[1400px]` with fluid responsive padding (`px-4 sm:px-6 lg:px-8`).
+  - Added strict `whitespace-nowrap` across all navigation links, dropdown items, user pill, and CTA button to eliminate two-line text wrapping (e.g., "Luxury\nChauffeurs").
+  - Moved desktop navigation switch from `md` (768px) to `lg` (1024px) with safe `gap-3 xl:gap-6` and `shrink-0` bounds, preventing overlap between logo, nav links, and logged-in account pill on medium-sized displays (1024px-1366px laptops).
+  - Scaled logo to `h-8 sm:h-9 lg:h-10 xl:h-11` and added `max-w-[75px] xl:max-w-[110px] truncate` to user's first name in the profile pill.
 
 
