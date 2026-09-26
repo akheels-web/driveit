@@ -31,18 +31,30 @@ services:
 
       # --- Required ---
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      CRON_SECRET: ${CRON_SECRET}
       # Postgres is the only supported database (see lib/db.ts). The default
       # points at the `postgres` service below; override DATABASE_URI to use a
       # managed Postgres instead.
       DATABASE_URI: ${DATABASE_URI:-postgres://${POSTGRES_USER:-driveit}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-driveit}}
       AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: ${AUTH_URL:-https://driveitluxury.in}
       NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+
+      # --- Cloudinary CDN ---
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER:-driveit}
 
       # --- Google OAuth (NextAuth) ---
       AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
       AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET}
 
-      # --- Email (Resend) ---
+      # --- Email (Brevo / Resend) ---
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL}
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME}
+      BREVO_MARKETING_LIST_ID: ${BREVO_MARKETING_LIST_ID}
       RESEND_API_KEY: ${RESEND_API_KEY}
       EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
       EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
