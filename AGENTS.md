@@ -426,6 +426,12 @@
     - Sets an encrypted, `HttpOnly`, `SameSite=Lax`, `Secure` browser cookie (`authjs.session-token` or `__Secure-authjs.session-token`).
     - **Persistence**: Because the cookie has an explicit 30-day `maxAge`, it is stored in the browser's persistent storage (not a temporary session-only cookie).
     - **Returning Tomorrow**: A user returning tomorrow (or anytime within 30 days) is **instantly recognized without needing to log in again**. The browser presents the cookie, `proxy.ts` verifies the signature, and the dashboard/header loads their account immediately.
+  - **Tactile Sign Out Button & Zero-Lag Redirect**:
+    - Upgraded [`components/sign-out-button.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/sign-out-button.tsx) from a faint wireframe link to a premium tactile button (`bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/30 text-rose-300`).
+    - Added instant interactive loading state (`<Loader2 className="animate-spin" /> Signing out...`) and hard browser redirect (`window.location.href = '/'`), eliminating Next.js router transition delays and instantly clearing client-side session cache.
+  - **CMS `/admin` Unified Brand Logo**:
+    - Replaced the generic golden initial box ("D") in [`components/cms/Logo.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/cms/Logo.tsx) and [`components/cms/Icon.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/cms/Icon.tsx) with the official metallic gold DriveIt brand logo (`/logo.png`).
+    - Styled in [`app/(payload)/admin.css`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(payload)/admin.css) across both the logged-in sidebar nav and the `/admin/login` executive showcase.
 
 ## 26. Production VPS Deployment, Official Domain (driveitluxury.in) & Cloudflare SSL Setup
 - **Server Specifications & Environment**:
