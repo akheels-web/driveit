@@ -525,7 +525,20 @@
   2. Runs `docker compose build app` using layer caching.
   3. Recreates and starts the target container with `--no-deps`.
   4. Waits 3 seconds and verifies boot health via container logs.
-- **The Golden Rule**: Local machine (`npm run typecheck`) → Git push → Server git pull → Container build & restart. Never edit files directly inside the production container.
+## 31. Scroll-Driven Experiential Showcase & Luxury Editorial Typography (Hype.luxury Evolution)
+- **ScrollStoryShowcase (`components/scroll-story-showcase.tsx`)**:
+  - Implements 4 full-viewport (`100svh`) cinematic scroll panels showcasing DriveIt's core pillars:
+    1. *Royal Chauffeur Service* (Rolls-Royce Phantom Night Black)
+    2. *Exotic Self-Drive Freedom* (Ferrari SF90 Stradale)
+    3. *VIP Airport Tarmac Concierge* (Gulfstream G650 on Tarmac)
+    4. *Royal Wedding Convoys* (Rolls-Royce Wedding Ribbon)
+  - Features scroll-driven blur-to-focus dissolutions (`filter: blur(16px)` -> `blur(0px)`, `opacity: 0 -> 1`), background parallax scale transforms (`scale: 1.12 -> 1.0`), expanding gold accent dividers, and frosted glass capsule buttons with an animated 45-degree light sheen reflection.
+- **Luxury Editorial Typography (Syne + Wide Tracking)**:
+  - Added `Syne` Google Font (`--font-syne`) to [`app/(site)/layout.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/layout.tsx) and `@theme inline` in [`app/globals.css`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/globals.css).
+  - Introduced utility classes `.font-luxury`, `.tracking-luxury` (`0.22em`), and `.tracking-luxury-wide` (`0.38em`) for fashion-grade luxury headings and uppercase badges.
+- **Refined Graphite & Obsidian Surfaces**:
+  - Softened pure OLED black (`#050505`) to a layered luxury graphite obsidian palette (`--luxury-bg: #09090d;`, `--luxury-surface: #111116;`, `--luxury-surface-2: #17171e;`, `--luxury-surface-3: #1e1e27;`), providing physical depth and subtle shadows without pitch-black flatness.
+
 
 
 

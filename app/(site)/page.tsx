@@ -14,6 +14,7 @@ import { SiteFooter } from "@/components/site-footer"
 import Hero from "@/components/hero"
 import { MarqueeStrip } from "@/components/marquee-strip"
 import { Stats } from "@/components/stats"
+import { ScrollStoryShowcase } from "@/components/scroll-story-showcase"
 import { Showcase } from "@/components/showcase"
 import Mision from "@/components/Mision"
 import { TrendingGrid } from "@/components/trending-grid"
@@ -90,6 +91,9 @@ export default async function HomePage() {
           <MarqueeStrip />
           <Stats items={stats} />
         </section>
+
+        {/* Cinematic Scroll Story Showcase — Full-viewport transitions */}
+        <ScrollStoryShowcase />
 
         {/* Booking — Primary CTA */}
         <BookingSection />

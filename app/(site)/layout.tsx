@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Playfair_Display } from "next/font/google"
+import { Playfair_Display, Syne } from "next/font/google"
 import { Suspense } from "react"
 import Sidectabtn from "@/components/Sidectabtn"
 import Script from "next/script"
@@ -13,6 +13,13 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   display: "swap",
   weight: ["400", "500", "600", "700", "800", "900"],
+})
+
+const syne = Syne({
+  subsets: ["latin"],
+  variable: "--font-syne",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 })
 
 import { getSiteSettings, resolveMediaUrl, SITE_DEFAULTS } from "@/lib/cms"
@@ -182,7 +189,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`bg-background text-foreground antialiased font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable}`}
+        className={`bg-background text-foreground antialiased font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable} ${syne.variable}`}
       >
         <SessionProvider>
           <Suspense fallback={null}>
