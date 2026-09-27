@@ -557,6 +557,9 @@
 - **Tranquil Editorial Client Reviews ([`components/Testomonials.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/Testomonials.tsx))**:
   - Replaced the continuous, jittery auto-scrolling marquee with a quiet, editorial 3-card luxury review grid.
   - Features 5-star gold ratings, verified client badges, obsidian glass cards with subtle gold hover borders, and smooth numbered pagination controls (`1 / 2`, `← / →`) that give users complete control over reading reviews.
+- **Cinematic Multi-Image Hero Slideshow ([`components/hero.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/hero.tsx))**:
+  - Implemented automatic cycling between 5 flagship luxury slides (Rolls-Royce Phantom Series II, Ferrari SF90 Stradale, Mercedes-Maybach S680, Gulfstream G650 Tarmac Concierge, and Rolls-Royce Bridal Convoy).
+  - Features smooth 1.4s cross-dissolve with continuous 7s Ken Burns slow-scale zoom (`scale: 1.0` -> `1.06`), dynamic model badge above the headline that synchronizes with the active vehicle, and interactive gold progress indicators (`01 / 05`).
 
 
 
