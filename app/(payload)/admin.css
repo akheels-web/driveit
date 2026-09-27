@@ -735,6 +735,7 @@ td, [class*="table__cell"] {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   font-family: var(--font-syne), var(--font-geist-sans), sans-serif;
+}
 
 .driveit-showcase-brand em {
   color: #d4af37;
