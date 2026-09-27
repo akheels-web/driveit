@@ -427,9 +427,7 @@ td, [class*="table__cell"] {
   font-size: 1.65rem;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: -0.01em;
-  font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
-  line-height: 1.2;
+  font-family: var(--font-syne), var(--font-geist-sans), sans-serif;
 }
 
 .login__form::after {
@@ -736,9 +734,7 @@ td, [class*="table__cell"] {
   font-weight: 800;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #ffffff;
-  font-family: 'Playfair Display', Georgia, serif;
-}
+  font-family: var(--font-syne), var(--font-geist-sans), sans-serif;
 
 .driveit-showcase-brand em {
   color: #d4af37;
@@ -814,9 +810,7 @@ td, [class*="table__cell"] {
   font-size: 2.2rem;
   line-height: 1.2;
   font-weight: 800;
-  color: #ffffff;
-  font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
-  margin: 0;
+  font-family: var(--font-syne), var(--font-geist-sans), sans-serif;
 }
 
 .driveit-gold-gradient-text {

@@ -85,11 +85,11 @@ export default function Hero({
           {subtitle}
         </motion.p>
 
-        {/* Main Heading - Clean word-level entrance for light DOM footprint */}
-        <div className="text-center">
-          <h1 className="font-[family-name:var(--font-playfair)] font-bold leading-[1.1]">
+        {/* Main Heading - Refined, elegant, unobstructed (Matching Screenshot 1) */}
+        <div className="text-center max-w-4xl mx-auto px-4">
+          <h1 className="font-luxury uppercase tracking-[0.2em] font-light leading-[1.25]">
             <motion.span
-              className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-1"
+              className="block text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white mb-2"
               initial={{ opacity: 0, y: 25 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
@@ -98,8 +98,8 @@ export default function Hero({
             </motion.span>
 
             <motion.span
-              className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-shimmer-gold"
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gradient-gold font-normal tracking-[0.25em]"
+              initial={{ opacity: 0, y: 30, scale: 0.98 }}
               animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
               transition={{ duration: 0.7, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -110,26 +110,28 @@ export default function Hero({
 
         {/* Description */}
         <motion.p
-          className="mt-6 max-w-md text-center text-sm md:text-base text-white/70 font-light leading-relaxed"
+          className="mt-5 max-w-xl text-center text-xs sm:text-sm md:text-base text-white/75 font-light tracking-wider leading-relaxed"
           initial={{ opacity: 0, y: 15 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          Experience elegance and innovation with Hyderabad&apos;s finest fleet.
+          Royal Chauffeur · Exotic Self-Drive · VIP Airport Concierge
+          <br className="hidden sm:inline" />
+          <span className="text-white/60"> One elite world. Entirely yours.</span>
         </motion.p>
 
         {/* CTA Button */}
         <motion.button
           onClick={scrollToBooking}
-          className="mt-8 group relative overflow-hidden rounded-full px-8 md:px-10 py-3.5 md:py-4 text-sm md:text-base font-semibold text-black bg-[var(--gold-400)] cursor-pointer"
-          initial={{ opacity: 0, scale: 0.9 }}
+          className="mt-7 group relative overflow-hidden inline-flex items-center gap-2.5 border border-white/25 hover:border-[var(--gold-400)]/60 bg-white/10 hover:bg-[var(--gold-400)]/15 backdrop-blur-md text-white px-8 md:px-10 py-3 rounded-full uppercase tracking-[0.22em] text-xs font-medium cursor-pointer transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={isInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.75, type: "spring", stiffness: 200 }}
-          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.5, delay: 0.75 }}
+          whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
         >
-          <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-700" />
-          <span className="relative z-10">Book Your Ride</span>
+          <span className="absolute inset-0 w-[40%] bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-[-25deg] -translate-x-[150%] group-hover:translate-x-[350%] transition-transform duration-1000 ease-out pointer-events-none" />
+          <span className="relative z-10">Reserve Your Flagship</span>
         </motion.button>
       </div>
 

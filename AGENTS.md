@@ -539,6 +539,25 @@
 - **Refined Graphite & Obsidian Surfaces**:
   - Softened pure OLED black (`#050505`) to a layered luxury graphite obsidian palette (`--luxury-bg: #09090d;`, `--luxury-surface: #111116;`, `--luxury-surface-2: #17171e;`, `--luxury-surface-3: #1e1e27;`), providing physical depth and subtle shadows without pitch-black flatness.
 
+## 32. Minimal Hype-Style Header, Serif Elimination & Tranquil Editorial Reviews
+- **Complete Serif Font Elimination**:
+  - Replaced all traditional serif typography (`Playfair Display`, Georgia, etc.) across the entire codebase with modern high-fashion luxury sans-serif (`Syne` display font and `GeistSans` body).
+  - Aliased `--font-playfair`, `--font-display`, and `--font-luxury` to `var(--font-syne), var(--font-geist-sans), sans-serif;` in [`app/globals.css`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/globals.css) and [`app/(site)/layout.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/layout.tsx), ensuring all 45+ existing headings instantly inherit luxury geometric sans without breaking any layouts.
+  - Updated [`app/(payload)/admin.css`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(payload)/admin.css) font stacks to eliminate serif fallbacks in Payload CMS.
+- **Minimalist Hype-Style Header ([`components/site-header.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/site-header.tsx))**:
+  - **Left**: Minimal 2-line hamburger icon (`=`) with smooth hover expansion and "Menu" label.
+  - **Center**: Centered DRIVEIT brand crest and logo, perfectly balanced on the top bar.
+  - **Right**: Spaced, high-fashion all-caps sans links (`CHAUFFEUR`, `CARS`, `AIRPORT VIP`, `WEDDING`, `PRIVATE JETS`), user session avatar, and understated gold "Book Now" CTA pill.
+  - **Full-Screen Luxury Obsidian Drawer**:
+    - Opens with smooth Motion slide-in animation and locks body scroll.
+    - Features a 2-column editorial layout: 9 indexed services with category numbers (`01 Chauffeured Fleet`, `02 Self-Drive Collection`, `03 All Luxury Cars`, etc.), quick vehicle type filters, and a dedicated 24/7 VIP Concierge card with 1-tap phone (`+91 63000 41186`) and WhatsApp access.
+    - Supports ESC key listener, route change auto-close, and accessible close button.
+- **Landing Page Streamlining ([`app/(site)/page.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/app/(site)/page.tsx))**:
+  - Removed `<ProcessTimeline />` (Work Process) section to keep the landing page clean, focused, and free of bloated generic steps.
+- **Tranquil Editorial Client Reviews ([`components/Testomonials.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/Testomonials.tsx))**:
+  - Replaced the continuous, jittery auto-scrolling marquee with a quiet, editorial 3-card luxury review grid.
+  - Features 5-star gold ratings, verified client badges, obsidian glass cards with subtle gold hover borders, and smooth numbered pagination controls (`1 / 2`, `← / →`) that give users complete control over reading reviews.
+
 
 
 

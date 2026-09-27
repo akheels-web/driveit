@@ -2,18 +2,11 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Playfair_Display, Syne } from "next/font/google"
+import { Syne } from "next/font/google"
 import { Suspense } from "react"
 import Sidectabtn from "@/components/Sidectabtn"
 import Script from "next/script"
 import "../globals.css"
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-  weight: ["400", "500", "600", "700", "800", "900"],
-})
 
 const syne = Syne({
   subsets: ["latin"],
@@ -21,6 +14,9 @@ const syne = Syne({
   display: "swap",
   weight: ["400", "500", "600", "700", "800"],
 })
+
+// Alias playfair variable to Syne to eliminate all serif fonts site-wide
+const playfair = { variable: "--font-playfair font-luxury" }
 
 import { getSiteSettings, resolveMediaUrl, SITE_DEFAULTS } from "@/lib/cms"
 import { SessionProvider } from "@/components/providers/session-provider"

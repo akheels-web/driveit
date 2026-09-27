@@ -68,6 +68,25 @@ const nextConfig = {
       },
     ]
   },
+  async redirects() {
+    return [
+      {
+        source: '/services/luxury-chauffeur',
+        destination: '/services/luxury-car-rental',
+        permanent: true,
+      },
+      {
+        source: '/services/self-drive',
+        destination: '/cars?service=selfdrive',
+        permanent: true,
+      },
+      {
+        source: '/services/wedding-events',
+        destination: '/services/wedding-cars',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 export default withPayload(nextConfig)

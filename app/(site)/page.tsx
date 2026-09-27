@@ -15,16 +15,12 @@ import Hero from "@/components/hero"
 import { MarqueeStrip } from "@/components/marquee-strip"
 import { Stats } from "@/components/stats"
 import { ScrollStoryShowcase } from "@/components/scroll-story-showcase"
-import { Showcase } from "@/components/showcase"
-import Mision from "@/components/Mision"
 import { TrendingGrid } from "@/components/trending-grid"
-import { ProcessTimeline } from "@/components/process-timeline"
 import { BookingSection } from "@/components/booking-section"
 import { FleetCarousel } from "@/components/fleet-carousel"
 import Testomonials from "@/components/Testomonials"
 import { FAQ } from "@/components/faq"
 import { About } from "@/components/about"
-import { TrustStrip } from "@/components/trust-strip"
 
 /** ISR: the homepage is rebuilt at most every 5 minutes, or instantly on a CMS save. */
 export const revalidate = 300
@@ -98,20 +94,9 @@ export default async function HomePage() {
         {/* Booking — Primary CTA */}
         <BookingSection />
         
-        {/* Trust & Promos */}
-        <TrustStrip />
-
-        {/* Showcase & Mission */}
+        {/* Trending Fleets & Experiences */}
         <section id="services" className="content-auto">
-          <Showcase services={services} />
-          <Mision
-            badge={siteSettings.missionBadge}
-            title={siteSettings.missionTitle}
-            text={siteSettings.missionText}
-            imageSrc={missionImage}
-          />
           <TrendingGrid services={services} />
-          <ProcessTimeline />
         </section>
 
         {/* Fleet */}
