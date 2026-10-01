@@ -89,6 +89,18 @@
   - `CLOUDINARY_*`: Automatically routes CMS uploads and fleet media to Cloudinary CDN.
 - **Detailed Step-by-Step Guide**: [`deployment_guide.md`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/deployment_guide.md) contains end-to-end instructions written for junior developers (freshers) on Contabo VPS (6 vCPU / 12 GB RAM) and Cloudflare DNS, including Cloudflare 15-year Origin CA SSL, Zoho Mail (5 free users), Brevo (transactional + marketing), Cloudinary CDN, Google OAuth 2.0, Nginx, smoke tests, and an 8-issue troubleshooting guide.
 - **Admin, Dashboard & WACRM Setup Guide**: Step 7 (Section 9) in [`deployment_guide.md`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/deployment_guide.md#9-step-7-seeding-initial-data--managing-administrators-cms-dashboard--wacrm) details CLI vs UI admin creation (`npm run create:admin`), role permissions (`admin` vs `editor`), customer dashboard vs CMS separation, and WhatsApp CRM (WACRM) agent onboarding & webhook bridge configuration.
+- **Automated VPS Maintenance & 2-Day Log Rotation Policy**:
+  - Global Docker daemon log caps in `/etc/docker/daemon.json` (`max-size: 10m`, `max-file: 2` — max 20MB per container).
+  - Systemd Journal bounded to 50MB and 2-day retention in `/etc/systemd/journald.conf.d/retention.conf` (`SystemMaxUse=50M`, `MaxRetentionSec=2day`).
+  - Nginx logrotate configured to daily with `rotate 2` in `/etc/logrotate.d/nginx`.
+  - Master optimizer cron job `/etc/cron.d/driveit-vps-cleaner` runs `/usr/local/bin/vps-cleaner.sh` every 12 hours (03:00 & 15:00 UTC):
+    1. Vacuums systemd journals (`journalctl --vacuum-time=2d`).
+    2. Truncates oversized/stale Docker container logs in `/var/lib/docker/containers/`.
+    3. Purges compressed rotated logs older than 2 days in `/var/log`.
+    4. Prunes Docker build cache & dangling images older than 48h (`docker builder prune -af --filter "until=48h"`).
+    5. Cleans APT package cache (`apt-get clean`).
+    6. Reclaims dirty kernel pagecache safely (`sync && echo 1 > /proc/sys/vm/drop_caches`).
+
 
 ## 5. Brevo Transactional Email & Notifications Architecture
 - **Client**: [`lib/brevo.ts`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/lib/brevo.ts) communicates via Brevo REST API (`POST https://api.brevo.com/v3/smtp/email`) and contacts API (`POST https://api.brevo.com/v3/contacts`). Fails soft (logs warning, never crashes checkout or background tasks if `BREVO_API_KEY` is unset).

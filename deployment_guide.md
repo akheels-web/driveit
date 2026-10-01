@@ -1169,6 +1169,60 @@ sudo tail -f /var/log/nginx/access.log
 
 ---
 
+### 🧹 Automated VPS Maintenance & 2-Day Log Rotation Policy
+
+To prevent runaway disk consumption and memory bloat, DriveIt enforces a strict **2-day maximum log retention and automated cleanup policy**:
+
+#### 1. Global Docker Logging Daemon (`/etc/docker/daemon.json`)
+All Docker containers are globally restricted to `max-size: 10m` and `max-file: 2` (hard cap of 20MB per container, total).
+```json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "2"
+  }
+}
+```
+
+#### 2. Systemd Journal Retention Limit (`/etc/systemd/journald.conf.d/retention.conf`)
+Host systemd journal logs are capped to 50MB and discarded after 2 days:
+```ini
+[Journal]
+SystemMaxUse=50M
+MaxRetentionSec=2day
+```
+
+#### 3. Nginx Logrotate (`/etc/logrotate.d/nginx`)
+Nginx rotates access and error logs daily, compressing them and retaining only the last 2 days (`rotate 2`).
+
+#### 4. Automated VPS Optimization Cron Job (`/etc/cron.d/driveit-vps-cleaner`)
+Runs automatically every 12 hours (at 03:00 and 15:00 UTC) executing `/usr/local/bin/vps-cleaner.sh`:
+1. **Vacuums Systemd journals** older than 2 days (`journalctl --vacuum-time=2d`).
+2. **Truncates oversized/old Docker logs** in `/var/lib/docker/containers/`.
+3. **Purges compressed rotated logs** older than 2 days in `/var/log`.
+4. **Prunes Docker build caches & dangling images** older than 48 hours (`docker builder prune -af --filter "until=48h"`).
+5. **Cleans APT package cache** (`apt-get clean`).
+6. **Reclaims dirty kernel pagecache** safely (`sync && echo 1 > /proc/sys/vm/drop_caches`).
+
+To run the optimizer manually at any time:
+```bash
+sudo /usr/local/bin/vps-cleaner.sh
+```
+
+---
+
+### ⚡ VPS Caching Architecture Reference
+
+DriveIt utilizes a multi-tier caching strategy for speed and zero memory leaks:
+* **Cloudflare Edge CDN:** Caches static assets (`_next/static`, images, fonts, JS bundles) across Indian edge data centers (`cf-cache-status: HIT`).
+* **Next.js Full Route & Data Cache:** Public catalog and site settings use Incremental Static Regeneration (ISR) with `s-maxage=60, stale-while-revalidate=300`.
+* **Redis In-Memory Store (`port 6379`):** Stores sliding-window rate limit counters and session tokens in RAM.
+* **PostgreSQL Shared Buffers:** Caches database query results and indexes in memory for fast sub-millisecond execution.
+* **Linux Pagecache Dropper:** Hourly system job reclaims inactive filesystem caches to keep available RAM high.
+
+---
+
 ## 18. Step 16: Production Environment Variables Reference
 
 | Environment Variable | Required? | Example | Purpose |
