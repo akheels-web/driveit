@@ -221,6 +221,32 @@ services:
       - driveit-net
 
   # ─────────────────────────────────────────
+  # NocoDB: Open-source Airtable for Staff & Operations
+  # ─────────────────────────────────────────
+  nocodb:
+    image: nocodb/nocodb:latest
+    container_name: driveit-nocodb
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      NC_DB: "pg://postgres:5432?u=${POSTGRES_USER:-driveit}&p=${POSTGRES_PASSWORD:-change-me}&d=nocodb"
+      NC_AUTH_JWT_SECRET: ${AUTH_SECRET}
+      NC_PUBLIC_URL: ${NC_PUBLIC_URL:-https://ops.driveitluxury.in}
+    volumes:
+      - driveit-nocodb-data:/usr/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - driveit-net
+
+  # ─────────────────────────────────────────
   # Nginx: Reverse proxy + SSL termination
   # Uncomment this block after running Certbot
   # ─────────────────────────────────────────
@@ -250,6 +276,8 @@ volumes:
   driveit-media:
     driver: local
   driveit-backups:
+    driver: local
+  driveit-nocodb-data:
     driver: local
 
 # ─────────────────────────────────────────

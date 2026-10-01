@@ -34,7 +34,7 @@ Follow each phase sequentially. Do not skip steps. If you encounter any issue, r
 6. [Step 4: Cloning Code & Configuring Environment (.env)](#6-step-4-cloning-code--configuring-environment-env)
 7. [Step 5: Starting Services & Initial Database Setup](#7-step-5-starting-services--initial-database-setup)
 8. [Step 6: Setting Up Cloudinary (Free Fleet Asset CDN)](#8-step-6-setting-up-cloudinary-free-fleet-asset-cdn)
-9. [Step 7: Seeding Initial Data & Managing Administrators (CMS, Dashboard & WaCRM)](#9-step-7-seeding-initial-data--managing-administrators-cms-dashboard--wacrm)
+9. [Step 7: Seeding Initial Data & Managing Administrators (CMS, Dashboard, WaCRM & NocoDB Staff Operations)](#9-step-7-seeding-initial-data--managing-administrators-cms-dashboard--wacrm)
 10. [Step 8: Configuring Nginx Reverse Proxy](#10-step-8-configuring-nginx-reverse-proxy)
 11. [Step 9: Securing SSL (Cloudflare 15-Year Origin CA vs Let's Encrypt)](#11-step-9-securing-ssl-cloudflare-15-year-origin-ca-vs-lets-encrypt)
 12. [Step 10: Setting Up Zoho Mail (Free 5 Business Inboxes)](#12-step-10-setting-up-zoho-mail-free-5-business-inboxes)
@@ -83,13 +83,18 @@ Before typing commands, let's understand how the DriveIt Luxury system is organi
 │   │  │    Payload CMS 3)       │        │   Port 5432 (Internal)   │  │   │
 │   │  └───────────┬─────────────┘        └─────────────▲────────────┘  │   │
 │   │              │                                    │               │   │
-│   │              ├───────────────────┐                │               │   │
-│   │              ▼                   ▼                │               │   │
-│   │  ┌───────────────────────┐ ┌───────────────┐ ┌────┴────────────┐  │   │
-│   │  │   driveit-redis       │ │ driveit-      │ │ driveit-backup  │  │   │
-│   │  │   (Rate Limiting)     │ │ scheduler     │ │ (Nightly Dumps) │  │   │
-│   │  │   Port 6379           │ │ (Hold Sweeper)│ └─────────────────┘  │   │
-│   │  └───────────────────────┘ └───────────────┘                      │   │
+│   │              ├───────────────────┐                ├────────────┐  │   │
+│   │              ▼                   ▼                ▼            │  │   │
+│   │  ┌───────────────────────┐ ┌───────────────┐ ┌───────────────┐ │  │   │
+│   │  │   driveit-redis       │ │ driveit-      │ │ driveit-nocodb│ │  │   │
+│   │  │   (Rate Limiting)     │ │ scheduler     │ │ (Staff Portal │ │  │   │
+│   │  │   Port 6379           │ │ (Hold Sweeper)│ │  Port 8080)   │ │  │   │
+│   │  └───────────────────────┘ └───────────────┘ └───────▲───────┘ │  │   │
+│   │                                                      │         │  │   │
+│   │                                            ┌─────────┴───────┐ │  │   │
+│   │                                            │ driveit-backup  │◄┘  │   │
+│   │                                            │ (Nightly Dumps) │    │   │
+│   │                                            └─────────────────┘    │   │
 │   └───────────────────────────────────────────────────────────────────┘   │
 │                                                                           │
 │   EXTERNAL SERVICES:                                                      │
@@ -576,6 +581,61 @@ The central concierge WhatsApp number is configured in `globals/SiteSettings.ts`
 
 ---
 
+### 9.4 Staff Operations & Fleet Dispatch Portal (NocoDB)
+
+For day-to-day operations—tracking car availability, checking customer KYC, refunding security deposits, and assigning chauffeurs—DriveIt includes **[NocoDB](https://github.com/nocodb/nocodb)** (open-source smart spreadsheet & Airtable alternative).
+
+#### Why NocoDB over Heavy CRMs?
+* **Zero Data Synchronization:** NocoDB connects **directly to your existing PostgreSQL database** (`driveit`). Every booking made on the website appears instantly in NocoDB in real time with zero API sync overhead.
+* **Lightweight:** Uses only ~200 MB of RAM (versus 2.5 GB for enterprise ERPs).
+* **Isolated Metadata:** NocoDB stores its own views and user profiles in a dedicated `nocodb` database, keeping your production `driveit` tables clean.
+
+#### Step 1: Create Your Super Admin Account
+1. Open your browser and navigate to:
+   👉 `https://ops.yourdomain.com` (or `https://ops.driveitluxury.in`)
+2. Enter your work email and a strong password to create the initial Super Admin account.
+
+#### Step 2: Connect DriveIt PostgreSQL as a Project Base
+1. Click **+ New Base** (or **Create New Base**).
+2. Select **Connect to External Database**.
+3. Choose **PostgreSQL** and enter the internal Docker connection parameters:
+   * **Host:** `postgres` *(the Docker service name on `driveit-net`)*
+   * **Port:** `5432`
+   * **User:** `driveit` *(from your `.env` `POSTGRES_USER`)*
+   * **Password:** *(your `.env` `POSTGRES_PASSWORD`)*
+   * **Database:** `driveit`
+   * **Schema:** `public`
+4. Click **Test Database** → **Connect**.
+5. NocoDB will instantly load all 24 production tables: `bookings`, `cars`, `customers`, `coupons`, `partner_applications`, etc.
+
+#### Step 3: Set Up the 4 Essential Staff Views
+Once connected, create these 4 customized views inside the `bookings` and `customers` tables:
+
+1. **Visual Fleet Booking Calendar (`bookings` table):**
+   * Click **+ View** → Select **Calendar / Timeline View**.
+   * Set **Start Date:** `startDate` and **End Date:** `endDate`.
+   * Title: `vehicleName` (or Car ID) + `customerName`.
+   * *Outcome:* Dispatchers can visually see vehicle booking schedules, overlaps, and return gaps at a glance.
+
+2. **Operations Dispatch Kanban (`bookings` table):**
+   * Click **+ View** → Select **Kanban View**.
+   * Group by field: `status` (`pending`, `confirmed`, `completed`, `cancelled`).
+   * *Outcome:* Front-desk staff can drag and drop bookings across operational stages.
+
+3. **VIP Customer KYC Verification Vault (`customers` table):**
+   * Click **+ View** → Select **Grid View** and name it `Pending KYC Review`.
+   * Add Filter: `kycStatus` equals `pending` (or `unverified`).
+   * Display columns: `name`, `email`, `phone`, `drivingLicenseNumber`, `drivingLicenseFront`, `drivingLicenseBack`, `aadhaarLast4`, `idProofDocument`.
+   * *Outcome:* Staff can preview uploaded Cloudinary license/ID proofs and change `kycStatus` to `verified` with 1 click.
+
+4. **Security Deposit Refund Tracker (`bookings` table):**
+   * Click **+ View** → Select **Grid View** and name it `Deposit Refunds Pending`.
+   * Add Filter: `securityDepositStatus` equals `held` AND `status` equals `completed`.
+   * Display columns: `bookingReference`, `customerName`, `securityDepositAmount`, `securityDepositStatus`, `depositRefundUtr`, `depositRefundedAt`.
+   * *Outcome:* Accountants can inspect returned cars, enter bank UTR numbers, and mark deposits `refunded`.
+
+---
+
 ## 10. Step 8: Configuring Nginx Reverse Proxy
 
 Nginx listens on ports 80 and 443, handles SSL termination, and proxies traffic to the Next.js app on `127.0.0.1:3000`.
@@ -688,6 +748,41 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
         proxy_read_timeout 180s;
+    }
+}
+
+# 5. Dedicated Subdomain: ops.yourdomain.com (Staff Operations Portal)
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name ops.yourdomain.com;
+
+    # Reuses the exact same 15-year Cloudflare Wildcard Origin CA certificate!
+    ssl_certificate     /etc/ssl/cloudflare/cert.pem;
+    ssl_certificate_key /etc/ssl/cloudflare/key.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    client_max_body_size 50M;
+
+    location / {
+        # Proxies directly to the driveit-nocodb container on port 8080
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 300s;
     }
 }
 ```
@@ -962,6 +1057,7 @@ Here is the single reference table of all DNS records to enter into your Cloudfl
 | **A** | `@` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | Main website address (driveitluxury.in) |
 | **A** | `www` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | WWW subdomain |
 | **A** | `crm` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | WhatsApp CRM / Twenty CRM Concierge Portal |
+| **A** | `ops` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | Staff Operations, Fleet Dispatch & KYC Vault (`ops.driveitluxury.in`) |
 | **A** | `admin` | `YOUR_CONTABO_VPS_IP` | - | 🟠 Proxied | Optional Dedicated Admin Portal Subdomain |
 | **MX** | `@` | `mx.zoho.in` (or `mx.zoho.com`) | `10` | ⚪ DNS Only | Zoho Mail Primary Server |
 | **MX** | `@` | `mx2.zoho.in` (or `mx2.zoho.com`) | `20` | ⚪ DNS Only | Zoho Mail Backup 1 |

@@ -66,6 +66,20 @@
     3. **Cost Architecture**: Uses Google Maps Platform's recurring **$200 USD (~₹16,500 INR) free monthly credit**, providing ~11,700 search sessions and ~28,500 dynamic map loads each month at zero cost ($0). A budget alert and quota limit in Google Cloud Console ensures zero unexpected charges.
     4. **Integration Targets**: Replace preset zones in [`components/booking-section.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/booking-section.tsx), [`components/car-booking-modal.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/car-booking-modal.tsx), and upgrade [`components/location-search-input.tsx`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/components/location-search-input.tsx).
 
+- **NocoDB Staff Operations, Dispatch Calendar & KYC Vault**:
+  - **Decision**: Deployed NocoDB as the dedicated open-source operations backoffice for staff, eliminating the need for heavy ERPs (Ever Gauzy) or dual-database sync scripts.
+  - **Architecture**:
+    - Container `driveit-nocodb` (`nocodb/nocodb:latest`) running on internal port 8080 (`127.0.0.1:8080:8080`), footprint ~200 MB RAM.
+    - Metadata isolated in separate Postgres database `nocodb` (`NC_DB=pg://postgres:5432?...&d=nocodb`).
+    - Connects directly to production `driveit` database as an external PostgreSQL data source on the `driveit-net` network (`host: postgres, port: 5432, db: driveit`).
+    - Nginx reverse-proxies `ops.driveitluxury.in` with Cloudflare Wildcard Origin CA SSL (`*.driveitluxury.in`).
+  - **Core Staff Workflows**:
+    1. **Visual Fleet Booking Calendar**: Timeline view of all bookings to spot overlapping reservations and vehicle return turnaround times.
+    2. **Operations Dispatch Kanban**: Real-time board tracking booking statuses (`hold` -> `confirmed` -> `driver_assigned` -> `completed`).
+    3. **Customer KYC Verification**: Grid view of pending customers with direct Cloudinary DL/Aadhaar document preview and 1-tap verification.
+    4. **Security Deposit Refund Tracker**: Dedicated view for completed bookings to track held deposits, enter bank UTR numbers, and log refund timestamps.
+
+
 ## 4. Deployment Architecture & Fresher Runbook
 - **Unified Full-Stack Deployment**: The app runs as a single unified Next.js 16 + Payload 3 standalone container via [`docker-compose.yml`](file:///c:/Users/Akheel/Downloads/driveitfinals-main%202/driveitfinals-main/docker-compose.yml).
   - Do NOT attempt a split Vercel frontend / VPS backend rewrite proxy: server components in `app/(site)/dashboard/*` rely on Payload's Local API (`getPayload()`), which requires direct database access and shared secrets (`PAYLOAD_SECRET`, `DATABASE_URI`).
