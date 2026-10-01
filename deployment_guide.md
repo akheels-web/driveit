@@ -606,6 +606,7 @@ For day-to-day operations—tracking car availability, checking customer KYC, re
    * **Database:** `driveit`
    * **Schema:** `public`
 4. Click **Test Database** → **Connect**.
+   *(Note: The environment variable `NC_ALLOW_LOCAL_EXTERNAL_DBS=true` is enabled in `docker-compose.yml` to permit NocoDB to communicate directly with internal Docker service hostnames like `postgres`).*
 5. NocoDB will instantly load all 24 production tables: `bookings`, `cars`, `customers`, `coupons`, `partner_applications`, etc.
 
 #### Step 3: Set Up the 4 Essential Staff Views

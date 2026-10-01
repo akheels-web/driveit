@@ -233,6 +233,7 @@ services:
       NC_DB: "pg://postgres:5432?u=${POSTGRES_USER:-driveit}&p=${POSTGRES_PASSWORD:-change-me}&d=nocodb"
       NC_AUTH_JWT_SECRET: ${AUTH_SECRET}
       NC_PUBLIC_URL: ${NC_PUBLIC_URL:-https://ops.driveitluxury.in}
+      NC_ALLOW_LOCAL_EXTERNAL_DBS: "true"
     volumes:
       - driveit-nocodb-data:/usr/app/data
     depends_on:
