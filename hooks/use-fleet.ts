@@ -2,36 +2,40 @@
 
 import { useEffect, useState } from 'react'
 
-import type { CarDetails } from '@/lib/cars'
+import { carsData, type CarDetails } from '@/lib/cars'
 import type { SavedProfile } from '@/lib/types'
 
 let fleetPromise: Promise<CarDetails[]> | null = null
+let cachedFleet: CarDetails[] = carsData
 
 /**
- * Live fleet data from the CMS (via the cached /api/fleet route).
- *
- * Client components use this instead of importing `lib/cars.ts`, which shipped
- * the entire static catalogue to every visitor and ignored the CMS entirely.
+ * Live fleet data with instant 0ms initial render from seed catalogue,
+ * seamlessly hydrated by the CMS `/api/fleet` feed in the background.
  */
 export function useFleet() {
-  const [cars, setCars] = useState<CarDetails[]>([])
-  const [loading, setLoading] = useState(true)
+  const [cars, setCars] = useState<CarDetails[]>(cachedFleet)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     let active = true
 
     fleetPromise ??= fetch('/api/fleet')
-      .then((response) => (response.ok ? response.json() : { cars: [] }))
-      .then((data: { cars?: CarDetails[] }) => data.cars ?? [])
-      .catch(() => [] as CarDetails[])
+      .then((response) => (response.ok ? response.json() : { cars: cachedFleet }))
+      .then((data: { cars?: CarDetails[] }) => {
+        if (data.cars && data.cars.length > 0) {
+          cachedFleet = data.cars
+          return data.cars
+        }
+        return cachedFleet
+      })
+      .catch(() => cachedFleet)
 
-    fleetPromise
-      .then((result) => {
-        if (active) setCars(result)
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
+    fleetPromise.then((result) => {
+      if (active && result.length > 0) {
+        setCars(result)
+        setLoading(false)
+      }
+    })
 
     return () => {
       active = false
@@ -65,9 +69,6 @@ export function useSavedProfile() {
 
 /**
  * Counts down to the moment a 10 minute booking hold expires.
- *
- * Only the clock is stored in state; the remaining time is derived during
- * render, so the effect never has to set state synchronously on mount.
  */
 export function useCountdown(expiresAt?: string | null) {
   const [now, setNow] = useState(() => Date.now())

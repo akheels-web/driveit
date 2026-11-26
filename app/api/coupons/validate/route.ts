@@ -3,6 +3,8 @@ import { getPayload } from 'payload'
 import { z } from 'zod'
 
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
+import { validateLocalCoupon } from '@/lib/local-booking-fallback'
 import { validateCoupon } from '@/lib/coupons'
 import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
 
@@ -33,6 +35,21 @@ export async function POST(request: Request) {
   const parsed = Schema.safeParse(rawBody)
   if (!parsed.success) {
     return NextResponse.json({ valid: false, discount: 0, message: 'Enter a promo code.' }, { status: 400 })
+  }
+
+  if (!(await isPostgresReachable())) {
+    const localRes = validateLocalCoupon(parsed.data.code, parsed.data.subtotal ?? 0)
+    if (!localRes.valid) {
+      return NextResponse.json({ valid: false, discount: 0, message: localRes.message })
+    }
+    return NextResponse.json({
+      valid: true,
+      code: localRes.code,
+      discount: localRes.discount,
+      discountType: 'percentage',
+      discountValue: localRes.code === 'WELCOME10' ? 10 : 15,
+      message: 'Promo code applied.',
+    })
   }
 
   const payload = await getPayload({ config })

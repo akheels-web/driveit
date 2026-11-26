@@ -62,7 +62,7 @@ export function PageProgressBar() {
   useEffect(() => {
     if (!visible) return
 
-    setProgress(100)
+    queueMicrotask(() => setProgress(100))
     const timeout = setTimeout(() => {
       setVisible(false)
       setProgress(0)

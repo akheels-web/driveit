@@ -2,30 +2,73 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { CalendarDays, ShieldCheck, Info, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import {
+  ShieldCheck,
+  ArrowRight,
+  Crown,
+  Users,
+  Sparkles,
+  UserCheck,
+  Camera,
+  Gift,
+  Lock,
+  ChevronDown,
+  MapPin,
+} from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
 import type { CarDetails } from '@/lib/cars'
 import { LuxuryDatePicker } from '@/components/luxury-date-picker'
+import { LuxurySelect } from '@/components/luxury-select'
+
+const todayStr = () => new Date().toISOString().split('T')[0]
+
+const HUBS = [
+  'Banjara Hills',
+  'Jubilee Hills',
+  'RGIA Airport (Shamshabad)',
+  'HITEC City',
+  'Financial District',
+  'Taj Falaknuma Palace',
+]
+
+const ADDON_PRICES = {
+  child_seat: 1500,
+  extra_driver: 1000,
+  photographer: 5000,
+  decoration: 2500,
+}
+
+const BUNDLES = [
+  {
+    id: 'wedding_bundle',
+    label: 'Royal Bridal Package',
+    price: 15000,
+    Icon: Crown,
+  },
+  {
+    id: 'family_trip',
+    label: 'Family Concierge Suite',
+    price: 3000,
+    Icon: Users,
+  },
+  {
+    id: 'vip_arrival',
+    label: 'Tarmac VIP Protocol',
+    price: 10000,
+    Icon: Sparkles,
+  },
+]
 
 export function CarBookingWidget({ car }: { car: CarDetails }) {
   const router = useRouter()
-  const [pickupDate, setPickupDate] = useState('')
-  const [returnDate, setReturnDate] = useState('')
-  const [service, setService] = useState('chauffeur') // chauffeur or selfdrive
+  const [pickupDate, setPickupDate] = useState(todayStr)
+  const [returnDate, setReturnDate] = useState(todayStr)
+  const [pickupHub, setPickupHub] = useState(HUBS[0])
+  const [service, setService] = useState<'chauffeur' | 'selfdrive'>('chauffeur')
   const [addons, setAddons] = useState<string[]>([])
   const [activeBundle, setActiveBundle] = useState<string | null>(null)
-
-  const ADDON_PRICES = {
-    child_seat: 1500,
-    extra_driver: 1000,
-    photographer: 5000,
-    decoration: 2500,
-  }
-
-  const BUNDLES = [
-    { id: 'wedding_bundle', label: 'Wedding Package', price: 15000, desc: 'Decoration + Photographer + 50km Extra', icon: '💍' },
-    { id: 'family_trip', label: 'Family Trip', price: 3000, desc: 'Child Seat + Extra Driver', icon: '👨‍👩‍👧‍👦' },
-    { id: 'vip_arrival', label: 'VIP Arrival', price: 10000, desc: 'Premium Decor + Champagne + Meet & Greet', icon: '🍾' },
-  ]
+  const [showAddons, setShowAddons] = useState(false)
 
   const isSelfDrive = service === 'selfdrive'
   const selfDriveRate = car.selfDrivePrice ?? Math.round(car.price * 0.85)
@@ -40,246 +83,288 @@ export function CarBookingWidget({ car }: { car: CarDetails }) {
       if (diff > 0) days = diff
     }
     const base = effectiveDailyRate * days
-    
-    // Addons calculation
+
     const addonsTotal = addons.reduce((sum, addonId) => {
       return sum + (ADDON_PRICES[addonId as keyof typeof ADDON_PRICES] || 0)
     }, 0)
 
-    const bundleTotal = activeBundle ? (BUNDLES.find(b => b.id === activeBundle)?.price || 0) : 0
+    const bundleTotal = activeBundle ? BUNDLES.find((b) => b.id === activeBundle)?.price || 0 : 0
     const totalAddonsAndBundles = addonsTotal + bundleTotal
 
-    const gst = 0
-    return { days, base, addonsTotal: totalAddonsAndBundles, gst, total: base + totalAddonsAndBundles + gst }
+    return {
+      days,
+      base,
+      addonsTotal: totalAddonsAndBundles,
+      total: base + totalAddonsAndBundles,
+    }
   }, [effectiveDailyRate, pickupDate, returnDate, addons, activeBundle])
 
+  const handlePickupChange = (val: string) => {
+    const nextPickup = val || todayStr()
+    setPickupDate(nextPickup)
+    if (!returnDate || returnDate < nextPickup) {
+      setReturnDate(nextPickup)
+    }
+  }
+
+  const handleReturnChange = (val: string) => {
+    const nextReturn = val && val >= pickupDate ? val : pickupDate
+    setReturnDate(nextReturn)
+  }
+
   const handleCheckout = () => {
-    if (!pickupDate) return
+    const resolvedPickup = pickupDate || todayStr()
+    const resolvedReturn = returnDate && returnDate >= resolvedPickup ? returnDate : resolvedPickup
     const q = new URLSearchParams({
-      carId: car.id,
-      pickupDate,
-      returnDate: returnDate || pickupDate,
+      carId: car.slug || car.id,
+      pickup: pickupHub,
+      pickupDate: resolvedPickup,
+      returnDate: resolvedReturn,
       service,
       days: estimate.days.toString(),
       addons: [...addons, activeBundle].filter(Boolean).join(','),
-      total: estimate.total.toString()
+      total: estimate.total.toString(),
     })
     router.push(`/checkout?${q.toString()}`)
   }
 
+  // Contact-Only Charter Desk for Luxury Coaches / Buses
+  if (car.category === 'bus') {
+    const waText = encodeURIComponent(
+      `Hello DRIVEIT Charter Desk, I would like a private charter quote for the ${car.name}.`,
+    )
+    return (
+      <div className="bg-[#09090d] rounded-2xl border border-[#c9a96e]/35 p-6 space-y-5">
+        <div className="border-b border-white/10 pb-4">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#c9a96e]/12 border border-[#c9a96e]/30 text-[10px] font-mono uppercase tracking-[0.22em] text-[#c9a96e] mb-2">
+            <Lock className="w-3 h-3" />
+            Contact Only
+          </span>
+          <h3 className="text-xl font-medium text-white">Private Charter Desk</h3>
+        </div>
+
+        <div className="space-y-2.5">
+          <Link
+            href={`/contact?service=${encodeURIComponent(`Luxury Coach Charter: ${car.name}`)}`}
+            className="w-full py-4 rounded-xl bg-[#c9a96e] hover:bg-[#dfc288] text-black font-bold text-xs font-mono uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition"
+          >
+            <span>Inquire Privately</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <a
+            href={`https://wa.me/916300041186?text=${waText}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3.5 rounded-xl border border-white/15 bg-white/[0.03] hover:border-[#25D366]/50 text-white text-xs font-mono uppercase tracking-[0.18em] flex items-center justify-center gap-2 transition"
+          >
+            <FaWhatsapp className="w-4 h-4 text-[#25D366]" />
+            <span>WhatsApp Desk</span>
+          </a>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="bg-[#111] rounded-2xl border border-[var(--gold-400)]/30 p-6 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
-      <div className="flex items-end gap-2 mb-6 border-b border-white/10 pb-4">
-         <span className="text-3xl font-bold text-[var(--gold-400)]">₹{effectiveDailyRate.toLocaleString('en-IN')}</span>
-         <span className="text-sm text-white/40 mb-1">/ day ({isSelfDrive ? 'Without Driver' : 'With Chauffeur'})</span>
+    <div className="bg-[#09090d] rounded-2xl border border-white/12 p-6 space-y-5">
+      {/* Top Rate Display */}
+      <div className="flex items-end justify-between border-b border-white/10 pb-4">
+        <div>
+          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#c9a96e] block mb-1">
+            {isSelfDrive ? 'Self-Drive Rate' : 'Chauffeur Rate'}
+          </span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-3xl font-bold text-white font-mono">
+              ₹{effectiveDailyRate.toLocaleString('en-IN')}
+            </span>
+            <span className="text-xs font-mono text-white/45">/ day</span>
+          </div>
+        </div>
+        <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/12 text-emerald-300 border border-emerald-500/25">
+          {isSelfDrive ? 'Doorstep Delivery' : '₹0 Deposit'}
+        </span>
       </div>
 
-      <div className="space-y-5">
-         <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-xs text-white/40 uppercase tracking-wider">Service Type</label>
-              <span className="text-[11px] text-[var(--gold-400)] font-medium">
-                ₹{effectiveDailyRate.toLocaleString('en-IN')}/day
-              </span>
-            </div>
-            <div className="flex bg-black/50 p-1 rounded-xl border border-white/5">
-               <button 
-                 onClick={() => setService('chauffeur')}
-                 disabled={!car.services.includes('chauffeur')}
-                 className={`flex-1 py-2 text-xs md:text-sm font-medium rounded-lg transition-all ${service === 'chauffeur' ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/70'} disabled:opacity-20`}
-               >
-                  Chauffeur (₹{car.price.toLocaleString('en-IN')}/d)
-               </button>
-               <button 
-                 onClick={() => setService('selfdrive')}
-                 disabled={!car.services.includes('selfdrive')}
-                 className={`flex-1 py-2 text-xs md:text-sm font-medium rounded-lg transition-all ${service === 'selfdrive' ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/70'} disabled:opacity-20`}
-               >
-                  Self Drive (₹{selfDriveRate.toLocaleString('en-IN')}/d)
-               </button>
-            </div>
-         </div>
+      {/* Mode Switch */}
+      <div className="grid grid-cols-2 gap-1.5 bg-black p-1 rounded-xl border border-white/10">
+        <button
+          type="button"
+          onClick={() => setService('chauffeur')}
+          className={`py-2.5 px-3 text-xs font-mono uppercase tracking-wider rounded-lg transition cursor-pointer ${
+            service === 'chauffeur'
+              ? 'bg-[#c9a96e] text-black font-bold'
+              : 'text-white/55 hover:text-white'
+          }`}
+        >
+          Chauffeur
+        </button>
+        <button
+          type="button"
+          onClick={() => setService('selfdrive')}
+          className={`py-2.5 px-3 text-xs font-mono uppercase tracking-wider rounded-lg transition cursor-pointer ${
+            service === 'selfdrive'
+              ? 'bg-[#c9a96e] text-black font-bold'
+              : 'text-white/55 hover:text-white'
+          }`}
+        >
+          Self-Drive
+        </button>
+      </div>
 
-         <div className="grid grid-cols-2 gap-3">
-            <div>
-               <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Pickup</label>
-               <LuxuryDatePicker
-                 value={pickupDate}
-                 onChange={setPickupDate}
-                 min={new Date().toISOString().split("T")[0]}
-                 placeholder="Pickup date"
-                 triggerClassName="bg-white/5 border-white/10"
-               />
-            </div>
-            <div>
-               <label className="block text-xs text-white/40 uppercase tracking-wider mb-2">Return</label>
-               <LuxuryDatePicker
-                 value={returnDate}
-                 onChange={setReturnDate}
-                 min={pickupDate || new Date().toISOString().split("T")[0]}
-                 placeholder="Return date"
-                 triggerClassName="bg-white/5 border-white/10"
-               />
-            </div>
-         </div>
+      {/* Pickup Location */}
+      <div>
+        <label className="block text-[10px] font-mono text-white/45 uppercase tracking-[0.2em] mb-1.5">
+          Handover Hub
+        </label>
+        <LuxurySelect
+          value={pickupHub}
+          onChange={setPickupHub}
+          options={HUBS}
+          size="sm"
+          icon={<MapPin className="w-3.5 h-3.5 text-[#c9a96e]" />}
+          triggerClassName="bg-black border-white/12 text-xs py-2.5 min-h-[42px]"
+          ariaLabel="Select handover location"
+        />
+      </div>
 
-         {/* Curated Bundles */}
-         <div className="pt-2">
-            <label className="block text-xs text-white/40 uppercase tracking-wider mb-3">Curated Packages</label>
-            <div className="space-y-2 mb-4">
-              {BUNDLES.map((bundle) => (
-                <label 
-                  key={bundle.id} 
-                  className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                    activeBundle === bundle.id ? 'bg-[var(--gold-400)]/10 border-[var(--gold-400)]' : 'bg-white/5 border-white/5 hover:border-white/20'
+      {/* Dates */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-[10px] font-mono text-white/45 uppercase tracking-[0.2em] mb-1.5">
+            Pickup
+          </label>
+          <LuxuryDatePicker
+            value={pickupDate}
+            onChange={handlePickupChange}
+            min={todayStr()}
+            placeholder="Pickup"
+            triggerClassName="bg-black border-white/12"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-mono text-white/45 uppercase tracking-[0.2em] mb-1.5">
+            Return
+          </label>
+          <LuxuryDatePicker
+            value={returnDate}
+            onChange={handleReturnChange}
+            min={pickupDate || todayStr()}
+            placeholder="Return"
+            triggerClassName="bg-black border-white/12"
+          />
+        </div>
+      </div>
+
+      {/* Collapsible Concierge Add-ons */}
+      <div className="border-t border-white/8 pt-3">
+        <button
+          type="button"
+          onClick={() => setShowAddons(!showAddons)}
+          className="w-full flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.18em] text-white/60 hover:text-white cursor-pointer py-1"
+        >
+          <span>+ Concierge Packages & Add-ons</span>
+          <ChevronDown
+            className={`w-4 h-4 text-[#c9a96e] transition-transform ${showAddons ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        {showAddons && (
+          <div className="mt-3 space-y-2">
+            {BUNDLES.map((bundle) => {
+              const Icon = bundle.Icon
+              const isSelected = activeBundle === bundle.id
+              return (
+                <button
+                  type="button"
+                  key={bundle.id}
+                  onClick={() => setActiveBundle(isSelected ? null : bundle.id)}
+                  className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-left cursor-pointer transition ${
+                    isSelected
+                      ? 'bg-[#c9a96e]/15 border-[#c9a96e]'
+                      : 'bg-black/40 border-white/8 hover:border-white/20'
                   }`}
                 >
-                  <div className="flex gap-3 items-center">
-                    <span className="text-2xl">{bundle.icon}</span>
-                    <div>
-                      <p className="text-sm font-semibold text-white/90">{bundle.label}</p>
-                      <p className="text-[10px] text-white/50">{bundle.desc}</p>
-                    </div>
-                  </div>
-                  <div className="text-right flex flex-col items-end">
-                     <p className="text-xs text-[var(--gold-400)] font-medium mb-1">+₹{bundle.price.toLocaleString()}</p>
-                     <input 
-                        type="radio" 
-                        name="bundle"
-                        className="accent-[var(--gold-400)] w-4 h-4 cursor-pointer"
-                        checked={activeBundle === bundle.id}
-                        onChange={(e) => setActiveBundle(e.target.checked ? bundle.id : null)}
-                        onClick={(e) => {
-                           // Allow unchecking a radio button
-                           if (activeBundle === bundle.id) {
-                              e.preventDefault()
-                              setActiveBundle(null)
-                           }
-                        }}
-                     />
-                  </div>
-                </label>
-              ))}
-            </div>
+                  <span className="flex items-center gap-2 text-xs text-white">
+                    <Icon className="w-3.5 h-3.5 text-[#c9a96e]" />
+                    {bundle.label}
+                  </span>
+                  <span className="text-[11px] font-mono text-[#c9a96e]">
+                    +₹{bundle.price.toLocaleString('en-IN')}
+                  </span>
+                </button>
+              )
+            })}
 
-            <label className="block text-xs text-white/40 uppercase tracking-wider mb-3">A-la-carte Add-ons</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5 pt-1">
               {[
-                { id: 'child_seat', label: 'Child Seat', price: ADDON_PRICES.child_seat, icon: '🍼' },
-                { id: 'extra_driver', label: 'Extra Driver', price: ADDON_PRICES.extra_driver, icon: '👔' },
-                { id: 'photographer', label: 'Photographer', price: ADDON_PRICES.photographer, icon: '📸' },
-                { id: 'decoration', label: 'Decoration', price: ADDON_PRICES.decoration, icon: '🎀' },
-              ].map((addon) => (
-                <label 
-                  key={addon.id} 
-                  className={`flex flex-col p-3 rounded-xl border cursor-pointer transition-all ${
-                    addons.includes(addon.id) ? 'bg-[var(--gold-400)]/10 border-[var(--gold-400)]' : 'bg-white/5 border-white/5 hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <span className="text-lg">{addon.icon}</span>
-                    <input 
-                      type="checkbox" 
-                      className="accent-[var(--gold-400)] w-4 h-4"
-                      checked={addons.includes(addon.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) setAddons(prev => [...prev, addon.id])
-                        else setAddons(prev => prev.filter(id => id !== addon.id))
-                      }}
-                    />
-                  </div>
-                  <div className="mt-2">
-                    <p className="text-xs font-semibold text-white/90">{addon.label}</p>
-                    <p className="text-[10px] text-[var(--gold-400)] mt-0.5">+₹{addon.price.toLocaleString()}</p>
-                  </div>
-                </label>
-              ))}
+                { id: 'child_seat', label: 'Child Seat', price: ADDON_PRICES.child_seat, Icon: ShieldCheck },
+                { id: 'extra_driver', label: 'Relief Driver', price: ADDON_PRICES.extra_driver, Icon: UserCheck },
+                { id: 'photographer', label: 'Photographer', price: ADDON_PRICES.photographer, Icon: Camera },
+                { id: 'decoration', label: 'Floral Trim', price: ADDON_PRICES.decoration, Icon: Gift },
+              ].map((addon) => {
+                const checked = addons.includes(addon.id)
+                return (
+                  <button
+                    type="button"
+                    key={addon.id}
+                    onClick={() =>
+                      setAddons((prev) =>
+                        checked ? prev.filter((id) => id !== addon.id) : [...prev, addon.id],
+                      )
+                    }
+                    className={`p-2 rounded-lg border text-left cursor-pointer text-[11px] flex items-center justify-between transition ${
+                      checked
+                        ? 'bg-[#c9a96e]/15 border-[#c9a96e] text-white'
+                        : 'bg-black/40 border-white/8 text-white/65'
+                    }`}
+                  >
+                    <span className="truncate">{addon.label}</span>
+                    <span className="font-mono text-[#c9a96e] ml-1">
+                      +₹{(addon.price / 1000).toFixed(1)}k
+                    </span>
+                  </button>
+                )
+              })}
             </div>
-         </div>
-
-         {(!pickupDate || !returnDate) ? (
-            <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-500/80 p-3 rounded-xl text-xs mt-2 flex gap-2">
-               <Info className="w-4 h-4 shrink-0 mt-0.5" />
-               <p>Please select your <strong>Pickup</strong> and <strong>Return</strong> dates to view accurate pricing and proceed to checkout.</p>
-            </div>
-         ) : (
-            <div className="bg-black/30 rounded-xl p-4 border border-white/5 space-y-3 mt-2 text-sm">
-               <div className="flex justify-between text-white/60">
-                  <span>₹{car.price.toLocaleString()} x {estimate.days} days</span>
-                  <span>₹{estimate.base.toLocaleString()}</span>
-               </div>
-               {estimate.addonsTotal > 0 && (
-                 <div className="flex justify-between text-white/60">
-                    <span>Premium Add-ons</span>
-                    <span>+₹{estimate.addonsTotal.toLocaleString()}</span>
-                 </div>
-               )}
-               <div className="pt-3 border-t border-white/10 flex justify-between font-bold text-white text-base">
-                  <span>Total Estimate</span>
-                  <span>₹{estimate.total.toLocaleString()}</span>
-               </div>
-            </div>
-         )}
-
-         {(!pickupDate || !returnDate) && (
-           <p className="text-[11px] text-white/40 text-center py-1">
-             Please select pickup and return dates to unlock checkout
-           </p>
-         )}
-
-         <button 
-           onClick={handleCheckout}
-           disabled={!pickupDate || !returnDate}
-           className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-           style={{
-             background: (pickupDate && returnDate) ? 'linear-gradient(135deg, var(--gold-300), var(--gold-400), var(--gold-500))' : 'rgba(255,255,255,0.05)',
-             color: (pickupDate && returnDate) ? 'black' : 'rgba(255,255,255,0.3)',
-             boxShadow: (pickupDate && returnDate) ? '0 4px 20px rgba(212,175,55,0.3)' : 'none',
-           }}
-         >
-            Proceed to Checkout <ArrowRight className="w-5 h-5" />
-         </button>
+          </div>
+        )}
       </div>
 
-      <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
-         <div className="flex gap-3">
-            <ShieldCheck className="w-5 h-5 text-green-400 shrink-0" />
-            <div>
-               <h4 className="text-xs font-semibold text-white/90">Free Cancellation</h4>
-               <p className="text-[10px] text-white/40 mt-1">{car.cancellationPolicy}</p>
-            </div>
-         </div>
-         <div className="flex gap-3">
-            <ShieldCheck className="w-5 h-5 text-[var(--gold-400)] shrink-0" />
-            <div>
-               <h4 className="text-xs font-semibold text-white/90">
-                 {service === 'selfdrive' ? 'Refundable Security Deposit' : 'Zero Deposit Chauffeur'}
-               </h4>
-               <p className="text-[10px] text-white/40 mt-1">
-                 {service === 'selfdrive'
-                   ? `${car.securityDeposit || '₹25,000'} refundable deposit released within 24–48h via UPI post inspection.`
-                   : 'Zero security deposit required for our chauffeur-driven luxury trips.'}
-               </p>
-            </div>
-         </div>
-         <div className="flex gap-3">
-            <Info className="w-5 h-5 text-white/40 shrink-0" />
-            <div>
-               <h4 className="text-xs font-semibold text-white/90">Fuel & Electronic Tolls</h4>
-               <p className="text-[10px] text-white/40 mt-1">
-                 {service === 'selfdrive'
-                   ? 'Full-to-Full fuel policy. Equipped with electronic FASTag for automatic highway & airport toll lanes.'
-                   : 'Chauffeur trips include fuel and chauffeur allowances; tolls & parking billed at actuals.'}
-               </p>
-            </div>
-         </div>
-         <div className="flex gap-3">
-            <Info className="w-5 h-5 text-white/40 shrink-0" />
-            <div>
-               <h4 className="text-xs font-semibold text-white/90">Kilometer Allowance</h4>
-               <p className="text-[10px] text-white/40 mt-1">{car.kmAllowance}</p>
-            </div>
-         </div>
+      {/* Total Bar */}
+      <div className="bg-black rounded-xl p-4 border border-white/10 flex items-center justify-between">
+        <div>
+          <span className="text-[10px] font-mono uppercase tracking-wider text-white/45 block">
+            Total ({estimate.days} {estimate.days === 1 ? 'Day' : 'Days'})
+          </span>
+          <span className="text-2xl font-bold font-mono text-[#c9a96e]">
+            ₹{estimate.total.toLocaleString('en-IN')}
+          </span>
+        </div>
+        <span className="text-[10px] font-mono text-white/45">Excl. GST</span>
+      </div>
+
+      {/* Primary Book CTA + WhatsApp */}
+      <div className="space-y-2.5">
+        <button
+          type="button"
+          onClick={handleCheckout}
+          className="w-full py-4 rounded-xl bg-[#c9a96e] hover:bg-[#dfc288] text-black font-bold text-xs font-mono uppercase tracking-[0.22em] transition cursor-pointer flex items-center justify-center gap-2"
+        >
+          <span>Book Now</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+
+        <a
+          href={`https://wa.me/916300041186?text=${encodeURIComponent(
+            `Hi DRIVEIT, I want to reserve the ${car.name} (${service}) on ${pickupDate} at ${pickupHub}.`,
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-3 rounded-xl border border-white/12 bg-white/[0.02] hover:border-[#25D366]/50 text-xs font-mono uppercase tracking-[0.18em] text-white/80 hover:text-white flex items-center justify-center gap-2 transition"
+        >
+          <FaWhatsapp className="w-4 h-4 text-[#25D366]" />
+          <span>Book via WhatsApp</span>
+        </a>
       </div>
     </div>
   )

@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import { auth } from '@/auth'
 import config from '@/payload.config'
 import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
+import { isPostgresReachable } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +28,9 @@ export async function GET(request: Request) {
   if (!carId) return NextResponse.json({ count: 0 })
 
   try {
+    const reachable = await isPostgresReachable()
+    if (!reachable) return NextResponse.json({ count: 0 })
+
     const payload = await getPayload({ config })
     const { totalDocs } = await payload.count({
       collection: 'bookings',

@@ -46,9 +46,9 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og/luxury-car-rental.jpg',
-        width: 1200,
-        height: 630,
+        url: '/aston-martin-db12-night.webp',
+        width: 1920,
+        height: 1072,
         alt: 'DRIVEIT Luxury Car Rental Hyderabad',
       },
     ],

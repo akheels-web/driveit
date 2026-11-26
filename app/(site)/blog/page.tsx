@@ -11,7 +11,7 @@ export const revalidate = 300
 
 export const metadata: Metadata = {
   alternates: { canonical: '/blog' },
-  title: "Luxury Travel Journal | Car Rental & Chauffeur Insights | DRIVEIT",
+  title: "Luxury Travel Blog | Car Rental & Chauffeur Insights | DRIVEIT",
   description:
     "Guides, trends and stories from the world of luxury mobility in Hyderabad — wedding cars, corporate travel, weekend getaways and chauffeur tips.",
 }
@@ -27,7 +27,7 @@ export default async function BlogPage() {
 
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-6xl font-[family-name:var(--font-playfair)] font-bold mb-4">
-              The <span className="text-gradient-gold">Luxury</span> Journal
+              The <span className="text-gradient-gold">Luxury</span> Blog
             </h1>
             <p className="text-white/50 max-w-2xl mx-auto text-sm md:text-base">
               Discover the latest trends in premium transportation, travel guides, and insights from the world of luxury mobility in Hyderabad.
@@ -47,7 +47,7 @@ export default async function BlogPage() {
                   <div className="relative h-64 md:h-80 w-full overflow-hidden">
                     <Image
                       src={post.image}
-                      alt={post.title}
+                      alt={post.imageAlt || post.title}
                       fill
                       sizes="(min-width: 768px) 50vw, 100vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-700"

@@ -47,9 +47,9 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og/airport-taxi.jpg',
-        width: 1200,
-        height: 630,
+        url: '/black-chauffeur-sedan-night-city.webp',
+        width: 1920,
+        height: 1072,
         alt: 'DRIVEIT Airport Taxi Hyderabad',
       },
     ],

@@ -15,9 +15,9 @@ const steps = [
 ]
 
 const primaryCars = [
-  { id: 's-class', name: 'Mercedes S-Class', price: 45000, img: '/sadan/4.jpg' },
-  { id: 'maybach', name: 'Mercedes Maybach', price: 85000, img: '/sadan/3.jpg' },
-  { id: 'rolls', name: 'Rolls Royce Ghost', price: 150000, img: '/sadan/6.jpg' },
+  { id: 's-class', name: 'Mercedes S-Class', price: 45000, img: '/sadan/mercedes-s-350.webp' },
+  { id: 'maybach', name: 'Mercedes Maybach', price: 85000, img: '/sadan/lexus-es-300h.webp' },
+  { id: 'rolls', name: 'Rolls Royce Ghost', price: 150000, img: '/sadan/toyota-camry.webp' },
 ]
 
 const escortCars = [
@@ -99,7 +99,7 @@ export function WeddingConfigurator() {
                 className={`cursor-pointer rounded-2xl overflow-hidden border-2 transition-all ${selections.primaryCar === car.id ? 'border-[var(--gold-400)] shadow-[0_0_20px_rgba(212,175,55,0.3)]' : 'border-white/10 hover:border-white/30'}`}
               >
                 <div className="relative h-40 w-full bg-neutral-900">
-                  <Image src={car.img} alt={car.name} fill className="object-cover" />
+                  <Image src={car.img} alt={`${car.name} decorated luxury wedding car hire in Hyderabad`} fill className="object-cover" />
                 </div>
                 <div className="p-4 bg-black/50">
                   <h3 className="font-semibold text-white">{car.name}</h3>

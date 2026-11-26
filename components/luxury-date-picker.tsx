@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { CalendarDays, ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, getLocalDateString } from '@/lib/utils'
 
 interface LuxuryDatePickerProps {
   value: string // Format: 'YYYY-MM-DD'
@@ -93,8 +93,10 @@ export function LuxuryDatePicker({
     if (value) {
       const d = new Date(value)
       if (!isNaN(d.getTime())) {
-        setViewYear(d.getFullYear())
-        setViewMonth(d.getMonth())
+        queueMicrotask(() => {
+          setViewYear(d.getFullYear())
+          setViewMonth(d.getMonth())
+        })
       }
     }
   }, [value])
@@ -115,7 +117,7 @@ export function LuxuryDatePicker({
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setMounted(true)
+    queueMicrotask(() => setMounted(true))
   }, [])
 
   const updatePosition = useCallback(() => {
@@ -126,8 +128,8 @@ export function LuxuryDatePicker({
     const popoverHeight = 350
     const showAbove = spaceBelow < popoverHeight && spaceAbove > spaceBelow
 
-    const calendarWidth = Math.max(300, rect.width)
-    const left = Math.max(8, Math.min(rect.left, window.innerWidth - calendarWidth - 12))
+    const calendarWidth = Math.min(window.innerWidth - 16, Math.max(280, rect.width))
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - calendarWidth - 8))
 
     setCoords({
       top: showAbove ? rect.top - 6 : rect.bottom + 6,
@@ -209,7 +211,7 @@ export function LuxuryDatePicker({
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate()
   const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate()
 
-  const todayStr = new Date().toISOString().split('T')[0]
+  const todayStr = getLocalDateString()
 
   return (
     <div className={cn('relative w-full', className)}>
@@ -268,6 +270,8 @@ export function LuxuryDatePicker({
         createPortal(
           <div
             ref={menuRef}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             style={{
               position: 'fixed',
               top: coords.showAbove ? undefined : coords.top,
@@ -393,7 +397,7 @@ export function LuxuryDatePicker({
                 <button
                   type="button"
                   onClick={() => {
-                    const today = new Date().toISOString().split('T')[0]
+                    const today = getLocalDateString()
                     if (!min || today >= min) {
                       onChange(today)
                       setIsOpen(false)

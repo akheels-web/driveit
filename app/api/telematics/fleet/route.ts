@@ -1,28 +1,34 @@
-import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
+import { safeTokenMatches } from '@/lib/env'
+import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
-
-function safeTokenMatches(expected: string, provided: string | null | undefined): boolean {
-  if (!provided) return false
-  const a = Buffer.from(expected)
-  const b = Buffer.from(provided)
-  return a.length === b.length && crypto.timingSafeEqual(a, b)
-}
 
 /**
  * Fleet Telematics Summary Endpoint (Staff & Dispatch Only)
  * Returns live GPS status for all vehicles
  */
 export async function GET(req: NextRequest) {
+  const verdict = await limitRequest(req, 'telematics-fleet', {
+    limit: 60,
+    windowMs: 60_000,
+    globalLimit: 300,
+  })
+  if (!verdict.ok) return tooManyRequests(verdict.retryAfterSeconds)
+
+  if (!(await isPostgresReachable())) {
+    return NextResponse.json({ error: 'Fleet telemetry database offline.' }, { status: 503 })
+  }
+
   try {
     const payload = await getPayload({ config })
 
     // Verify Staff or Authorized Service Token (prevents public tracking of VIP vehicles)
     const { user } = await payload.auth({ headers: req.headers })
-    const isStaff = Boolean(user)
+    const isStaff = Boolean(user && (user as { collection?: string }).collection === 'users')
 
     const configuredSecret = process.env.TELEMATICS_SECRET || process.env.CRON_SECRET
     const authHeader = req.headers.get('x-telematics-secret') || req.headers.get('authorization')?.replace('Bearer ', '')
@@ -38,7 +44,7 @@ export async function GET(req: NextRequest) {
     const carsRes = await payload.find({
       collection: 'cars',
       limit: 100,
-      depth: 1,
+      depth: 0,
     })
 
     const fleet = carsRes.docs.map((car: any) => ({

@@ -1,503 +1,303 @@
-import { metadata } from './metadata'
-export { metadata }
-import Image from "next/image"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { ShieldCheck, Lock, Clock, Plane, Wifi, Utensils, User, Stars, Phone, MessageCircle, MapPin, PawPrint, Crown } from "lucide-react"
-import Link from "next/link"
-import { ContactForm } from "@/components/contact-form"
+import type { Metadata } from 'next'
+import { metadata as fallbackMetadata } from './metadata'
+import Image from 'next/image'
+import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
+import { Lock, ArrowRight, MessageCircle, Phone, Plane, ShieldCheck, Clock, Compass } from 'lucide-react'
+import { ContactForm } from '@/components/contact-form'
+import { getServiceBySlugFromCMS, getSiteSettings, SITE_DEFAULTS } from '@/lib/cms'
+import { DEFAULT_JET_SHOWCASE } from '@/lib/home-config'
 
+export const revalidate = 60
 
-export default function PrivateJetServicesPage() {
-  const serviceSchema = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "Luxury Private Jet Charters Hyderabad",
-    "description": "On-demand VIP private jet and aviation charter services from Begumpet and Rajiv Gandhi International Airport in Hyderabad.",
-    "provider": {
-      "@type": "LocalBusiness",
-      "name": "DRIVEIT Luxury",
-      "url": "https://www.driveitluxury.in"
+export async function generateMetadata(): Promise<Metadata> {
+  const service = await getServiceBySlugFromCMS('private-jet-services')
+  if (!service) return fallbackMetadata
+
+  const title = service.seoTitle || fallbackMetadata.title
+  const description = service.seoDescription || service.summary || fallbackMetadata.description
+  const heroSrc = service.image || '/gulfstream-g650-private-jet-on-tarmac-night.webp'
+  const heroAlt = service.imageAlt || 'Gulfstream G650ER Private Jet Charter Hyderabad — DRIVEIT Aviation'
+
+  return {
+    ...fallbackMetadata,
+    title,
+    description,
+    keywords: service.seoKeywords?.length ? service.seoKeywords : fallbackMetadata.keywords,
+    openGraph: {
+      ...fallbackMetadata.openGraph,
+      title: String(title),
+      description: String(description),
+      images: [{ url: heroSrc, width: 1920, height: 1072, alt: heroAlt }],
     },
-    "areaServed": {
-      "@type": "State",
-      "name": "Telangana"
-    }
-  };
+  }
+}
+
+export default async function PrivateJetServicesPage() {
+  const [service, settings] = await Promise.all([
+    getServiceBySlugFromCMS('private-jet-services'),
+    getSiteSettings(),
+  ])
+
+  const heroSrc = service?.image || '/gulfstream-g650-private-jet-on-tarmac-night.webp'
+  const heroAlt =
+    service?.imageAlt || 'Gulfstream G650ER ultra-long-range private jet parked on night tarmac in Hyderabad'
+  const heroTitle = service?.title || 'Private Aviation'
+  const heroSubtitle =
+    service?.heroSubtitle ||
+    service?.summary ||
+    'Begumpet VVIP Gate & RGIA Shamshabad · Direct Tarmac Transfers & Airside Escort'
+  const heroCta = service?.heroCtaLabel || 'Inquire Privately'
+  const aircraftList =
+    service?.showcaseItems && service.showcaseItems.length > 0
+      ? service.showcaseItems
+      : DEFAULT_JET_SHOWCASE
+
+  const contactPhone = String(settings?.contactPhone || SITE_DEFAULTS.contactPhone)
+  const cleanPhone = contactPhone.replace(/[^+\d]/g, '')
+  const whatsappClean = String(settings?.whatsappNumber || SITE_DEFAULTS.whatsappNumber).replace(/[^\d]/g, '')
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in').replace(/\/$/, '')
+
+  const serviceJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: heroTitle,
+    description: heroSubtitle,
+    provider: {
+      '@type': 'Organization',
+      name: String(settings?.siteName || SITE_DEFAULTS.siteName),
+      url: siteUrl,
+    },
+    areaServed: ['Hyderabad', 'Begumpet Airport', 'RGIA Shamshabad'],
+    url: `${siteUrl}/services/private-jet-services`,
+    image: heroSrc.startsWith('http') ? heroSrc : `${siteUrl}${heroSrc}`,
+  }
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Services', item: `${siteUrl}/services` },
+      { '@type': 'ListItem', position: 3, name: heroTitle, item: `${siteUrl}/services/private-jet-services` },
+    ],
+  }
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
-      />
       <SiteHeader />
-      <main className="bg-black text-zinc-100">
-        {/* 1) HERO */}
-        <section className="relative min-h-[92vh] flex items-center">
-              <Image
-            src="https://i.pinimg.com/1200x/f5/03/b8/f503b886eaa87abdfc8d3aa0a19e80cf.jpg"
-            alt="Luxury private jet at Hyderabad airport at night"
+      <main className="bg-[#040405] text-zinc-100">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        />
+
+        {/* FULL-SCREEN VISUAL HERO */}
+        <section className="relative h-[86svh] min-h-[580px] flex items-end overflow-hidden">
+          <Image
+            src={heroSrc}
+            alt={heroAlt}
             fill
             priority
-            className="object-cover opacity-60"
+            quality={88}
+            sizes="100vw"
+            className="object-cover object-center"
           />
-          {/* HERO container: center + home width */}
-          <div className="relative w-full">
-            <div className="mx-auto max-w-7xl px-4 py-24 md:py-32 text-center">
-              <div className="inline-flex items-center gap-2 text-xs md:text-sm text-zinc-300 mb-4">
-                <MapPin className="w-4 h-4 text-gold" />
-                Hyderabad, India • Begumpet & RGIA
+          <div className="absolute inset-0 bg-gradient-to-t from-[#040405] via-[#040405]/55 to-black/30" />
+
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-4 pb-12 md:pb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/75 border border-[#c9a96e]/40 text-[10px] font-mono uppercase tracking-[0.26em] text-[#c9a96e] mb-4">
+              <Lock className="w-3 h-3" />
+              <span>DRIVEIT AVIATION · BY PRIVATE COMMISSION</span>
+            </div>
+
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h1 className="font-luxury text-[clamp(2.5rem,6vw,5.5rem)] font-extralight uppercase leading-[0.92] tracking-[0.02em] text-[#f4efe6]">
+                  {heroTitle}
+                </h1>
+                <p className="mt-2 text-xs md:text-sm font-mono uppercase tracking-[0.24em] text-white/65">
+                  {heroSubtitle}
+                </p>
               </div>
-              <h1 className="text-3xl md:text-5xl font-semibold leading-tight">
-                Luxury Private Jet Charters in{" "}
-                <span style={{ color: '#b48811' }}>Hyderabad</span>
-              </h1>
-              <p className="mt-4 mx-auto max-w-2xl text-zinc-300 text-base md:text-lg">
-                Exclusive, Comfortable, and On-Demand Travel.
-              </p>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+
+              <div className="flex flex-wrap items-center gap-2.5">
                 <a
-                  href="#booking"
-                  className="px-6 md:px-8 py-3 text-black font-medium rounded-full shadow transition text-sm md:text-base hover:scale-105 hover:brightness-110"
-                  style={{ backgroundColor: '#b48811' }}
+                  href="#commission-desk"
+                  className="px-6 py-3.5 rounded-full bg-[#c9a96e] hover:bg-[#dfc288] text-black font-bold text-[11px] font-mono uppercase tracking-[0.22em] transition inline-flex items-center gap-2 shadow-[0_0_20px_rgba(201,169,110,0.3)]"
                 >
-                  Book Now / Get a Quote
+                  <span>{heroCta}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </a>
                 <a
-                  href="tel:+916300041186"
-                  className="px-6 py-3 text-sm md:text-base rounded-full border border-neutral-700 hover:border-gold text-zinc-200 hover:text-gold transition"
+                  href={`https://wa.me/${whatsappClean}?text=Hello%20DRIVEIT%20Aviation%20Desk%2C%20I%20would%20like%20to%20commission%20a%20private%20jet%20charter.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-3.5 rounded-full border border-white/20 bg-black/60 hover:border-[#c9a96e] text-[11px] font-mono uppercase tracking-[0.2em] text-white inline-flex items-center gap-2 transition"
                 >
-                  Call: +91 63000 41186
+                  <MessageCircle className="w-3.5 h-3.5 text-[#c9a96e]" />
+                  <span>WhatsApp Flight Desk</span>
                 </a>
               </div>
             </div>
           </div>
         </section>
 
-{/* Types & Models — centered, 2-up, taller cards, glass labels */}
-<div className="mx-auto max-w-7xl px-4 mt-12 border-t border-neutral-800 pt-10">
-  <div className="text-center max-w-2xl mx-auto">
-    <h3 className="text-2xl md:text-3xl font-semibold text-gold">Types & Models</h3>
-    <p className="mt-2 text-sm text-zinc-400">A refined selection for Hyderabad routes.</p>
-  </div>
-
-  {/* Business Airliners */}
-  <div className="mt-8">
-    <h4 className="text-xs md:text-sm font-medium text-zinc-400 tracking-wide uppercase text-center">Business Airliners</h4>
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Airbus Corporate Jet</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Ultra-long range business airliner for intercontinental travel</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 19-30 passengers</div>
-          <div>• Range: 6,000+ nautical miles</div>
-          <div>• Features: Full flat beds, conference room, luxury amenities</div>
-        </div>
-      </div>
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Boeing Business Jet</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Premium business jet with exceptional range and comfort</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 25-50 passengers</div>
-          <div>• Range: 6,200+ nautical miles</div>
-          <div>• Features: Private suites, dining area, office space</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* Super Large Jets */}
-  <div className="mt-10">
-    <h4 className="text-xs md:text-sm font-medium text-zinc-400 tracking-wide uppercase text-center">Super Large Jets</h4>
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Falcon 900 / 6X / 7X / 8X</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Ultra-long range jets with exceptional performance</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 12-16 passengers</div>
-          <div>• Range: 5,000-7,500 nautical miles</div>
-          <div>• Features: Three living areas, full galley, luxury interiors</div>
-        </div>
-      </div>
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Global 5000 / 6000 / 7500</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Premium long-range jets with advanced technology</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 13-17 passengers</div>
-          <div>• Range: 5,200-7,700 nautical miles</div>
-          <div>• Features: Ka-band connectivity, luxury cabin, advanced avionics</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* Large Jets */}
-  <div className="mt-10">
-    <h4 className="text-xs md:text-sm font-medium text-zinc-400 tracking-wide uppercase text-center">Large Jets</h4>
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Challenger 604 / 605 / 650</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Spacious cabin with transcontinental range</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 9-12 passengers</div>
-          <div>• Range: 4,000-4,100 nautical miles</div>
-          <div>• Features: Stand-up cabin, full galley, baggage compartment</div>
-        </div>
-      </div>
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Falcon 2000</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Versatile long-range jet with excellent performance</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 8-10 passengers</div>
-          <div>• Range: 3,350-4,000 nautical miles</div>
-          <div>• Features: Wide cabin, advanced avionics, fuel efficiency</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* Mid-size Jets */}
-  <div className="mt-10">
-    <h4 className="text-xs md:text-sm font-medium text-zinc-400 tracking-wide uppercase text-center">Mid-size Jets</h4>
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Challenger 300 / 350</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Popular mid-size jets with excellent range and comfort</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 8-10 passengers</div>
-          <div>• Range: 3,100-3,200 nautical miles</div>
-          <div>• Features: Flat floor cabin, large windows, quiet operation</div>
-        </div>
-      </div>
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Citation Longitude</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Modern super-midsize jet with advanced technology</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 8-12 passengers</div>
-          <div>• Range: 3,500 nautical miles</div>
-          <div>• Features: Flat floor, large cabin, advanced avionics</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* Super Light • Light & VLJ */}
-  <div className="mt-10">
-    <h4 className="text-xs md:text-sm font-medium text-zinc-400 tracking-wide uppercase text-center">Super Light • Light & VLJ</h4>
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Citation XLS / XLS+</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Reliable super-light jets for regional travel</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 9-12 passengers</div>
-          <div>• Range: 2,100 nautical miles</div>
-          <div>• Features: Stand-up cabin, proven reliability, cost-effective</div>
-        </div>
-      </div>
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Phenom 100</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Entry-level jet with modern amenities</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 4-7 passengers</div>
-          <div>• Range: 1,178 nautical miles</div>
-          <div>• Features: Single pilot operation, modern avionics, fuel efficient</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* Turboprops */}
-  <div className="mt-10">
-    <h4 className="text-xs md:text-sm font-medium text-zinc-400 tracking-wide uppercase text-center">Turboprops</h4>
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">King Air 350</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Versatile turboprop for short to medium range flights</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 9-11 passengers</div>
-          <div>• Range: 1,806 nautical miles</div>
-          <div>• Features: Proven reliability, short runway capability, cost-effective</div>
-        </div>
-      </div>
-      <div className="group p-6 rounded-2xl border border-neutral-800 bg-white/5 backdrop-blur-sm hover:border-gold/50 transition-all duration-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-            <Plane className="w-6 h-6 text-gold" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Pilatus PC‑12</h3>
-        </div>
-        <p className="text-sm text-zinc-400 mb-3">Single-engine turboprop with exceptional versatility</p>
-        <div className="space-y-2 text-xs text-zinc-500">
-          <div>• Capacity: 6-9 passengers</div>
-          <div>• Range: 1,803 nautical miles</div>
-          <div>• Features: Single pilot operation, cargo door, unpaved runway capability</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* Capacity & Flight Time — compact visual */}
-  <div className="mt-10 relative rounded-2xl overflow-hidden border border-neutral-800">
-    <Image src="/gulfstream-g650-private-jet-on-tarmac-night.png" alt="Range & capacity" fill loading="lazy" className="object-cover" />
-    <div className="absolute inset-0 bg-black/50" />
-    <div className="relative z-10 grid sm:grid-cols-2 gap-4 p-6 md:p-8">
-      <div className="rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-4">
-        <div className="text-xs text-zinc-400">Capacity</div>
-        <div className="mt-1 text-lg font-medium text-zinc-100">12 – 30 passengers</div>
-      </div>
-      <div className="rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-4">
-        <div className="text-xs text-zinc-400">Typical Flight Time</div>
-        <div className="mt-1 text-lg font-medium text-zinc-100">Up to 12 hours</div>
-      </div>
-    </div>
-  </div>
-
-{/* service */}
-
-<div>
-  <section className="mx-auto max-w-7xl px-4 mt-12 py-12 space-y-10">
-    {/* Row 1: Image Left, Content Right */}
-    <div className="grid md:grid-cols-2 gap-8 items-center">
-      <div className="group relative h-64 md:h-[420px] rounded-2xl overflow-hidden border border-neutral-800">
-        <Image
-          src="/gulfstream-g650-private-jet-on-tarmac-night.png"
-          alt="Premium private jet cabin service Hyderabad"
-          fill
-          loading="lazy"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-      </div>
-      <div>
-        <h2 className="text-2xl md:text-3xl font-semibold">
-          <span className="text-gold">HIGH QUALITY SERVICE</span>
-        </h2>
-        <p className="mt-3 text-sm text-zinc-400">
-          Personalized, discreet, and detail‑driven—crafted to exceed expectations on every Hyderabad route.
-        </p>
-      </div>
-    </div>
-
-    {/* Row 2: Content Left, Image Right */}
-    <div className="grid md:grid-cols-2 gap-8 items-center">
-      <div className="order-2 md:order-1">
-        <h3 className="text-xl md:text-2xl font-semibold text-white">EXCLUSIVE DINING</h3>
-        <p className="mt-2 text-sm text-zinc-400">Gourmet menus, bespoke beverages, curated to taste.</p>
-      </div>
-      <div className="order-1 md:order-2 group relative h-64 md:h-[420px] rounded-2xl overflow-hidden border border-neutral-800">
-        <Image
-          src="/3.jpg"
-          alt="Exclusive in flight dining private jet Hyderabad"
-          fill
-          sizes="(max-width: 768px) 100vw, 600px"
-          loading="lazy"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-      </div>
-    </div>
-
-    {/* Row 3: Image Left, Content Right */}
-    <div className="grid md:grid-cols-2 gap-8 items-center">
-      <div className="group relative h-64 md:h-[420px] rounded-2xl overflow-hidden border border-neutral-800">
-        <Image
-          src="/4.jpg"
-          alt="Luxury private jet cabin interior Hyderabad departures"
-          fill
-          sizes="(max-width: 768px) 100vw, 600px"
-          loading="lazy"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-      </div>
-      <div>
-        <h3 className="text-xl md:text-2xl font-semibold text-white">LUXURY ON AIR</h3>
-        <p className="mt-2 text-sm text-zinc-400">Quiet cabins, lie‑flat seats, fine linens, designer amenities.</p>
-      </div>
-    </div>
-
-    {/* Row 4: Content Left, Image Right */}
-    <div className="grid md:grid-cols-2 gap-8 items-center">
-      <div className="order-2 md:order-1">
-        <h3 className="text-xl md:text-2xl font-semibold text-white">PET FRIENDLY</h3>
-        <p className="mt-2 text-sm text-zinc-400">Comfortable arrangements and compliant handling.</p>
-      </div>
-      <div className="order-1 md:order-2 group relative h-64 md:h-[420px] rounded-2xl overflow-hidden border border-neutral-800">
-        <Image
-          src="/2.jpg"
-          alt="Pet friendly private jet charter Hyderabad"
-          fill
-          sizes="(max-width: 768px) 100vw, 600px"
-          loading="lazy"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-      </div>
-    </div>
-
-    {/* Row 5: Image Left, Content Right */}
-    <div className="grid md:grid-cols-2 gap-8 items-center">
-      <div className="group relative h-64 md:h-[420px] rounded-2xl overflow-hidden border border-neutral-800">
-        <Image
-          src="https://i.pinimg.com/736x/64/fb/5e/64fb5e82d7e9128ce78783f6d6e8998e.jpg"
-          alt="VIP private jet ground transfers Hyderabad"
-          fill
-          sizes="(max-width: 768px) 100vw, 600px"
-          loading="lazy"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-      </div>
-      <div>
-        <h3 className="text-xl md:text-2xl font-semibold text-white">VIP GROUND TRANSFERS</h3>
-        <p className="mt-2 text-sm text-zinc-400">Door‑to‑jet luxury with chauffeur‑driven arrivals.</p>
-      </div>
-    </div>
-  </section>
-</div>
-  
-</div>
-               {/* 3) WHY CHOOSE US */}
-               <section className="mx-auto max-w-7xl px-4 py-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-semibold text-gold">Why Choose Us</h2>
-            <p className="mt-2 text-sm text-zinc-400">
-              Safety, privacy, and convenience—optimized for Hyderabad departures.
-            </p>
-          </div>
-
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="group rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-              <div className="flex items-center gap-3">
-                <div className="shrink-0 w-10 h-10 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-                  <ShieldCheck className="w-5 h-5 text-gold" />
-                </div>
-                <h3 className="font-medium">Certified Pilots</h3>
-              </div>
-              <p className="mt-3 text-sm text-zinc-300">
-                Experienced, type‑rated crews adhering to global safety standards.
-              </p>
+        {/* WHITE/LIGHT-GREY STUDIO AIRCRAFT ATELIER (2 CARDS PER ROW) */}
+        <section className="mx-auto max-w-7xl px-4 py-20 border-t border-white/8">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-[0.35em] text-[#c9a96e] block mb-2">
+                01 / AIRCRAFT ATELIER
+              </span>
+              <h2 className="font-luxury text-3xl md:text-5xl font-extralight uppercase text-[#f4efe6]">
+                The Aircraft Fleet
+              </h2>
             </div>
-
-            <div className="group rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-              <div className="flex items-center gap-3">
-                <div className="shrink-0 w-10 h-10 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-gold" />
-                </div>
-                <h3 className="font-medium">Full Privacy</h3>
-              </div>
-              <p className="mt-3 text-sm text-zinc-300">
-                Discreet handling, private lounges, and confidential itineraries.
-              </p>
+            <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/45">
+              <span className="w-2 h-2 rounded-full bg-[#c9a96e]" />
+              <span>Contact Only · No Online Checkout</span>
             </div>
+          </div>
 
-            <div className="group rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-              <div className="flex items-center gap-3">
-                <div className="shrink-0 w-10 h-10 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-gold" />
-                </div>
-                <h3 className="font-medium">24/7 Concierge</h3>
-              </div>
-              <p className="mt-3 text-sm text-zinc-300">
-                On‑demand scheduling, VIP transfers, and tailored cabin service.
-              </p>
-            </div>
+          {/* 2 CARDS IN A ROW: Light-grey studio canvas with pure aircraft */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+            {aircraftList.map((aircraft) => (
+              <div
+                key={aircraft.model}
+                className="group rounded-3xl bg-[#09090d] border border-white/10 overflow-hidden flex flex-col justify-between hover:border-[#c9a96e]/50 transition-all duration-300 shadow-xl"
+              >
+                {/* Light Studio Cyclorama Canvas */}
+                <div className="relative aspect-[16/10] bg-[#ebebea] overflow-hidden p-5 sm:p-6 flex flex-col justify-between">
+                  {/* Top Header inside Studio Canvas */}
+                  <div className="relative z-10 flex items-start justify-between gap-3 pointer-events-none select-none">
+                    <div className="px-3.5 py-2 rounded-2xl bg-[#ebebea]/88 backdrop-blur-md border border-black/10 shadow-sm">
+                      <p className="text-[10px] font-mono uppercase tracking-[0.28em] text-[#7a6440] font-semibold">
+                        {aircraft.badgeLabel}
+                      </p>
+                      <h3 className="font-luxury text-xl sm:text-2xl font-light text-[#111111] uppercase tracking-wide mt-0.5">
+                        {aircraft.model}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ebebea]/90 backdrop-blur-md border border-black/10 text-[9px] font-mono uppercase tracking-[0.22em] text-[#111111] shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#8c734b]" />
+                      <span>Contact Only</span>
+                    </div>
+                  </div>
 
-            <div className="group rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-              <div className="flex items-center gap-3">
-                <div className="shrink-0 w-10 h-10 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-                  <Stars className="w-5 h-5 text-gold" />
-                </div>
-                <h3 className="font-medium">VIP Experience</h3>
-              </div>
-              <p className="mt-3 text-sm text-zinc-300">
-                Luxury interiors, fine dining, and curated in‑flight experiences.
-              </p>
-            </div>
+                  {/* Aircraft Image Centered on Studio Floor */}
+                  <div className="absolute inset-0">
+                    <Image
+                      src={aircraft.src}
+                      alt={aircraft.imageAlt || `${aircraft.badgeLabel} ${aircraft.model} charter aircraft — DRIVEIT Aviation`}
+                      fill
+                      quality={88}
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                  </div>
 
-            <div className="group rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 sm:col-span-2 lg:col-span-1 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-              <div className="flex items-center gap-3">
-                <div className="shrink-0 w-10 h-10 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-gold" />
+                  {/* Subtle Gradient Vignette at Floor Base */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/15 to-transparent" />
                 </div>
-                <h3 className="font-medium">Hyderabad Advantage</h3>
+
+                {/* Dark Obsidian Bottom Strip */}
+                <div className="p-5 sm:p-6 bg-[#0c0c10] border-t border-white/8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="text-xs font-mono font-bold text-[#c9a96e]">
+                      {aircraft.specs}
+                    </div>
+                    <p className="text-[11px] text-white/50 leading-relaxed font-light">
+                      {aircraft.highlightTag}
+                    </p>
+                  </div>
+
+                  <a
+                    href="#commission-desk"
+                    className="shrink-0 px-5 py-3 rounded-xl bg-[#c9a96e] hover:bg-[#dfc288] text-black font-bold text-[10px] font-mono uppercase tracking-[0.22em] transition inline-flex items-center justify-center gap-1.5"
+                  >
+                    <span>{aircraft.ctaLabel || 'Inquire'}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               </div>
-              <p className="mt-3 text-sm text-zinc-300">
-                Operations from Begumpet and Rajiv Gandhi International Airport.
-              </p>
-            </div>
+            ))}
           </div>
         </section>
-    
 
+        {/* PROTOCOL METRICS */}
+        <section className="mx-auto max-w-7xl px-4 py-12 border-t border-white/8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                title: 'Tarmac Airside Gate',
+                desc: 'Direct ramp access with discreet VVIP protocol at Begumpet & RGIA Shamshabad.',
+                Icon: Plane,
+              },
+              {
+                title: 'Global Non-Stop Range',
+                desc: 'Fly London, Dubai, Zurich, Singapore, or Tokyo direct without tech stops.',
+                Icon: Compass,
+              },
+              {
+                title: 'Certified Flight Crew',
+                desc: 'Two type-rated captains and dedicated in-flight cabin concierge on every sector.',
+                Icon: ShieldCheck,
+              },
+              {
+                title: '2-Hour Wheels Up',
+                desc: 'Expedited flight clearance and rapid deployment for priority emergency charter.',
+                Icon: Clock,
+              },
+            ].map((feature) => {
+              const Icon = feature.Icon
+              return (
+                <div
+                  key={feature.title}
+                  className="p-5 rounded-2xl bg-[#09090d] border border-white/8 flex flex-col gap-2"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-[#c9a96e]/15 border border-[#c9a96e]/30 flex items-center justify-center text-[#c9a96e]">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <h4 className="text-sm font-medium text-white mt-1">{feature.title}</h4>
+                  <p className="text-xs text-white/50 leading-relaxed font-light">{feature.desc}</p>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* COMMISSION DESK FORM */}
+        <section id="commission-desk" className="mx-auto max-w-5xl px-4 py-16 pb-28 scroll-mt-24">
+          <div className="rounded-3xl border border-[#c9a96e]/30 bg-[#09090d] p-6 md:p-10 shadow-2xl">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pb-6 border-b border-white/8">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#c9a96e] block mb-1.5">
+                  02 / FLIGHT DESK
+                </span>
+                <h3 className="font-luxury text-2xl md:text-3xl font-extralight uppercase text-[#f4efe6]">
+                  Request Private Flight Charter
+                </h3>
+                <p className="text-xs text-white/50 mt-1">
+                  Our Hyderabad private aviation coordinators will prepare flight itineraries, slot clearances, and bespoke catering.
+                </p>
+              </div>
+              <a
+                href={`tel:${cleanPhone}`}
+                className="inline-flex items-center gap-2 text-xs font-mono text-[#c9a96e] hover:underline shrink-0"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>{contactPhone}</span>
+              </a>
+            </div>
+            <ContactForm defaultService="Private Jet / Helicopter Charter" />
+          </div>
+        </section>
       </main>
-
-      {/* Contact Section */}
-      <section className="bg-[var(--luxury-bg)] pb-16">
-        <div className="mx-auto max-w-3xl px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-semibold text-white">
-              Inquire About Private Jets
-            </h2>
-            <p className="mt-2 text-sm text-zinc-400">
-              Get a personalised quote from our aviation team.
-            </p>
-          </div>
-          <ContactForm />
-        </div>
-      </section>
       <SiteFooter />
     </>
   )

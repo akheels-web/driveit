@@ -4,19 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, ArrowRight, Sparkles, ChevronLeft, ChevronRight, Users, Settings2 } from "lucide-react";
+import { Car, ShieldCheck, Crown, MapPin, ArrowRight, Sparkles, Users, Settings2 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 import { LuxuryCarClient } from "@/components/luxury-car-client";
 
 const GOLD = '#b48811';
-type CarItem = {
-  title: string;
-  img: string;
-  isAd?: boolean;
-  type?: 'whatsapp' | 'contact';
-  description?: string;
-};
 
 
 export default function LuxuryCarRentalPage() {
@@ -47,12 +40,13 @@ export default function LuxuryCarRentalPage() {
         {/* HERO */}
         <section className="relative min-h-[92vh] flex items-center">
           <Image
-            src="https://i.pinimg.com/1200x/1d/cf/cb/1dcfcb4696c662ba71d32cb76fccc103.jpg"
-            alt="Luxury car hero"
+            src="/aston-martin-db12-night.webp"
+            alt="Rolls-Royce Phantom and Aston Martin DB12 luxury rental fleet in Hyderabad"
             fill
             priority
+            quality={90}
             sizes="100vw"
-            className="object-cover opacity-60"
+            className="object-cover opacity-65"
           />
           <div className="relative w-full">
             <div className="mx-auto max-w-7xl px-4 py-24 md:py-32 text-center">
@@ -135,100 +129,100 @@ export default function LuxuryCarRentalPage() {
             <h2 className="text-3xl md:text-4xl font-[family-name:var(--font-playfair)] font-bold text-white mb-4">Choose Your Experience</h2>
             <p className="text-zinc-400">Tailor your journey with our signature chauffeur service or experience the thrill of self-drive.</p>
           </div>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-             <div className="bg-gradient-to-br from-white/[0.05] to-transparent border border-[var(--gold-400)]/30 rounded-3xl p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-                   <Crown className="w-32 h-32" />
-                </div>
-                <h3 className="text-2xl font-bold text-[var(--gold-400)] mb-6 flex items-center gap-3">
-                   <Users className="w-6 h-6" /> Chauffeur Driven
-                </h3>
-                <ul className="space-y-5 relative z-10">
-                   <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> White-glove service from professionally trained, bilingual chauffeurs.</li>
-                   <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> Zero liability for vehicle damage or insurance deductibles.</li>
-                   <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> Complimentary bottled water, Wi-Fi, and reading materials.</li>
-                   <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> Door-to-door VIP airport transfers with meet-and-greet.</li>
-                </ul>
-                <div className="mt-8 pt-6 border-t border-white/10">
-                   <Link href="/cars?service=chauffeur" className="inline-flex items-center gap-2 text-[var(--gold-400)] font-semibold hover:gap-4 transition-all">
-                      Browse Chauffeur Fleet <ArrowRight className="w-4 h-4" />
-                   </Link>
-                </div>
-             </div>
 
-             <div className="bg-gradient-to-br from-white/[0.02] to-transparent border border-white/10 rounded-3xl p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
-                   <Car className="w-32 h-32" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                   <Settings2 className="w-6 h-6" /> Self Drive
-                </h3>
-                <ul className="space-y-5 relative z-10">
-                   <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Complete privacy and freedom to craft your own itinerary.</li>
-                   <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Comprehensive insurance coverage included (deductibles apply).</li>
-                   <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Flexible pickup and drop-off locations across the city.</li>
-                   <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Transparent fuel policies and generous daily kilometer limits.</li>
-                </ul>
-                <div className="mt-8 pt-6 border-t border-white/10">
-                   <Link href="/cars?service=selfdrive" className="inline-flex items-center gap-2 text-white hover:gap-4 transition-all">
-                      Browse Self-Drive Fleet <ArrowRight className="w-4 h-4" />
-                   </Link>
-                </div>
-             </div>
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="bg-gradient-to-br from-white/[0.05] to-transparent border border-[var(--gold-400)]/30 rounded-3xl p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+                <Crown className="w-32 h-32" />
+              </div>
+              <h3 className="text-2xl font-bold text-[var(--gold-400)] mb-6 flex items-center gap-3">
+                <Users className="w-6 h-6" /> Chauffeur Driven
+              </h3>
+              <ul className="space-y-5 relative z-10">
+                <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> White-glove service from professionally trained, bilingual chauffeurs.</li>
+                <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> Zero liability for vehicle damage or insurance deductibles.</li>
+                <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> Complimentary bottled water, Wi-Fi, and reading materials.</li>
+                <li className="flex gap-3 text-zinc-300"><span className="text-[var(--gold-400)] mt-1">✓</span> Door-to-door VIP airport transfers with meet-and-greet.</li>
+              </ul>
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <Link href="/cars?service=chauffeur" className="inline-flex items-center gap-2 text-[var(--gold-400)] font-semibold hover:gap-4 transition-all">
+                  Browse Chauffeur Fleet <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-white/[0.02] to-transparent border border-white/10 rounded-3xl p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
+                <Car className="w-32 h-32" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <Settings2 className="w-6 h-6" /> Self Drive
+              </h3>
+              <ul className="space-y-5 relative z-10">
+                <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Complete privacy and freedom to craft your own itinerary.</li>
+                <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Comprehensive insurance coverage included (deductibles apply).</li>
+                <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Flexible pickup and drop-off locations across the city.</li>
+                <li className="flex gap-3 text-zinc-300"><span className="text-white/50 mt-1">✓</span> Transparent fuel policies and generous daily kilometer limits.</li>
+              </ul>
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <Link href="/cars?service=selfdrive" className="inline-flex items-center gap-2 text-white hover:gap-4 transition-all">
+                  Browse Self-Drive Fleet <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* TRUST & SANITIZATION */}
         <section className="mx-auto max-w-7xl px-4 py-16 border-t border-white/5">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-             <div>
-                <h2 className="text-3xl font-[family-name:var(--font-playfair)] font-bold text-white mb-6">Our Commitment to Excellence</h2>
-                <p className="text-zinc-400 mb-8 leading-relaxed">
-                   Your safety and comfort are our highest priorities. Every vehicle in our fleet undergoes rigorous maintenance and a comprehensive 30-point detailing and sanitization process before each dispatch.
-                </p>
-                <div className="space-y-6">
-                   <div className="flex gap-4">
-                      <div className="w-12 h-12 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
-                         <ShieldCheck className="w-6 h-6 text-[var(--gold-400)]" />
-                      </div>
-                      <div>
-                         <h4 className="text-lg font-semibold text-white">Vetted Professionals</h4>
-                         <p className="text-sm text-zinc-500 mt-1">Strict background checks and defensive driving certifications for all staff.</p>
-                      </div>
-                   </div>
-                   <div className="flex gap-4">
-                      <div className="w-12 h-12 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
-                         <Sparkles className="w-6 h-6 text-[var(--gold-400)]" />
-                      </div>
-                      <div>
-                         <h4 className="text-lg font-semibold text-white">Hospital-Grade Sanitization</h4>
-                         <p className="text-sm text-zinc-500 mt-1">Interior ozone treatment and surface disinfection after every booking.</p>
-                      </div>
-                   </div>
+            <div>
+              <h2 className="text-3xl font-[family-name:var(--font-playfair)] font-bold text-white mb-6">Our Commitment to Excellence</h2>
+              <p className="text-zinc-400 mb-8 leading-relaxed">
+                Your safety and comfort are our highest priorities. Every vehicle in our fleet undergoes rigorous maintenance and a comprehensive 30-point detailing and sanitization process before each dispatch.
+              </p>
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-6 h-6 text-[var(--gold-400)]" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white">Vetted Professionals</h4>
+                    <p className="text-sm text-zinc-500 mt-1">Strict background checks and defensive driving certifications for all staff.</p>
+                  </div>
                 </div>
-             </div>
-             <div className="relative h-[400px] rounded-3xl overflow-hidden border border-white/10 hidden lg:block">
-                <Image src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?q=80&w=1600&auto=format&fit=crop" alt="Sanitization and Trust" fill className="object-cover opacity-80" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
-                   <div className="bg-black/60 backdrop-blur-md border border-[var(--gold-400)]/30 rounded-xl p-6">
-                      <div className="text-3xl font-bold text-[var(--gold-400)] mb-1">100%</div>
-                      <div className="text-sm text-white font-medium">Satisfaction Rate</div>
-                   </div>
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[var(--gold-400)]/10 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-6 h-6 text-[var(--gold-400)]" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white">Hospital-Grade Sanitization</h4>
+                    <p className="text-sm text-zinc-500 mt-1">Interior ozone treatment and surface disinfection after every booking.</p>
+                  </div>
                 </div>
-             </div>
+              </div>
+            </div>
+            <div className="relative h-[400px] rounded-3xl overflow-hidden border border-white/10 hidden lg:block">
+              <Image src="/rolls-royce-phantom-night.webp" alt="Sanitized luxury car cabin and verified chauffeur protocol by DRIVEIT Hyderabad" fill className="object-cover opacity-80" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
+                <div className="bg-black/60 backdrop-blur-md border border-[var(--gold-400)]/30 rounded-xl p-6">
+                  <div className="text-3xl font-bold text-[var(--gold-400)] mb-1">100%</div>
+                  <div className="text-sm text-white font-medium">Satisfaction Rate</div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* STICKY BOTTOM CTA (Mobile/Tablet focused) */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-xl border-t border-[var(--gold-400)]/30 p-4 md:hidden flex items-center justify-between gap-4">
-           <div>
-              <div className="text-xs text-[var(--gold-400)] font-semibold uppercase tracking-wider">Ready to Drive?</div>
-              <div className="text-sm font-bold text-white">Book Your Luxury Car</div>
-           </div>
-           <Link href="/cars" className="px-6 py-3 bg-[var(--gold-400)] text-black rounded-full text-sm font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)] whitespace-nowrap">
-              View Fleet
-           </Link>
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-xl border-t border-[var(--gold-400)]/30 pt-3.5 pl-4 pr-20 pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[11px] text-[var(--gold-400)] font-semibold uppercase tracking-wider">Ready to Drive?</div>
+            <div className="text-sm font-bold text-white truncate">Book Your Luxury Car</div>
+          </div>
+          <Link href="/cars" className="min-h-[42px] inline-flex items-center px-5 py-2.5 bg-[var(--gold-400)] text-black rounded-full text-xs sm:text-sm font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)] whitespace-nowrap shrink-0">
+            View Fleet
+          </Link>
         </div>
 
       </main>

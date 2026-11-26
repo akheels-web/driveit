@@ -4,7 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, MessageCircle, ArrowRight, Sparkles, Clock, Plane, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react"
+import { Car, ShieldCheck, Crown, Phone, Stars, MessageCircle, ArrowRight, Sparkles, Clock, Plane, CheckCircle } from "lucide-react"
 
 const GOLD = '#d4af37'
 const LIGHT_GOLD = '#f4e4a6'
@@ -38,13 +38,13 @@ export default function LuxuryChauffeurPage() {
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-black via-black/95 to-amber-900/20 z-0" />
           <Image
-            src="https://i.pinimg.com/1200x/a3/e7/0f/a3e70f1bff097271a2e4e903460e3668.jpg"
-            alt="Luxury chauffeur service"
+            src="/black-chauffeur-sedan-night-city.webp"
+            alt="Uniformed DRIVEIT luxury chauffeur waiting at RGIA Shamshabad Airport in Hyderabad"
             fill
             priority
+            quality={90}
             sizes="100vw"
-            className="object-cover opacity-40 scale-105"
-            style={{ transform: 'scale(1.1)' }}
+            className="object-cover opacity-50"
           />
           
           {/* Animated background elements */}
@@ -148,8 +148,8 @@ export default function LuxuryChauffeurPage() {
               {/* Celebrity & Events */}
               <div className="group relative h-96 rounded-3xl overflow-hidden transform transition-all duration-700 hover:scale-[1.02]">
                 <Image
-                  src="/1.jpg"
-                  alt="Celebrity & Events Transportation"
+                  src="/rolls-royce-phantom-night.webp"
+                  alt="Celebrity, diplomat, and gala VIP luxury chauffeur fleet in Hyderabad"
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -172,8 +172,8 @@ export default function LuxuryChauffeurPage() {
               {/* Luxury Service */}
               <div className="group relative h-96 rounded-3xl overflow-hidden transform transition-all duration-700 hover:scale-[1.02]">
                 <Image
-                  src="https://i.pinimg.com/736x/68/b9/c2/68b9c2fe5a114be8de36d53873d39041.jpg"
-                  alt="Chauffeur Luxury Service"
+                  src="/maybach-s680-night.webp"
+                  alt="Executive chauffeur-driven luxury saloon for Hyderabad corporate corridors"
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -194,8 +194,8 @@ export default function LuxuryChauffeurPage() {
             {/* Wedding Cars - Full Width */}
             <div className="group relative h-[500px] rounded-3xl overflow-hidden transform transition-all duration-700 hover:scale-[1.01]">
               <Image
-                src="https://i.pinimg.com/736x/09/f9/44/09f944012c94c6a5b75bffa4e11333c5.jpg"
-                alt="Wedding Cars"
+                src="/rolls-royce-wedding-ribbon.webp"
+                alt="Decorated Rolls-Royce and flagship wedding car hire in Hyderabad"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
               />
@@ -336,8 +336,8 @@ export default function LuxuryChauffeurPage() {
         <section className="py-24 bg-black relative overflow-hidden">
           <div className="absolute inset-0">
             <Image
-              src="/black-chauffeur-sedan-night-city.png"
-              alt="Book luxury chauffeur service"
+              src="/black-chauffeur-sedan-night-city.webp"
+              alt="Reserve uniformed luxury chauffeur service and flight-synced airport pickup in Hyderabad"
               fill
               sizes="100vw"
               className="object-cover opacity-20"

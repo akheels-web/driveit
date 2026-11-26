@@ -185,7 +185,7 @@ export async function GET(request: Request) {
 
   // 2. If no text query was provided, return sorted filtered list
   if (!query) {
-    let sorted = [...filtered]
+    const sorted = [...filtered]
     if (sortBy === 'price-low') sorted.sort((a, b) => a.price - b.price)
     else if (sortBy === 'price-high') sorted.sort((a, b) => b.price - a.price)
     else if (sortBy === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name))
@@ -205,7 +205,7 @@ export async function GET(request: Request) {
   )
 
   // Keep cars with at least one match, or fallback to all if query had general terms
-  let matchingCars = scoredCars.filter((sc) => sc.score > 0)
+  const matchingCars = scoredCars.filter((sc) => sc.score > 0)
 
   // Sort by relevance score descending
   matchingCars.sort((a, b) => {

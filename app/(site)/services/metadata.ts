@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     url: '/services',
     type: 'website',
     images: [
-      { url: '/og/services.jpg', width: 1200, height: 630, alt: 'DRIVEIT Services Hyderabad' },
+      { url: '/luxury-flagship-cars-in-black-studio.webp', width: 1920, height: 1072, alt: 'DRIVEIT Services Hyderabad' },
     ],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },

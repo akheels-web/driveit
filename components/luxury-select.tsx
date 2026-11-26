@@ -58,7 +58,7 @@ export function LuxurySelect({
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setMounted(true)
+    queueMicrotask(() => setMounted(true))
   }, [])
 
   // Normalize options to { value, label }

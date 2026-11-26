@@ -5,6 +5,8 @@ import { ArrowLeft, ShieldCheck } from 'lucide-react'
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
+import { getLocalBooking } from '@/lib/local-booking-fallback'
 import { PrintButtons } from '@/components/print-buttons'
 
 export const metadata = { title: 'Invoice | DRIVEIT Luxury', robots: { index: false } }
@@ -16,12 +18,21 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const session = await auth()
   if (!session?.user?.email) redirect(`/login?redirect=/dashboard/invoices/${id}`)
 
-  const payload = await getPayload({ config })
+  const reachable = await isPostgresReachable()
+  let booking: Record<string, any> | null = null
 
-  // findByID throws for missing/invalid ids — treat that as "not found".
-  const booking = (await payload
-    .findByID({ collection: 'bookings', id, depth: 0, overrideAccess: true, disableErrors: true })
-    .catch(() => null)) as Record<string, any> | null
+  if (reachable) {
+    try {
+      const payload = await getPayload({ config })
+      booking = (await payload
+        .findByID({ collection: 'bookings', id, depth: 0, overrideAccess: true, disableErrors: true })
+        .catch(() => null)) as Record<string, any> | null
+    } catch {
+      booking = getLocalBooking(id) as any
+    }
+  } else {
+    booking = getLocalBooking(id) as any
+  }
 
   if (!booking) notFound()
 
@@ -50,7 +61,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
       <main className="max-w-4xl mx-auto p-4 sm:p-8 md:py-12">
         <div className="bg-[#1a1a1a] border border-white/10 shadow-2xl rounded-2xl overflow-hidden print:bg-white print:text-black print:border-none">
-          <div className="p-8 md:p-12 border-b border-white/10 flex flex-col md:flex-row justify-between items-start gap-8">
+          <div className="p-5 sm:p-8 md:p-12 border-b border-white/10 flex flex-col md:flex-row justify-between items-start gap-6 sm:gap-8">
             <div>
               <div className="text-3xl font-[family-name:var(--font-playfair)] font-bold tracking-wider mb-2 text-[var(--gold-400)] print:text-black">
                 DRIVEIT
@@ -79,7 +90,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="p-5 sm:p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10">
             <div>
               <h3 className="text-xs uppercase tracking-widest text-zinc-500 mb-3 border-b border-white/10 pb-2">
                 Billed to
@@ -118,17 +129,17 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          <div className="px-8 md:px-12 pb-8">
+          <div className="px-5 sm:px-8 md:px-12 pb-8">
             <div className="w-full border border-white/10 rounded-xl overflow-hidden">
-              <div className="grid grid-cols-12 gap-4 bg-white/5 p-4 text-xs uppercase tracking-widest font-semibold text-zinc-400">
+              <div className="grid grid-cols-12 gap-2 sm:gap-4 bg-white/5 p-3 sm:p-4 text-[10px] sm:text-xs uppercase tracking-widest font-semibold text-zinc-400">
                 <div className="col-span-6">Description</div>
                 <div className="col-span-2 text-right">Qty</div>
                 <div className="col-span-4 text-right">Amount</div>
               </div>
 
-              <div className="grid grid-cols-12 gap-4 p-4 border-t border-white/10 items-center">
-                <div className="col-span-6">
-                  <p className="font-bold text-base">{booking.carName}</p>
+              <div className="grid grid-cols-12 gap-2 sm:gap-4 p-3 sm:p-4 border-t border-white/10 items-center">
+                <div className="col-span-6 min-w-0">
+                  <p className="font-bold text-sm sm:text-base">{booking.carName}</p>
                   <p className="text-xs text-zinc-500 mt-1 capitalize">
                     {booking.serviceType} service
                     {booking.addons ? ` • ${String(booking.addons).split(',').join(', ')}` : ''}

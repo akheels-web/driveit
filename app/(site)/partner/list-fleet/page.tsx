@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { PartnerConsignmentForm } from './partner-form'
-import { ShieldCheck, IndianRupee, Users, Award, Lock, Sparkles } from 'lucide-react'
+import { ShieldCheck, IndianRupee, Users, Sparkles } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Consign Your Luxury Fleet | DRIVEIT Partner Program',

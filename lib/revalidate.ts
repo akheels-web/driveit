@@ -1,4 +1,5 @@
 import { revalidatePath } from 'next/cache'
+import { invalidateCmsMemoryCache } from './cms'
 import type {
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
@@ -14,15 +15,28 @@ import type {
  * nothing change for minutes.
  */
 
-const SEO_DISCOVERY_ROUTES = ['/sitemap.xml', '/robots.txt', '/llms.txt', '/llms-full.txt']
+const SEO_DISCOVERY_ROUTES = ['/sitemap.xml', '/robots.txt', '/llms.txt', '/llms-full.txt', '/feed.xml']
 
 const ROUTES_BY_COLLECTION: Record<string, string[]> = {
   cars: ['/', '/cars', '/checkout', '/dashboard/wishlist', '/api/fleet', ...SEO_DISCOVERY_ROUTES],
-  blogs: ['/blog', '/feed.xml', ...SEO_DISCOVERY_ROUTES],
-  services: ['/', '/services', ...SEO_DISCOVERY_ROUTES],
+  blogs: ['/blog', ...SEO_DISCOVERY_ROUTES],
+  services: [
+    '/',
+    '/services',
+    '/services/private-jet-services',
+    '/services/yacht-services',
+    '/services/luxury-buses',
+    '/services/luxury-car-rental',
+    '/services/airport-taxi',
+    '/services/corporate-car-rental',
+    '/services/intercity-cabs',
+    '/services/pickup-dropoff',
+    '/services/wedding-cars',
+    ...SEO_DISCOVERY_ROUTES,
+  ],
   testimonials: ['/', '/about'],
   coupons: ['/checkout'],
-  media: ['/', '/cars', '/blog', ...SEO_DISCOVERY_ROUTES],
+  media: ['/', '/cars', '/blog', '/services', ...SEO_DISCOVERY_ROUTES],
   partner_applications: ['/partner/list-fleet'],
 }
 
@@ -38,6 +52,7 @@ function safeRevalidate(path: string) {
 }
 
 function revalidateForCollection(slug: string, doc?: Record<string, any> | null) {
+  invalidateCmsMemoryCache()
   for (const path of ROUTES_BY_COLLECTION[slug] ?? []) safeRevalidate(path)
 
   if (slug === 'cars' && doc?.slug) safeRevalidate(`/cars/${doc.slug}`)
@@ -56,6 +71,7 @@ export const revalidateAfterDelete: CollectionAfterDeleteHook = ({ collection, d
 }
 
 export const revalidateAfterGlobalChange: GlobalAfterChangeHook = ({ doc, global }) => {
+  invalidateCmsMemoryCache()
   if (global.slug === 'site-settings') {
     safeRevalidate('/')
     safeRevalidate('/about')

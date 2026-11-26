@@ -3,16 +3,9 @@
 import { useState } from 'react'
 import {
   Car,
-  ShieldCheck,
   CheckCircle2,
   Send,
-  Building,
-  Calendar,
-  Gauge,
-  Phone,
-  Mail,
   User,
-  MapPin,
   AlertCircle,
 } from 'lucide-react'
 

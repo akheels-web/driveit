@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 
+import { isPostgresReachable } from '@/lib/db'
 import { requiredSecret } from '@/lib/env'
 
 const googleConfigured = Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET)
@@ -25,14 +26,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signIn({ user }) {
       if (user?.email) {
         try {
-          const { getPayload } = await import('payload')
-          const config = (await import('@/payload.config')).default
-          const { upsertCustomer } = await import('@/lib/customers')
-          const payload = await getPayload({ config })
-          await upsertCustomer(payload, {
-            email: user.email,
-            name: user.name ?? null,
-          })
+          if (await isPostgresReachable()) {
+            const { getPayload } = await import('payload')
+            const config = (await import('@/payload.config')).default
+            const { upsertCustomer } = await import('@/lib/customers')
+            const payload = await getPayload({ config })
+            await upsertCustomer(payload, {
+              email: user.email,
+              name: user.name ?? null,
+            })
+          }
         } catch (err) {
           console.error('[auth] Failed to upsert customer on signIn callback:', err)
         }

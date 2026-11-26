@@ -14,6 +14,9 @@ export type CustomerProfileInput = {
   email: string
   name?: string | null
   phone?: string | null
+  drivingLicenseNumber?: string | null
+  gstin?: string | null
+  companyName?: string | null
 }
 
 export type CustomerProfilePatch = {
@@ -62,6 +65,9 @@ export async function upsertCustomer(
         email,
         ...(input.name ? { name: input.name } : {}),
         ...(input.phone ? { phone: input.phone } : {}),
+        ...(input.drivingLicenseNumber ? { drivingLicenseNumber: input.drivingLicenseNumber } : {}),
+        ...(input.gstin ? { gstin: input.gstin } : {}),
+        ...(input.companyName ? { companyName: input.companyName } : {}),
       },
       overrideAccess: true,
       ...(req ? { req } : {}),
@@ -78,6 +84,11 @@ export async function upsertCustomer(
   const patch: Record<string, unknown> = {}
   if (input.name && !existing.name) patch.name = input.name
   if (input.phone && !existing.phone) patch.phone = input.phone
+  if (input.drivingLicenseNumber && !existing.drivingLicenseNumber) {
+    patch.drivingLicenseNumber = input.drivingLicenseNumber
+  }
+  if (input.gstin && !existing.gstin) patch.gstin = input.gstin
+  if (input.companyName && !existing.companyName) patch.companyName = input.companyName
   if (Object.keys(patch).length === 0) return existing
 
   return payload.update({

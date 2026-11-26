@@ -3,7 +3,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { Award, Users, Clock, Shield, Star, Heart, Car, Plane, MapPin, Phone, Mail, Crown, Sparkles, CheckCircle, MessageCircle } from "lucide-react"
+import { Users, Clock, Shield, Star, Car, Plane, MapPin, Phone, Mail, Crown, CheckCircle, MessageCircle } from "lucide-react"
 
 import { getSiteSettings, resolveMediaUrl, SITE_DEFAULTS } from "@/lib/cms"
 
@@ -33,8 +33,8 @@ export default async function AboutPage() {
         {/* HERO SECTION */}
         <section className="relative min-h-[92vh] flex items-center">
           <Image
-            src="/luxury-flagship-cars-in-black-studio.png"
-            alt="DRIVEIT Luxury Fleet"
+            src="/luxury-flagship-cars-in-black-studio.webp"
+            alt="DRIVEIT Luxury flagship fleet showcase in Hyderabad"
             fill
             priority
             sizes="100vw"
@@ -99,8 +99,8 @@ export default async function AboutPage() {
           <div className="grid gap-12 lg:grid-cols-2">
             <div className="relative overflow-hidden rounded-2xl border border-white/10">
               <Image
-                src="/maybach-s680-night.png"
-                alt="Our Mission - Luxury Service"
+                src="/maybach-s680-night.webp"
+                alt="Our Mission — DRIVEIT Luxury executive mobility and concierge service"
                 fill
                 loading="lazy"
                 className="object-cover opacity-30"
@@ -116,8 +116,8 @@ export default async function AboutPage() {
 
             <div className="relative overflow-hidden rounded-2xl border border-white/10">
               <Image
-                src="/rolls-royce-phantom-night-black.png"
-                alt="Our Vision - Premium Excellence"
+                src="/rolls-royce-phantom-night.webp"
+                alt="Our Vision — Ultra-luxury chauffeurs, private aviation, and supercar excellence"
                 fill
                 loading="lazy"
                 className="object-cover opacity-30"
@@ -192,8 +192,8 @@ export default async function AboutPage() {
 
           <div className="relative overflow-hidden rounded-2xl border border-white/10">
             <Image
-              src="/black-chauffeur-sedan-night-city.png"
-              alt="Hyderabad City Presence"
+              src="/black-chauffeur-sedan-night-city.webp"
+              alt="DRIVEIT Luxury Banjara Hills showroom and Hyderabad VIP network"
               fill
               loading="lazy"
               className="object-cover opacity-40"
@@ -282,8 +282,8 @@ export default async function AboutPage() {
         {/* FINAL CTA SECTION */}
         <section className="relative py-20">
           <Image
-            src="/luxury-flagship-cars-in-black-studio.png"
-            alt="Contact DRIVEIT"
+            src="/luxury-flagship-cars-in-black-studio.webp"
+            alt="Contact DRIVEIT Luxury 24/7 concierge desk in Hyderabad"
             fill
             loading="lazy"
             className="object-cover opacity-30"

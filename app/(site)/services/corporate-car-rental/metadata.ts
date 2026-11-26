@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     url: '/services/corporate-car-rental',
     type: 'website',
     images: [
-      { url: '/og/corporate-car-rental.jpg', width: 1200, height: 630, alt: 'DRIVEIT Corporate Car Rental Hyderabad' },
+      { url: '/maybach-s680-night.webp', width: 1920, height: 1072, alt: 'DRIVEIT Corporate Car Rental Hyderabad' },
     ],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },

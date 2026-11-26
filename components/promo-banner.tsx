@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { X, Tag } from 'lucide-react'
+import { fetchClientSiteSettings, type ClientSiteSettings } from '@/lib/client-site-settings'
+
+const DEFAULT_PROMO_TEXT =
+  'Exclusive Offer: Use code FIRST10 for 10% off your first luxury rental!'
 
 export function PromoBanner({
   enabled: propEnabled,
@@ -14,49 +18,46 @@ export function PromoBanner({
   code?: string
 } = {}) {
   const [isVisible, setIsVisible] = useState(false)
-  const [bannerConfig, setBannerConfig] = useState({
-    enabled: propEnabled ?? true,
-    text: propText || 'Exclusive Offer: Use code FIRST10 for 10% off your first luxury rental!',
-    code: propCode || 'FIRST10',
-  })
+  const [fetched, setFetched] = useState<ClientSiteSettings | null>(null)
+  const needsClientFetch = propEnabled === undefined && !propText && !propCode
 
   useEffect(() => {
-    if (propEnabled !== undefined || propText || propCode) {
-      setBannerConfig({
-        enabled: propEnabled ?? true,
-        text: propText || 'Exclusive Offer: Use code FIRST10 for 10% off your first luxury rental!',
-        code: propCode || 'FIRST10',
+    let active = true
+    if (needsClientFetch) {
+      fetchClientSiteSettings().then((data) => {
+        if (active && data) setFetched(data)
       })
-    } else {
-      fetch('/api/site-settings')
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data) {
-            setBannerConfig({
-              enabled: data.promoBannerEnabled !== false,
-              text: data.promoBannerText || 'Exclusive Offer: Use code FIRST10 for 10% off your first luxury rental!',
-              code: data.promoBannerCode || 'FIRST10',
-            })
-          }
-        })
-        .catch(() => {})
     }
 
-    // Check if user dismissed the banner previously
     const dismissed = sessionStorage.getItem('promo_dismissed')
     if (!dismissed) {
-      // Small delay to let the site load first
       const timer = setTimeout(() => setIsVisible(true), 1500)
-      return () => clearTimeout(timer)
+      return () => {
+        active = false
+        clearTimeout(timer)
+      }
     }
-  }, [propEnabled, propText, propCode])
+
+    return () => {
+      active = false
+    }
+  }, [needsClientFetch])
+
+  const enabled =
+    propEnabled !== undefined
+      ? propEnabled
+      : fetched?.promoBannerEnabled !== undefined
+        ? fetched.promoBannerEnabled
+        : true
+  const text = propText || fetched?.promoBannerText || DEFAULT_PROMO_TEXT
+  const code = propCode || fetched?.promoBannerCode || 'FIRST10'
 
   const handleDismiss = () => {
     setIsVisible(false)
     sessionStorage.setItem('promo_dismissed', 'true')
   }
 
-  if (!bannerConfig.enabled) return null
+  if (!enabled) return null
 
   return (
     <AnimatePresence>
@@ -72,15 +73,16 @@ export function PromoBanner({
             <div className="flex items-center gap-2 text-xs md:text-sm font-semibold tracking-wide">
               <Tag className="w-4 h-4" />
               <span>
-                {bannerConfig.text}
-                {bannerConfig.code && !bannerConfig.text.includes(bannerConfig.code) && (
+                {text}
+                {code && !text.includes(code) && (
                   <span className="bg-black text-white px-2 py-0.5 rounded ml-1 font-mono tracking-widest text-[10px] md:text-xs">
-                    {bannerConfig.code}
+                    {code}
                   </span>
                 )}
               </span>
             </div>
-            <button 
+            <button
+              type="button"
               onClick={handleDismiss}
               className="absolute right-4 p-1 hover:bg-black/10 rounded-full transition-colors cursor-pointer"
               aria-label="Dismiss offer"

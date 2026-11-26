@@ -1,3 +1,5 @@
+import crypto from 'node:crypto'
+
 /**
  * Environment helpers.
  *
@@ -45,3 +47,14 @@ export function serverUrl(): string {
 }
 
 export const isProduction = isProd
+
+/**
+ * Constant-time token comparison via fixed-length SHA-256 digests so
+ * secret length cannot leak through timing side channels.
+ */
+export function safeTokenMatches(expected: string, provided: string | null | undefined): boolean {
+  if (!expected || !provided) return false
+  const digestA = crypto.createHash('sha256').update(expected).digest()
+  const digestB = crypto.createHash('sha256').update(provided).digest()
+  return crypto.timingSafeEqual(digestA, digestB)
+}

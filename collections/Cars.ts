@@ -68,12 +68,87 @@ export const Cars: CollectionConfig = {
     { name: 'image', type: 'relationship', relationTo: 'media', label: 'Primary Image Asset' },
     { name: 'imageSrc', type: 'text', label: 'Static Image URL (fallback when no upload)' },
     {
+      name: 'imageAlt',
+      type: 'text',
+      label: 'Primary Image Alt Text (SEO)',
+      admin: {
+        description:
+          'Accessible alt text for primary vehicle image. Leave blank to auto-generate non-duplicated Brand + Model alt.',
+      },
+    },
+    {
       name: 'gallery',
       type: 'array',
       label: 'Gallery Images',
       fields: [
         { name: 'image', type: 'relationship', relationTo: 'media', label: 'Gallery Image Asset' },
         { name: 'src', type: 'text', label: 'Image URL Fallback' },
+        { name: 'alt', type: 'text', label: 'Gallery Image Alt Text' },
+      ],
+    },
+    {
+      name: 'featuredInStudioStage',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Feature in Homepage Interactive Studio Stage',
+      admin: {
+        description: 'Check to display this vehicle inside the Interactive Garage Studio Stage on /.',
+      },
+    },
+    {
+      name: 'tagline',
+      type: 'text',
+      label: 'Studio Stage Tagline',
+      admin: { description: 'E.g. "Architecture of Luxury · Starlight Headliner"' },
+    },
+    {
+      type: 'row',
+      fields: [
+        { name: 'powerHp', type: 'number', min: 0, label: 'Power Output (BHP)', admin: { width: '33%' } },
+        { name: 'zeroToHundred', type: 'text', label: '0–100 km/h Time', admin: { width: '33%' } },
+        { name: 'topSpeed', type: 'text', label: 'Top Speed', admin: { width: '34%' } },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'acousticNote',
+          type: 'text',
+          label: 'Cabin Acoustic / Exhaust Signature',
+          admin: { width: '60%' },
+        },
+        {
+          name: 'engineAudioProfile',
+          type: 'select',
+          label: 'Engine Audio Profile',
+          defaultValue: 'v12-whisper',
+          options: [
+            { label: 'Rolls-Royce V12 Whisper Turbine', value: 'v12-whisper' },
+            { label: 'Aston Martin Twin-Turbo V8', value: 'v8-twinturbo' },
+            { label: 'Ferrari SF90 Hybrid Flat-Plane V8', value: 'v8-hybrid' },
+            { label: 'Mercedes-AMG G 63 Bi-Turbo V8', value: 'v8-amg' },
+            { label: 'Lamborghini Huracán NA V10', value: 'v10-screamer' },
+          ],
+          admin: { width: '40%' },
+        },
+      ],
+    },
+    {
+      name: 'studioHotspots',
+      type: 'array',
+      label: 'Interactive Studio Stage Hotspots',
+      fields: [
+        { name: 'label', type: 'text', required: true, label: 'Hotspot Label' },
+        { name: 'specBadge', type: 'text', label: 'Powertrain / Feature Badge' },
+        { name: 'detail', type: 'textarea', label: 'Engineering Detail' },
+        {
+          type: 'row',
+          fields: [
+            { name: 'x', type: 'number', min: 0, max: 100, defaultValue: 50, label: 'Pin X (%)', admin: { width: '50%' } },
+            { name: 'y', type: 'number', min: 0, max: 100, defaultValue: 50, label: 'Pin Y (%)', admin: { width: '50%' } },
+          ],
+        },
       ],
     },
     {

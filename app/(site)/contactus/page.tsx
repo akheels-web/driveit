@@ -2,7 +2,7 @@
 import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquare, Phone, Car, Plane, Anchor } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { LuxurySelect } from "@/components/luxury-select";
 
 export default function ContactForm() {
@@ -71,7 +71,7 @@ export default function ContactForm() {
 
         {/* Header */}
         <div className="bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border-b border-zinc-800">
-          <div className="px-6 pt-12 pb-8 text-center">
+          <div className="px-6 pt-16 sm:pt-12 pb-8 text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: '#b48811' }}>
               <MessageSquare className="w-8 h-8 text-black" />
             </div>

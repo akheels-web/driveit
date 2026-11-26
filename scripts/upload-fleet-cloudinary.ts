@@ -30,13 +30,14 @@ const TARGET_FOLDERS = ['sadan', 'suv', 'trending']
 
 async function uploadFile(fullPath: string, relativePath: string) {
   const buffer = fs.readFileSync(fullPath)
-  const ext = path.extname(relativePath)
-  const baseName = path.basename(relativePath, ext)
+  const ext = path.extname(relativePath).toLowerCase()
+  const baseName = path.basename(relativePath, path.extname(relativePath))
   const dirName = path.dirname(relativePath).replace(/\\/g, '/')
   const cleanDir = dirName === '.' ? '' : `${dirName}/`
 
   const publicId = `${settings!.folder}/fleet/${cleanDir}${baseName}`
-  const mimeType = ext === '.png' ? 'image/png' : 'image/jpeg'
+  const mimeType =
+    ext === '.webp' ? 'image/webp' : ext === '.png' ? 'image/png' : 'image/jpeg'
 
   try {
     const asset = await uploadBuffer(buffer, { publicId, mimeType })

@@ -5,6 +5,8 @@ import { ArrowLeft, CalendarDays, Car } from 'lucide-react'
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
+import { listLocalBookingsByEmail } from '@/lib/local-booking-fallback'
 import { SiteHeader } from '@/components/site-header'
 import { PaymentStatusBadge } from '@/components/payment-status-badge'
 import { LiveVehicleTracker } from '@/components/live-vehicle-tracker'
@@ -34,23 +36,36 @@ export default async function BookingsPage({
     : 'all'
   const email = session.user.email.toLowerCase()
 
-  const payload = await getPayload({ config })
+  const reachable = await isPostgresReachable()
+  let docs: Record<string, any>[] = []
 
-  // Filtering happens in the database — no more shipping every booking to the
-  // browser and filtering there.
-  const { docs } = await payload.find({
-    collection: 'bookings',
-    where: {
-      and: [
-        { customerEmail: { equals: email } },
-        ...(activeFilter === 'all' ? [] : [{ status: { equals: activeFilter } }]),
-      ],
-    } as any,
-    sort: '-createdAt',
-    limit: 100,
-    depth: 0,
-    overrideAccess: true, // scoped to the session email above
-  })
+  if (reachable) {
+    try {
+      const payload = await getPayload({ config })
+      // Filtering happens in the database — no more shipping every booking to the
+      // browser and filtering there.
+      const res = await payload.find({
+        collection: 'bookings',
+        where: {
+          and: [
+            { customerEmail: { equals: email } },
+            ...(activeFilter === 'all' ? [] : [{ status: { equals: activeFilter } }]),
+          ],
+        } as any,
+        sort: '-createdAt',
+        limit: 100,
+        depth: 0,
+        overrideAccess: true, // scoped to the session email above
+      })
+      docs = res.docs as Record<string, any>[]
+    } catch {
+      const local = listLocalBookingsByEmail(email)
+      docs = (activeFilter === 'all' ? local : local.filter((b) => b.status === activeFilter)) as any
+    }
+  } else {
+    const local = listLocalBookingsByEmail(email)
+    docs = (activeFilter === 'all' ? local : local.filter((b) => b.status === activeFilter)) as any
+  }
 
   const bookings = docs as Record<string, any>[]
 
@@ -266,7 +281,7 @@ export default async function BookingsPage({
                       </div>
 
                       {/* 4-Step Progress Stepper */}
-                      <div className="grid grid-cols-4 gap-1 text-center pt-1">
+                      <div className="grid grid-cols-2 min-[400px]:grid-cols-4 gap-2 sm:gap-1 text-center pt-1">
                         <div className="space-y-1">
                           <div className="h-1.5 rounded-full bg-emerald-500" />
                           <span className="text-[9px] text-emerald-400 font-medium">1. Held</span>

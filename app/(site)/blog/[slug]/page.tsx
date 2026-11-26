@@ -7,6 +7,7 @@ import { Calendar, User, ChevronLeft, Clock } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { blogSeedPosts, getBlogPost, getBlogPosts } from "@/lib/blog-seed"
+import { normalizeAssetPath } from "@/lib/asset-paths"
 
 export const revalidate = 300
 
@@ -24,13 +25,17 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   const post = await getBlogPost(slug)
   const seed = blogSeedPosts.find((entry) => entry.slug === slug)
 
-  const title = post?.title ?? seed?.title
-  const description = post?.excerpt ?? seed?.excerpt
+  const title = post?.seoTitle || post?.title || seed?.title
+  const description = post?.seoDescription || post?.excerpt || seed?.excerpt
+  const img = normalizeAssetPath(
+    post?.coverImage?.url || post?.coverImageSrc || seed?.image || "/sadan/mercedes-s-350.webp",
+  )
+  const alt = post?.coverImageAlt || post?.coverImage?.alt || post?.title || seed?.title
 
   if (!title) return { title: "Article not found | DRIVEIT" }
 
   return {
-    title: `${title} | DRIVEIT Journal`,
+    title: `${title} | DRIVEIT Blog`,
     description,
     alternates: { canonical: `/blog/${slug}` },
     openGraph: {
@@ -38,6 +43,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       description,
       type: "article",
       url: `/blog/${slug}`,
+      images: [{ url: img, alt: String(alt || title) }],
     },
   }
 }
@@ -51,11 +57,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (!cmsPost && !seedPost) notFound()
 
   const title = cmsPost?.title ?? seedPost!.title
-  const category = cmsPost?.category ?? seedPost?.category ?? "Journal"
+  const category = cmsPost?.category ?? seedPost?.category ?? "Blog"
   const author = cmsPost?.author ?? seedPost?.author ?? "DriveIt Editorial"
   const date = cmsPost?.publishedDate ? formatDate(cmsPost.publishedDate) : seedPost?.date ?? "—"
   const readTime = Number(cmsPost?.readTimeMinutes) || seedPost?.readTimeMinutes || 5
-  const coverImage = cmsPost?.coverImageSrc || cmsPost?.coverImage?.url || seedPost?.image || "/sadan/4.jpg"
+  const coverImage = normalizeAssetPath(
+    cmsPost?.coverImage?.url || cmsPost?.coverImageSrc || seedPost?.image || "/sadan/mercedes-s-350.webp",
+  )
+  const coverImageAlt =
+    cmsPost?.coverImageAlt ||
+    (typeof cmsPost?.coverImage === 'object' ? cmsPost?.coverImage?.alt : undefined) ||
+    `${title} — DRIVEIT Luxury Blog`
 
   const body = cmsPost?.content
   const hasRichBody = Boolean(body?.root?.children?.length)
@@ -107,7 +119,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {
         '@type': 'ListItem',
         position: 2,
-        name: 'Luxury Journal',
+        name: 'Luxury Blog',
         item: `${baseUrl}/blog`,
       },
       {
@@ -134,7 +146,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         <div className="max-w-4xl mx-auto px-4 py-4 mb-6">
           <Link href="/blog" className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-[var(--gold-400)] transition">
-            <ChevronLeft className="w-4 h-4" /> Back to Journal
+            <ChevronLeft className="w-4 h-4" /> Back to Blog
           </Link>
         </div>
 
@@ -159,7 +171,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <div className="relative w-full aspect-video rounded-3xl overflow-hidden mb-12 border border-white/5">
             <Image
               src={coverImage}
-              alt={title}
+              alt={coverImageAlt}
               fill
               sizes="(min-width: 1024px) 896px, 100vw"
               priority
@@ -189,7 +201,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         {related.length > 0 && (
           <section className="max-w-4xl mx-auto px-4">
-            <h2 className="text-xl font-[family-name:var(--font-playfair)] font-semibold mb-6">More from the Journal</h2>
+            <h2 className="text-xl font-[family-name:var(--font-playfair)] font-semibold mb-6">More from the Blog</h2>
             <ul className="grid gap-4 sm:grid-cols-3">
               {related.map((post) => (
                 <li key={post.slug}>

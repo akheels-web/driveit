@@ -4,7 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, ArrowRight, Sparkles, Clock, Users, CheckCircle, Building2, Calendar, UserCheck, Briefcase, ChevronLeft, ChevronRight } from "lucide-react"
+import { Car, Phone, Sparkles, Clock, Users, CheckCircle, Building2, Calendar, UserCheck, Briefcase } from "lucide-react"
 import { FaWhatsapp } from "react-icons/fa"
 import { ServiceFleetShowcase } from "@/components/service-fleet-showcase"
 
@@ -38,12 +38,13 @@ export default function CorporateCarRentalPage() {
         {/* HERO SECTION */}
         <section className="relative min-h-[92vh] flex items-center">
           <Image
-            src="https://i.pinimg.com/736x/14/c0/e4/14c0e437d268500ac4b4bc1b46879219.jpg"
+            src="/maybach-s680-night.webp"
             alt="Corporate car rental with business professionals"
             fill
             priority
+            quality={90}
             sizes="100vw"
-            className="object-cover opacity-50"
+            className="object-cover opacity-55"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/80" />
           <div className="relative w-full">
@@ -312,7 +313,7 @@ export default function CorporateCarRentalPage() {
         {/* FINAL CTA SECTION */}
         <section className="relative py-20">
           <Image
-            src="/luxury-flagship-cars-in-black-studio.png"
+            src="/luxury-flagship-cars-in-black-studio.webp"
             alt="Book your corporate car rental in Hyderabad"
             fill
             loading="lazy"

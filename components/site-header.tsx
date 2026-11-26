@@ -5,9 +5,6 @@ import { usePathname } from "next/navigation"
 import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 import {
-  Car,
-  Plane,
-  Anchor,
   Phone,
   Crown,
   User,
@@ -23,13 +20,14 @@ import Image from "next/image"
 import { motion, useScroll, useTransform, AnimatePresence } from "motion/react"
 import { useSession, signOut } from "next-auth/react"
 import { PromoBanner } from "@/components/promo-banner"
+import { fetchClientSiteSettings, type ClientSiteSettings } from "@/lib/client-site-settings"
 
-const TOP_NAV_LINKS = [
-  { href: "/services/airport-taxi", label: "CHAUFFEUR" },
-  { href: "/cars", label: "CARS" },
-  { href: "/services/pickup-dropoff", label: "AIRPORT VIP" },
-  { href: "/services/wedding-cars", label: "WEDDING" },
-  { href: "/services/private-jet-services", label: "PRIVATE JETS" },
+const HEADER_NAV_LINKS = [
+  { href: "/cars", label: "Cars", xlOnly: false },
+  { href: "/services/airport-taxi", label: "Chauffeur", xlOnly: false },
+  { href: "/services/private-jet-services", label: "Private Jets", xlOnly: false },
+  { href: "/services/yacht-services", label: "Yachts", xlOnly: false },
+  { href: "/services/wedding-cars", label: "Wedding", xlOnly: true },
 ]
 
 const DRAWER_SERVICES = [
@@ -46,48 +44,64 @@ const DRAWER_SERVICES = [
 
 export function SiteHeader({
   logoSrc: propLogoSrc,
+  logoAlt: propLogoAlt,
   siteName: propSiteName,
+  promoEnabled: propPromoEnabled,
+  promoText: propPromoText,
+  promoCode: propPromoCode,
 }: {
   logoSrc?: string
+  logoAlt?: string
   siteName?: string
+  promoEnabled?: boolean
+  promoText?: string
+  promoCode?: string
 } = {}) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [open, setOpen] = useState(false)
-  const [logoSrc, setLogoSrc] = useState(propLogoSrc || '/logo.png')
-  const [siteName, setSiteName] = useState(propSiteName || 'DRIVEIT')
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const [fetched, setFetched] = useState<ClientSiteSettings | null>(null)
   const [signingOut, setSigningOut] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
 
   const handleQuickSignOut = async () => {
     if (signingOut) return
     setSigningOut(true)
     try {
       await signOut({ redirect: false })
-    } catch {}
+    } catch { }
     window.location.href = '/'
   }
 
+  const needsClientFetch =
+    !propLogoSrc || !propLogoAlt || !propSiteName || propPromoEnabled === undefined
+
   useEffect(() => {
-    if (propLogoSrc) setLogoSrc(propLogoSrc)
-    if (propSiteName) setSiteName(propSiteName)
-    if (!propLogoSrc || !propSiteName) {
-      fetch('/api/site-settings')
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data) {
-            if (!propLogoSrc && data.headerLogo) setLogoSrc(data.headerLogo)
-            if (!propSiteName && data.siteName) setSiteName(data.siteName)
-          }
-        })
-        .catch(() => {})
+    if (!needsClientFetch) return
+    let active = true
+    fetchClientSiteSettings().then((data) => {
+      if (active && data) setFetched(data)
+    })
+    return () => {
+      active = false
     }
-  }, [propLogoSrc, propSiteName])
+  }, [needsClientFetch])
+
+  const logoSrc = propLogoSrc || fetched?.headerLogo || '/logo.png'
+  const logoAlt =
+    propLogoAlt || fetched?.headerLogoAlt || 'DRIVEIT Luxury Chauffeur & Supercar Rental Logo'
+  const siteName = propSiteName || fetched?.siteName || 'DRIVEIT'
+  const resolvedPromoEnabled =
+    propPromoEnabled !== undefined ? propPromoEnabled : fetched?.promoBannerEnabled
+  const resolvedPromoText = propPromoText || fetched?.promoBannerText
+  const resolvedPromoCode = propPromoCode || fetched?.promoBannerCode
 
   const { scrollY } = useScroll()
-  const headerBg = useTransform(scrollY, [0, 80], [0, 0.95])
-  const headerBlur = useTransform(scrollY, [0, 80], [0, 16])
-  const borderOpacity = useTransform(scrollY, [0, 80], [0.04, 0.12])
+  const headerBg = useTransform(scrollY, [0, 80], [0.82, 0.96])
+  const headerBlur = useTransform(scrollY, [0, 80], [14, 22])
+  const borderOpacity = useTransform(scrollY, [0, 80], [0.08, 0.14])
 
   // Lock body scroll and register escape key when drawer is open
   useEffect(() => {
@@ -108,169 +122,192 @@ export function SiteHeader({
     }
   }, [open])
 
-  // Close drawer on route change
+  // Close drawer & account popover on route change or outside pointer tap
   useEffect(() => {
-    setOpen(false)
+    const id = setTimeout(() => {
+      setOpen(false)
+      setAccountMenuOpen(false)
+    }, 0)
+    return () => clearTimeout(id)
   }, [pathname])
+
+  useEffect(() => {
+    if (!accountMenuOpen) return
+    const handleOutside = (e: PointerEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', handleOutside)
+    return () => document.removeEventListener('pointerdown', handleOutside)
+  }, [accountMenuOpen])
 
   return (
     <>
       <motion.header
         ref={headerRef}
-        className="w-full fixed top-0 z-[60] flex flex-col"
+        className="w-full fixed top-0 z-[60] flex flex-col pt-[env(safe-area-inset-top)] shadow-[0_12px_36px_rgba(0,0,0,0.55)]"
         style={{
           backgroundColor: useTransform(headerBg, (v) => `rgba(5, 5, 8, ${v})`),
           backdropFilter: useTransform(headerBlur, (v) => `blur(${v}px)`),
           borderBottom: useTransform(borderOpacity, (v) => `1px solid rgba(255, 255, 255, ${v})`),
         }}
       >
-        <PromoBanner />
+        <PromoBanner
+          enabled={resolvedPromoEnabled}
+          text={resolvedPromoText}
+          code={resolvedPromoCode}
+        />
 
-        {/* Minimal Hype-Style Navigation Bar with 3-Column Grid (Zero Overlap Guaranteed) */}
-        <div className="mx-auto max-w-[1500px] w-full px-4 sm:px-6 lg:px-8 h-16 sm:h-[68px] grid grid-cols-[auto_1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center text-zinc-100 gap-2 sm:gap-4">
-          {/* Left: Minimal 2-Line Hamburger Menu */}
-          <div className="flex items-center justify-start gap-2.5 sm:gap-3 shrink-0">
+        {/* Balanced Luxury Navigation Bar: Logo Left · Pill Nav Center · Actions & Drawer Right */}
+        <div className="mx-auto max-w-[1520px] w-full px-4 sm:px-6 lg:px-10 h-16 sm:h-[72px] flex items-center justify-between gap-3 sm:gap-5 text-zinc-100">
+          {/* Left: High-Contrast Brand Crest / Logo */}
+          <Link
+            href="/"
+            aria-label={`${siteName} Home`}
+            className="group inline-flex items-center rounded-xl px-2 py-1.5 -ml-2 transition-all duration-300 hover:bg-white/[0.04] shrink-0"
+          >
+            <Image
+              src={logoSrc}
+              alt={logoAlt}
+              width={160}
+              height={44}
+              className="h-7 sm:h-9 w-auto object-contain shrink-0 drop-shadow-[0_2px_12px_rgba(212,175,55,0.28)] transition-all duration-300 group-hover:brightness-110"
+              priority
+              loading="eager"
+              unoptimized={logoSrc.startsWith('http')}
+            />
+          </Link>
+
+          {/* Center: Spacious Frosted Pill Navigation */}
+          <nav
+            aria-label="Primary Navigation"
+            className="hidden lg:flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/10 px-2 py-1.5 backdrop-blur-md shrink-0"
+          >
+            {HEADER_NAV_LINKS.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "px-3.5 xl:px-4 py-1.5 rounded-full text-[11px] uppercase tracking-[0.16em] whitespace-nowrap transition-all duration-200 border",
+                    item.xlOnly ? "hidden xl:inline-flex items-center" : "inline-flex items-center",
+                    isActive
+                      ? "bg-[var(--gold-400)]/15 text-[var(--gold-400)] border-[var(--gold-400)]/30 font-semibold"
+                      : "text-zinc-200 border-transparent hover:text-white hover:bg-white/[0.06] font-medium"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Right: Member Account, Primary CTA & Concierge Drawer Trigger */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            {session?.user ? (
+              <div ref={accountMenuRef} className="relative group shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setAccountMenuOpen((prev) => !prev)}
+                  aria-expanded={accountMenuOpen}
+                  aria-haspopup="menu"
+                  aria-label="Member account menu"
+                  className="flex items-center gap-1.5 sm:gap-2 min-h-[40px] px-2 sm:px-3 py-1.5 rounded-full text-xs font-medium border border-white/12 bg-white/[0.04] text-zinc-200 hover:border-[var(--gold-400)]/45 hover:text-[var(--gold-400)] transition-all cursor-pointer"
+                >
+                  <div className="w-5 h-5 rounded-full bg-[var(--gold-400)] text-black flex items-center justify-center font-bold text-[10px]">
+                    {(session.user.name?.[0] || session.user.email?.[0] || 'U').toUpperCase()}
+                  </div>
+                  <span className="hidden sm:inline-block max-w-[80px] truncate">
+                    {session.user.name?.split(' ')[0] || 'Account'}
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      "w-3 h-3 opacity-60 transition-transform duration-200 lg:group-hover:rotate-180",
+                      accountMenuOpen && "rotate-180"
+                    )}
+                  />
+                </button>
+
+                {/* Dropdown */}
+                <div
+                  role="menu"
+                  className={cn(
+                    "absolute right-0 top-full pt-2 transition-all duration-200 z-50",
+                    accountMenuOpen
+                      ? "opacity-100 visible"
+                      : "opacity-0 invisible lg:group-hover:opacity-100 lg:group-hover:visible"
+                  )}
+                >
+                  <div className="bg-[#0c0c0e] border border-white/10 rounded-xl shadow-2xl p-2 min-w-[210px] text-xs backdrop-blur-xl">
+                    <div className="px-3 py-2 border-b border-white/10 mb-1">
+                      <p className="font-semibold text-white truncate">{session.user.name || 'VIP Member'}</p>
+                      <p className="text-[10px] text-zinc-400 truncate">{session.user.email}</p>
+                    </div>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2 min-h-[38px] px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors"
+                    >
+                      <Crown className="w-3.5 h-3.5 text-[var(--gold-400)]" /> Dashboard
+                    </Link>
+                    <Link
+                      href="/dashboard/bookings"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2 min-h-[38px] px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors"
+                    >
+                      <CalendarDays className="w-3.5 h-3.5 text-[var(--gold-400)]" /> My Bookings
+                    </Link>
+                    <Link
+                      href="/dashboard/profile"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2 min-h-[38px] px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors"
+                    >
+                      <User className="w-3.5 h-3.5 text-[var(--gold-400)]" /> Profile &amp; KYC
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleQuickSignOut}
+                      disabled={signingOut}
+                      className="w-full flex items-center gap-2 min-h-[38px] px-3 py-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors text-left mt-1 border-t border-white/5 pt-2 cursor-pointer disabled:opacity-50"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>{signingOut ? 'Signing out...' : 'Sign Out'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden md:inline-flex items-center min-h-[40px] px-3.5 py-2 rounded-full border border-white/12 bg-white/[0.04] hover:border-[var(--gold-400)]/45 hover:bg-white/[0.08] text-[11px] uppercase tracking-[0.16em] text-zinc-200 hover:text-[var(--gold-400)] font-medium transition-all whitespace-nowrap shrink-0"
+              >
+                Sign In
+              </Link>
+            )}
+
+            <Link
+              href="/cars"
+              className="inline-flex items-center justify-center min-h-[40px] text-[10px] sm:text-[11px] uppercase tracking-[0.14em] sm:tracking-[0.16em] text-zinc-950 font-semibold bg-[var(--gold-400)] hover:bg-[var(--gold-300)] px-3 sm:px-5 py-2 rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.28)] hover:scale-[1.03] shrink-0 whitespace-nowrap"
+            >
+              <span>Book Now</span>
+            </Link>
+
             <button
               type="button"
               onClick={() => setOpen(true)}
               aria-label="Open Navigation Drawer"
-              className="group flex flex-col justify-center items-start gap-[5px] w-9 h-9 p-1.5 text-zinc-300 hover:text-[var(--gold-400)] transition-colors cursor-pointer rounded-lg hover:bg-white/[0.04] focus:outline-none"
+              className="group inline-flex items-center justify-center gap-2.5 min-h-[40px] min-w-[40px] px-2.5 sm:px-3.5 py-2 rounded-full border border-white/12 bg-white/[0.04] hover:border-[var(--gold-400)]/45 hover:bg-white/[0.08] text-zinc-200 hover:text-[var(--gold-400)] transition-all duration-300 cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-400)]"
             >
-              <span className="w-5 h-[1.5px] bg-current transition-all duration-300 group-hover:w-6" />
-              <span className="w-3.5 h-[1.5px] bg-current transition-all duration-300 group-hover:w-6" />
+              <span className="flex flex-col justify-center items-end gap-[4px] w-4">
+                <span className="w-4 h-[1.5px] bg-current transition-all duration-300 group-hover:w-3" />
+                <span className="w-2.5 h-[1.5px] bg-current transition-all duration-300 group-hover:w-4" />
+              </span>
+              <span className="hidden sm:inline-block text-[11px] uppercase tracking-[0.18em] font-medium select-none">
+                Menu
+              </span>
             </button>
-            <span className="hidden sm:inline-block text-[11px] uppercase tracking-[0.2em] text-zinc-400 font-light select-none">
-              Menu
-            </span>
-          </div>
-
-          {/* Center: Brand Crest / Logo (Strictly centered in its own grid column, never overlaps) */}
-          <div className="flex items-center justify-center px-2 sm:px-4 shrink-0">
-            <Link href="/" className="flex items-center justify-center shrink-0">
-              <Image
-                src={logoSrc}
-                alt={`${siteName} Logo`}
-                width={140}
-                height={42}
-                className="h-7 sm:h-8 w-auto object-contain shrink-0 transition-opacity hover:opacity-90"
-                priority
-                loading="eager"
-                unoptimized={logoSrc.startsWith('http')}
-              />
-            </Link>
-          </div>
-
-          {/* Right: Spaced Uppercase Sans Links + Account / CTA */}
-          <div className="flex items-center justify-end gap-3 sm:gap-4 xl:gap-6 min-w-0">
-            <nav className="hidden lg:flex items-center gap-4 xl:gap-6 tracking-[0.16em] text-[11px] xl:text-xs uppercase font-medium text-zinc-300 shrink-0">
-              <Link
-                href="/services/airport-taxi"
-                className={cn(
-                  "hover:text-[var(--gold-400)] transition-colors whitespace-nowrap",
-                  pathname === '/services/airport-taxi' ? "text-[var(--gold-400)] font-semibold" : "text-zinc-300"
-                )}
-              >
-                CHAUFFEUR
-              </Link>
-              <Link
-                href="/cars"
-                className={cn(
-                  "hover:text-[var(--gold-400)] transition-colors whitespace-nowrap",
-                  pathname === '/cars' ? "text-[var(--gold-400)] font-semibold" : "text-zinc-300"
-                )}
-              >
-                CARS
-              </Link>
-              <Link
-                href="/services/pickup-dropoff"
-                className={cn(
-                  "hover:text-[var(--gold-400)] transition-colors whitespace-nowrap",
-                  pathname === '/services/pickup-dropoff' ? "text-[var(--gold-400)] font-semibold" : "text-zinc-300"
-                )}
-              >
-                AIRPORT VIP
-              </Link>
-              <Link
-                href="/services/wedding-cars"
-                className={cn(
-                  "hidden 2xl:inline-block hover:text-[var(--gold-400)] transition-colors whitespace-nowrap",
-                  pathname === '/services/wedding-cars' ? "text-[var(--gold-400)] font-semibold" : "text-zinc-300"
-                )}
-              >
-                WEDDING
-              </Link>
-            </nav>
-
-            {/* User Session or Minimal CTA */}
-            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-              {session?.user ? (
-                <div className="relative group shrink-0">
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs font-medium border border-white/10 bg-white/[0.04] text-zinc-200 hover:border-[var(--gold-400)]/40 hover:text-[var(--gold-400)] transition-all"
-                  >
-                    <div className="w-5 h-5 rounded-full bg-[var(--gold-400)] text-black flex items-center justify-center font-bold text-[10px]">
-                      {(session.user.name?.[0] || session.user.email?.[0] || 'U').toUpperCase()}
-                    </div>
-                    <span className="hidden sm:inline-block max-w-[80px] truncate">
-                      {session.user.name?.split(' ')[0] || 'Account'}
-                    </span>
-                    <ChevronDown className="w-3 h-3 opacity-60 group-hover:rotate-180 transition-transform duration-200" />
-                  </Link>
-
-                  {/* Dropdown */}
-                  <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="bg-[#0c0c0e] border border-white/10 rounded-xl shadow-2xl p-2 min-w-[200px] text-xs backdrop-blur-xl">
-                      <div className="px-3 py-2 border-b border-white/10 mb-1">
-                        <p className="font-semibold text-white truncate">{session.user.name || 'VIP Member'}</p>
-                        <p className="text-[10px] text-zinc-400 truncate">{session.user.email}</p>
-                      </div>
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors"
-                      >
-                        <Crown className="w-3.5 h-3.5 text-[var(--gold-400)]" /> Dashboard
-                      </Link>
-                      <Link
-                        href="/dashboard/bookings"
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors"
-                      >
-                        <CalendarDays className="w-3.5 h-3.5 text-[var(--gold-400)]" /> My Bookings
-                      </Link>
-                      <Link
-                        href="/dashboard/profile"
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-[var(--gold-400)] hover:bg-white/5 transition-colors"
-                      >
-                        <User className="w-3.5 h-3.5 text-[var(--gold-400)]" /> Profile &amp; KYC
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={handleQuickSignOut}
-                        disabled={signingOut}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors text-left mt-1 border-t border-white/5 pt-2 cursor-pointer disabled:opacity-50"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>{signingOut ? 'Signing out...' : 'Sign Out'}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="hidden xl:inline-block text-[11px] uppercase tracking-[0.16em] text-zinc-300 hover:text-[var(--gold-400)] font-medium transition-colors whitespace-nowrap"
-                >
-                  Sign In
-                </Link>
-              )}
-
-              <Link
-                href="/cars"
-                className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.16em] text-zinc-950 font-semibold bg-[var(--gold-400)] hover:bg-[var(--gold-300)] px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:scale-105 shrink-0 whitespace-nowrap"
-              >
-                <span>Book Now</span>
-              </Link>
-            </div>
           </div>
         </div>
       </motion.header>
@@ -279,14 +316,14 @@ export function SiteHeader({
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-[100] flex flex-col bg-[#050508]/98 backdrop-blur-2xl text-zinc-100 overflow-y-auto"
+            className="fixed inset-0 z-[100] flex flex-col bg-[#050508]/98 backdrop-blur-2xl text-zinc-100 overflow-y-auto pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Drawer Top Navigation Bar */}
-            <div className="mx-auto max-w-[1500px] w-full px-4 sm:px-6 lg:px-10 h-16 sm:h-[68px] flex items-center justify-between border-b border-white/[0.08]">
+            <div className="mx-auto max-w-[1500px] w-full px-4 sm:px-6 lg:px-10 h-16 sm:h-[68px] shrink-0 flex items-center justify-between border-b border-white/[0.08]">
               {/* Close Button */}
               <button
                 type="button"
@@ -302,7 +339,7 @@ export function SiteHeader({
               <Link href="/" onClick={() => setOpen(false)} className="flex items-center">
                 <Image
                   src={logoSrc}
-                  alt={`${siteName} Logo`}
+                  alt={logoAlt}
                   width={140}
                   height={42}
                   className="h-7 sm:h-8 w-auto object-contain"
@@ -429,6 +466,34 @@ export function SiteHeader({
                   <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-400 font-semibold block mb-3">
                     Client Access
                   </span>
+                  {session?.user ? (
+                    <div className="flex items-center justify-between gap-3 p-3 mb-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-xs">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-white truncate">{session.user.name || 'VIP Member'}</p>
+                        <p className="text-[10px] text-zinc-400 truncate">{session.user.email}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleQuickSignOut}
+                        disabled={signingOut}
+                        className="shrink-0 min-h-[36px] px-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-rose-300 hover:bg-rose-500/20 text-[11px] font-medium cursor-pointer disabled:opacity-50"
+                      >
+                        {signingOut ? 'Signing out...' : 'Sign Out'}
+                      </button>
+                    </div>
+                  ) : (
+                    <Link
+                      href="/login"
+                      onClick={() => setOpen(false)}
+                      className="flex items-center justify-between min-h-[44px] px-3.5 py-2.5 mb-2.5 rounded-xl bg-[var(--gold-400)]/12 border border-[var(--gold-400)]/35 text-[var(--gold-400)] hover:bg-[var(--gold-400)]/20 transition-colors text-xs font-semibold"
+                    >
+                      <span className="flex items-center gap-2">
+                        <User className="w-3.5 h-3.5" />
+                        Sign In / Member Portal
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  )}
                   <div className="grid gap-1.5 text-xs">
                     <Link
                       href="/dashboard"
@@ -476,7 +541,7 @@ export function SiteHeader({
                       onClick={() => setOpen(false)}
                       className="flex items-center justify-between p-2.5 rounded-lg text-zinc-300 hover:text-white hover:bg-white/[0.04] transition-colors"
                     >
-                      <span>Luxury Journal &amp; Guides</span>
+                      <span>Luxury Blog &amp; Guides</span>
                       <ArrowRight className="w-3 h-3 opacity-40" />
                     </Link>
                   </div>

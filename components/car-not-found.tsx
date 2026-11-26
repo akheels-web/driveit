@@ -108,7 +108,7 @@ export function CarNotFound() {
             style={{ position: 'relative' }}
           >
             <Image
-              src="/luxury-404-cars.jpg"
+              src="/luxury-404-cars.webp"
               alt="DRIVEIT Flagship Luxury Fleet Bugatti and Rolls-Royce"
               fill
               className="object-cover object-center group-hover:scale-105 transition-transform duration-700"

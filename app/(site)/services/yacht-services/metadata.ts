@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     url: '/services/yacht-services',
     type: 'website',
     images: [
-      { url: '/og/yacht-services.jpg', width: 1200, height: 630, alt: 'DRIVEIT Yacht Services Hyderabad' },
+      { url: '/yachts/benetti-oasis-40m-superyacht.webp', width: 1920, height: 1072, alt: 'DRIVEIT Yacht Services Hyderabad' },
     ],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },

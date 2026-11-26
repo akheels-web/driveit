@@ -4,7 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { Heart, Crown, MapPin, Phone, ArrowRight, Sparkles, Flower2, Car, ShieldCheck, Users, ChevronRight, ChevronLeft } from "lucide-react"
+import { Crown, MapPin, Flower2, Car, ShieldCheck } from "lucide-react"
 import { FaWhatsapp } from "react-icons/fa"
 import { ServiceFleetShowcase } from "@/components/service-fleet-showcase"
 
@@ -20,12 +20,13 @@ export default function WeddingCarsPage() {
         {/* HERO */}
         <section className="relative min-h-[92vh] flex items-center">
           <Image
-            src="https://i.pinimg.com/736x/a1/86/db/a186db7d8842e5c511163b21076dac56.jpg"
-            alt="Wedding luxury car hero"
+            src="/rolls-royce-wedding-ribbon.webp"
+            alt="Ribbons and floral-styled Rolls-Royce wedding car fleet in Hyderabad"
             fill
             priority
+            quality={90}
             sizes="100vw"
-            className="object-cover opacity-60"
+            className="object-cover opacity-65"
           />
           <div className="relative w-full">
             <div className="mx-auto max-w-7xl px-4 py-24 md:py-32 text-center">

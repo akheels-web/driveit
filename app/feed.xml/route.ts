@@ -35,13 +35,18 @@ export async function GET() {
       })
       .join('\n')
 
+    const lastBuildDate = posts[0]?.updatedAt || posts[0]?.date
+      ? new Date(posts[0].updatedAt || posts[0].date).toUTCString()
+      : new Date().toUTCString()
+
     const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title><![CDATA[${siteName} Journal]]></title>
+    <title><![CDATA[${siteName} Blog]]></title>
     <link>${baseUrl}/blog</link>
     <description><![CDATA[${description}]]></description>
     <language>en-in</language>
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
     ${itemsXml}
   </channel>
@@ -51,10 +56,10 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
       },
     })
-  } catch (error) {
+  } catch {
     return new NextResponse('<rss version="2.0"><channel><title>DRIVEIT</title></channel></rss>', {
       status: 200,
       headers: { 'Content-Type': 'application/xml; charset=utf-8' },

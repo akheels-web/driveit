@@ -5,6 +5,8 @@ import { Award, CalendarDays, Car, CheckCircle, Clock, User } from 'lucide-react
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
+import { listLocalBookingsByEmail } from '@/lib/local-booking-fallback'
 import { upsertCustomer } from '@/lib/customers'
 import { GOLD_THRESHOLD, PLATINUM_THRESHOLD } from '@/lib/loyalty'
 import { SiteHeader } from '@/components/site-header'
@@ -25,26 +27,45 @@ export default async function DashboardPage() {
   if (!session?.user?.email) redirect('/login?redirect=/dashboard')
 
   const email = session.user.email.toLowerCase()
-  const payload = await getPayload({ config })
+  const reachable = await isPostgresReachable()
 
-  const [customer, recent] = await Promise.all([
-    upsertCustomer(payload, { email, name: session.user.name ?? null }),
-    payload.find({
-      collection: 'bookings',
-      where: { customerEmail: { equals: email } },
-      sort: '-createdAt',
-      limit: 5,
-      depth: 0,
-      overrideAccess: true, // scoped to the signed-in session email
-    }),
-  ])
+  let customer: Record<string, any> | null = null
+  let bookings: Record<string, any>[] = []
+  let allBookingsCount = 0
 
-  const bookings = recent.docs as Record<string, any>[]
-  const allBookings = await payload.count({
-    collection: 'bookings',
-    where: { customerEmail: { equals: email } },
-    overrideAccess: true,
-  })
+  if (reachable) {
+    try {
+      const payload = await getPayload({ config })
+      const [cust, recent] = await Promise.all([
+        upsertCustomer(payload, { email, name: session.user.name ?? null }),
+        payload.find({
+          collection: 'bookings',
+          where: { customerEmail: { equals: email } },
+          sort: '-createdAt',
+          limit: 5,
+          depth: 0,
+          overrideAccess: true, // scoped to the signed-in session email
+        }),
+      ])
+      customer = cust as Record<string, any> | null
+      bookings = recent.docs as Record<string, any>[]
+
+      const countRes = await payload.count({
+        collection: 'bookings',
+        where: { customerEmail: { equals: email } },
+        overrideAccess: true,
+      })
+      allBookingsCount = countRes.totalDocs || 0
+    } catch {
+      const local = listLocalBookingsByEmail(email)
+      bookings = local as any
+      allBookingsCount = local.length
+    }
+  } else {
+    const local = listLocalBookingsByEmail(email)
+    bookings = local as any
+    allBookingsCount = local.length
+  }
 
   const upcoming = bookings.filter((b) => b.status === 'confirmed' || b.status === 'pending').length
   const completed = bookings.filter((b) => b.status === 'completed').length
@@ -112,15 +133,15 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-3 gap-3 sm:gap-4 mb-10">
             {[
-              { icon: CalendarDays, label: 'Total Bookings', value: allBookings.totalDocs, color: 'var(--gold-400)' },
+              { icon: CalendarDays, label: 'Total Bookings', value: allBookingsCount, color: 'var(--gold-400)' },
               { icon: Clock, label: 'Upcoming', value: upcoming, color: '#60a5fa' },
               { icon: CheckCircle, label: 'Completed', value: completed, color: '#34d399' },
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-xl p-5 text-center"
+                className="rounded-xl p-3.5 sm:p-5 text-center"
                 style={{ background: 'rgba(22,22,22,1)', border: '1px solid rgba(255,255,255,0.05)' }}
               >
                 <stat.icon className="w-6 h-6 mx-auto mb-2" style={{ color: stat.color }} />

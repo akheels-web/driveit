@@ -8,7 +8,7 @@ export const Blogs: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'category', 'publishedDate', 'isPublished'],
     description:
-      '📰 Journal articles: published posts appear on /blog and /blog/[slug]. Drafts stay hidden from the website.',
+      '📰 Blog articles: published posts appear on /blog and /blog/[slug]. Drafts stay hidden from the website.',
   },
   access: {
     read: anyone,
@@ -22,6 +22,9 @@ export const Blogs: CollectionConfig = {
     { name: 'excerpt', type: 'textarea', required: true, label: 'Short Summary Excerpt' },
     { name: 'coverImage', type: 'relationship', relationTo: 'media', label: 'Article Cover Image' },
     { name: 'coverImageSrc', type: 'text', label: 'Static Image URL Fallback' },
+    { name: 'coverImageAlt', type: 'text', label: 'Cover Image Alt Text (SEO)' },
+    { name: 'seoTitle', type: 'text', label: 'SEO Meta Title Override' },
+    { name: 'seoDescription', type: 'textarea', label: 'SEO Meta Description Override' },
     { name: 'author', type: 'text', defaultValue: 'DriveIt Editorial', label: 'Author Name' },
     { name: 'publishedDate', type: 'date', label: 'Publication Date' },
     { name: 'category', type: 'text', defaultValue: 'Luxury Travel', label: 'Category Tag' },

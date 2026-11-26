@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion } from 'motion/react'
 import {
   ArrowRight,
   ArrowLeft,
@@ -17,8 +17,6 @@ import {
   PhoneCall,
   Compass,
   Star,
-  FileCheck,
-  Zap,
 } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
 
@@ -45,9 +43,18 @@ function GoogleIcon() {
   )
 }
 
+function sanitizeRedirectPath(raw: string | null): string {
+  if (!raw) return '/dashboard'
+  const trimmed = raw.trim()
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.includes('\\') || trimmed.includes('://')) {
+    return '/dashboard'
+  }
+  return trimmed
+}
+
 function LoginForm() {
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/dashboard'
+  const redirectTo = sanitizeRedirectPath(searchParams.get('redirect'))
   const errorParam = searchParams.get('error')
   const loggedOutParam = searchParams.get('loggedOut')
   const reasonParam = searchParams.get('reason')
@@ -124,15 +131,15 @@ function LoginForm() {
   const notification = getAuthNotification()
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white flex flex-col lg:flex-row overflow-x-hidden selection:bg-[var(--gold-400)] selection:text-black">
+    <main className="min-h-screen bg-[#050505] text-white flex flex-col lg:flex-row overflow-x-clip selection:bg-[var(--gold-400)] selection:text-black">
       {/* ─────────────────────────────────────────────────────────────
           SECTION 1: THE VIP CLIENT ATELIER & PRESTIGE SHOWCASE (LEFT)
           ───────────────────────────────────────────────────────────── */}
-      <section className="relative w-full lg:w-7/12 xl:w-8/12 min-h-[460px] lg:min-h-screen overflow-hidden flex flex-col justify-between p-6 sm:p-10 lg:p-14 z-10 border-b lg:border-b-0 lg:border-r border-white/10">
+      <section className="relative order-2 lg:order-1 w-full lg:w-7/12 xl:w-8/12 min-h-[380px] lg:min-h-screen overflow-hidden flex flex-col justify-between p-6 sm:p-10 lg:p-14 z-10 border-t lg:border-t-0 lg:border-r border-white/10">
         {/* Background Visual Asset */}
         <div className="absolute inset-0 pointer-events-none">
           <Image
-            src="/maybach-s680-night.png"
+            src="/maybach-s680-night.webp"
             alt="DRIVEIT Luxury Flagship Fleet Hyderabad"
             fill
             priority
@@ -239,7 +246,7 @@ function LoginForm() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-mono text-white/50 shrink-0">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-mono text-white/50 shrink-0">
             <span>50+ Vehicles</span>
             <span>•</span>
             <span>1,200+ VIP Trips</span>
@@ -252,7 +259,7 @@ function LoginForm() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 2: CUSTOMER ACCESS PORTAL & AUTHENTICATION (RIGHT)
           ───────────────────────────────────────────────────────────── */}
-      <section className="w-full lg:w-5/12 xl:w-4/12 min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-12 bg-[#09090c] relative z-20">
+      <section className="order-1 lg:order-2 w-full lg:w-5/12 xl:w-4/12 min-h-[calc(100svh-2rem)] lg:min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-12 bg-[#09090c] relative z-20">
         {/* Top Utility Nav */}
         <div className="flex items-center justify-between pb-8">
           <Link

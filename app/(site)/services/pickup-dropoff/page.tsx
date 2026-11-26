@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Car, Clock, Shield, Users, CheckCircle, ChevronLeft, ChevronRight, Phone, MapPin, Stars, Sparkles, Plane, Building, Crown, ShieldCheck } from "lucide-react"
+import { Car, Clock, Phone, MapPin, Stars, Sparkles, Plane, Building, Crown, ShieldCheck } from "lucide-react"
 import { FaWhatsapp } from "react-icons/fa"
 import Link from "next/link"
 import Image from "next/image"
@@ -38,12 +38,13 @@ export default function PickupDropoffPage() {
         {/* HERO */}
         <section className="relative min-h-[92vh] flex items-center">
           <Image
-            src="https://i.pinimg.com/1200x/83/8b/0e/838b0e74f94eeda365aaf1e0c71bf0f8.jpg"
-            alt="Luxury pickup service hero"
+            src="/black-chauffeur-sedan-night-city.webp"
+            alt="Door-to-door luxury chauffeur pickup and tarmac dropoff service in Hyderabad"
             fill
             priority
+            quality={90}
             sizes="100vw"
-            className="object-cover opacity-60"
+            className="object-cover opacity-65"
           />
           <div className="relative w-full">
             <div className="mx-auto max-w-7xl px-4 py-24 md:py-32 text-center">
@@ -396,8 +397,8 @@ export default function PickupDropoffPage() {
         <section className="mx-auto max-w-7xl px-4 py-12">
           <div className="relative overflow-hidden rounded-2xl border border-neutral-800 min-h-[420px] md:min-h-[520px]">
             <Image
-              src="/black-chauffeur-sedan-night-city.png"
-              alt="Luxury chauffeur pickup booking banner Hyderabad"
+              src="/black-chauffeur-sedan-night-city.webp"
+              alt="Chauffeur-driven DRIVEIT luxury airport pickup car waiting at RGIA Shamshabad Hyderabad"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1200px"
               className="object-cover"
@@ -439,8 +440,8 @@ export default function PickupDropoffPage() {
         <section className="mx-auto max-w-7xl px-4 mt-12 pb-16">
           <div className="relative overflow-hidden rounded-2xl border border-neutral-800">
             <Image
-              src="/black-chauffeur-sedan-night-city.png"
-              alt="Premium chauffeur sedan pickup and dropoff Hyderabad"
+              src="/black-chauffeur-sedan-night-city.webp"
+              alt="Uniformed DRIVEIT chauffeur opening luxury sedan door for VIP tarmac dropoff in Hyderabad"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1200px"
               className="object-cover opacity-30"

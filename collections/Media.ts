@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { adminOnly, anyone } from '@/lib/access'
+import { adminOnly } from '@/lib/access'
 
 export const Media: CollectionConfig = {
   slug: 'media',

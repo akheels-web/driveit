@@ -4,7 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { Car, ShieldCheck, Crown, MapPin, Phone, Stars, MessageCircle, ArrowRight, Sparkles, Clock, Users, CheckCircle, IndianRupee, Route, Calendar, UserCheck, ChevronLeft, ChevronRight } from "lucide-react"
+import { Car, Phone, MessageCircle, ArrowRight, Sparkles, CheckCircle, IndianRupee, Route, Calendar, UserCheck, ChevronLeft, ChevronRight } from "lucide-react"
 
 const GOLD = '#b48811'
 
@@ -36,12 +36,13 @@ export default function IntercityCabsPage() {
         {/* HERO SECTION */}
         <section className="relative min-h-[92vh] flex items-center">
           <Image
-            src="https://i.pinimg.com/1200x/55/5f/35/555f355e29293e4c680192d119d4bf3f.jpg"
+            src="/maybach-s680-night.webp"
             alt="Luxury intercity cab on highway"
             fill
             priority
+            quality={90}
             sizes="100vw"
-            className="object-cover opacity-50"
+            className="object-cover opacity-55"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
           <div className="relative w-full">
@@ -124,40 +125,40 @@ export default function IntercityCabsPage() {
           <div className="mt-8 relative">
             <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory -webkit-overflow-scrolling-touch" id="selfdrive-carousel">
             {[
-               { title: "BMW 520D", img: "/sadan/1.jpg" },
-               { title: "Lamborghini Gallardo", img: "/sadan/2.jpg" },
-               { title: "Lexus ES 300H", img: "/sadan/3.jpg" },
-               { title: "Mercedes S 350", img: "/sadan/4.jpg" },
-               { title: "KIA Carnival", img: "/suv/1.jpg" },
-               { title: "Mercedes GLS 350D", img: "/suv/2.jpg" },
-               { title: "Mini Cooper Countryman", img: "/suv/3.jpg" },
-               { title: "Toyota Commuter (Custom)", img: "/suv/4.jpg" },
-               { title: "Toyota Crysta MT", img: "/suv/5.jpg" },
-               { title: "Toyota Fortuner", img: "/suv/6.jpg" },
-               { title: "Toyota Vellfire", img: "/suv/7.jpg" },
-               { title: "Volvo XC60", img: "/suv/8.jpg" },
-               { title: "Audi Q7 Quatro", img: "/suv/9.jpg" },
-               { title: "Mercedes S 450", img: "/sadan/5.jpg" },
-               { title: "Mercedes G 350 Wagon", img: "/trending/1.jpg" },
-               { title: "Mercedes GLS 400D", img: "/trending/2.jpg" },
-               { title: "Mercedes V-Class", img: "/trending/3.jpg" },
-               { title: "Range Rover Vogue", img: "/trending/4.jpg" },
-               { title: "Volvo S90", img: "/trending/5.jpg" },
-               { title: "Volvo XC 90", img: "/trending/6.jpg" },
-               { title: "BMW 730 LD", img: "/trending/7.jpg" },
-               { title: "BMW i4", img: "/trending/8.jpg" },
-               { title: "Mercedes C300 Convertible", img: "/trending/9.jpg" },
-               { title: "Mercedes E 220D", img: "/trending/10.jpg" },
-               { title: "Toyota Camry", img: "/sadan/6.jpg" },
-               { title: "Volvo S60 D5", img: "/sadan/7.jpg" },
-               { title: "Audi A6", img: "/sadan/8.jpg" },
-               { title: "Audi RS5 QUATRO", img: "/sadan/9.jpg" },
+               { title: "BMW 520d", img: "/sadan/bmw-520d.webp" },
+               { title: "Lamborghini Gallardo", img: "/sadan/lamborghini-gallardo.webp" },
+               { title: "Lexus ES 300h", img: "/sadan/lexus-es-300h.webp" },
+               { title: "Mercedes-Benz S 350", img: "/sadan/mercedes-s-350.webp" },
+               { title: "Kia Carnival", img: "/suv/kia-carnival.webp" },
+               { title: "Mercedes-Benz GLS 350d", img: "/suv/mercedes-gls-350d.webp" },
+               { title: "MINI Cooper Countryman", img: "/suv/mini-cooper-countryman.webp" },
+               { title: "Toyota Commuter Custom", img: "/suv/toyota-commuter-custom.webp" },
+               { title: "Toyota Innova Crysta MT", img: "/suv/toyota-crysta-mt.webp" },
+               { title: "Toyota Fortuner", img: "/suv/toyota-fortuner.webp" },
+               { title: "Toyota Vellfire", img: "/suv/toyota-vellfire.webp" },
+               { title: "Volvo XC60", img: "/suv/volvo-xc60.webp" },
+               { title: "Audi Q7 Quattro", img: "/suv/audi-q7-quattro.webp" },
+               { title: "Mercedes-Benz S 450", img: "/sadan/mercedes-s-450.webp" },
+               { title: "Mercedes-Benz G 350d Wagon", img: "/trending/mercedes-g-350-wagon.webp" },
+               { title: "Mercedes-Benz GLS 400d", img: "/trending/mercedes-gls-400d.webp" },
+               { title: "Mercedes-Benz V-Class", img: "/trending/mercedes-v-class.webp" },
+               { title: "Range Rover Vogue", img: "/trending/range-rover-vogue.webp" },
+               { title: "Volvo S90", img: "/trending/volvo-s90.webp" },
+               { title: "Volvo XC90", img: "/trending/volvo-xc90.webp" },
+               { title: "BMW 730Ld", img: "/trending/bmw-730-ld.webp" },
+               { title: "BMW i4", img: "/trending/bmw-i4.webp" },
+               { title: "Mercedes-Benz C300 Cabriolet", img: "/trending/mercedes-c300-convertible.webp" },
+               { title: "Mercedes-Benz E 220d", img: "/trending/mercedes-e-220d.webp" },
+               { title: "Toyota Camry", img: "/sadan/toyota-camry.webp" },
+               { title: "Volvo S60 D5", img: "/sadan/volvo-s60-d5.webp" },
+               { title: "Audi A6", img: "/sadan/audi-a6.webp" },
+               { title: "Audi RS5 Quattro", img: "/sadan/audi-rs5-quattro.webp" },
             ].map((car) => (
               <div key={car.title} className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-sm border border-white/10 rounded-2xl p-4 md:p-6 hover:border-gold/50 transition-all duration-300 group snap-start flex-shrink-0 w-[85vw] sm:w-[280px] md:w-[320px] lg:w-[calc((100%-48px)/3)]">
                 <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
                   <Image
                     src={car.img}
-                    alt={`${car.title} outstation self drive car Hyderabad`}
+                    alt={`${car.title} available for intercity and outstation self-drive hire in Hyderabad`}
                     fill
                     loading="lazy"
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -242,7 +243,7 @@ export default function IntercityCabsPage() {
                 </div>
                 <div className="relative h-64 rounded-xl overflow-hidden">
                   <Image
-                    src="/bentley-bentayga-night.png"
+                    src="/bentley-bentayga-night.webp"
                     alt="Luxury SUV intercity cab rental Hyderabad"
                     fill
                     loading="lazy"
@@ -277,7 +278,7 @@ export default function IntercityCabsPage() {
                 </div>
                 <div className="relative h-64 rounded-xl overflow-hidden md:order-1">
                   <Image
-                    src="/bentley-continental-gt-black-studio.png"
+                    src="/bentley-continental-gt-black-studio.webp"
                     alt="Premium Sedan outstation car rental Hyderabad"
                     fill
                     loading="lazy"
@@ -312,7 +313,7 @@ export default function IntercityCabsPage() {
                 </div>
                 <div className="relative h-64 rounded-xl overflow-hidden">
                   <Image
-                    src="/black-chauffeur-sedan-night-city.png"
+                    src="/black-chauffeur-sedan-night-city.webp"
                     alt="Family MUV chauffeur car Hyderabad"
                     fill
                     loading="lazy"
@@ -382,7 +383,7 @@ export default function IntercityCabsPage() {
         {/* FINAL CTA SECTION */}
         <section className="relative py-20">
           <Image
-            src="/black-chauffeur-sedan-night-city.png"
+            src="/black-chauffeur-sedan-night-city.webp"
             alt="Book premium intercity cabs from Hyderabad"
             fill
             loading="lazy"

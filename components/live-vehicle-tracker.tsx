@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'motion/react'
 import {
   MapPin,
@@ -48,8 +47,6 @@ export function LiveVehicleTracker({
   chauffeurPhone = '+91 63000 41186',
   isChauffeur = false,
 }: LiveVehicleTrackerProps) {
-  const [mapZoomed, setMapZoomed] = useState(false)
-
   // Calculate live trip distance
   const currentKmDriven = Math.max(0, currentOdometerKm - startOdometerKm)
   const percentUsed = Math.min(100, Math.round((currentKmDriven / Math.max(1, allowedKm)) * 100))

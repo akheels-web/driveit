@@ -6,6 +6,7 @@ import { Car, Heart } from 'lucide-react'
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
 import { getCarsFromCMS } from '@/lib/cms'
 import { SiteHeader } from '@/components/site-header'
 import { WishlistButton } from '@/components/wishlist-button'
@@ -17,18 +18,26 @@ export default async function WishlistPage() {
   if (!session?.user?.email) redirect('/login?redirect=/dashboard/wishlist')
 
   const email = session.user.email.toLowerCase()
-  const payload = await getPayload({ config })
+  const reachable = await isPostgresReachable()
 
-  const [{ docs }, cars] = await Promise.all([
-    payload.find({
-      collection: 'wishlists',
-      where: { userEmail: { equals: email } },
-      limit: 100,
-      depth: 0,
-      overrideAccess: true, // scoped to the session email above
-    }),
-    getCarsFromCMS(),
-  ])
+  let docs: Record<string, any>[] = []
+  const cars = await getCarsFromCMS()
+
+  if (reachable) {
+    try {
+      const payload = await getPayload({ config })
+      const res = await payload.find({
+        collection: 'wishlists',
+        where: { userEmail: { equals: email } },
+        limit: 100,
+        depth: 0,
+        overrideAccess: true, // scoped to the session email above
+      })
+      docs = res.docs as Record<string, any>[]
+    } catch {
+      docs = []
+    }
+  }
 
   const savedKeys = (docs as Record<string, any>[]).map((doc) => String(doc.carSlug))
   const savedCars = cars.filter((car) => savedKeys.includes(car.slug) || savedKeys.includes(car.id))
@@ -80,7 +89,7 @@ export default async function WishlistPage() {
                   <div className="relative h-48 w-full bg-neutral-900">
                     <Image
                       src={car.src}
-                      alt={car.name}
+                      alt={`${car.brand ? `${car.brand} ` : ''}${car.name} saved in DRIVEIT wishlist`}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"

@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     url: '/services/wedding-cars',
     type: 'website',
     images: [
-      { url: '/og/wedding-cars.jpg', width: 1200, height: 630, alt: 'DRIVEIT Wedding Cars Hyderabad' },
+      { url: '/rolls-royce-wedding-ribbon.webp', width: 1920, height: 1072, alt: 'DRIVEIT Wedding Cars Hyderabad' },
     ],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },

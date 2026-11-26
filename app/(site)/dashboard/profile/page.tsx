@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
 import { upsertCustomer } from '@/lib/customers'
 import { SiteHeader } from '@/components/site-header'
 import { ProfileForm } from '@/components/profile-form'
@@ -16,11 +17,22 @@ export default async function ProfilePage() {
   const session = await auth()
   if (!session?.user?.email) redirect('/login?redirect=/dashboard/profile')
 
-  const payload = await getPayload({ config })
-  const customer = (await upsertCustomer(payload, {
-    email: session.user.email,
-    name: session.user.name ?? null,
-  })) as Record<string, any> | null
+  const reachable = await isPostgresReachable()
+  let customer: Record<string, any> | null = null
+
+  if (reachable) {
+    try {
+      const payload = await getPayload({ config })
+      customer = (await upsertCustomer(payload, {
+        email: session.user.email,
+        name: session.user.name ?? null,
+      })) as Record<string, any> | null
+    } catch {
+      customer = { name: session.user.name ?? null, email: session.user.email }
+    }
+  } else {
+    customer = { name: session.user.name ?? null, email: session.user.email }
+  }
 
   const initial: CustomerProfile = {
     name: customer?.name ?? null,

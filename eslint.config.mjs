@@ -5,7 +5,7 @@ import nextTypescript from 'eslint-config-next/typescript'
  * Flat ESLint config (Next.js removed the `next lint` command in v16, so the
  * `lint` script calls ESLint directly).
  */
-export default [
+const eslintConfig = [
   {
     ignores: [
       '.next/**',
@@ -25,7 +25,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
       ],
       // React 19 no longer needs the classic runtime import in scope.
       'react/react-in-jsx-scope': 'off',
@@ -36,3 +36,5 @@ export default [
     },
   },
 ]
+
+export default eslintConfig

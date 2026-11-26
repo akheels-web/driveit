@@ -546,7 +546,7 @@ The customer-facing portal at `/dashboard` (`/dashboard/bookings`, `/dashboard/p
 
 ### 9.4 Adding Admins, Agents & Connecting WhatsApp CRM (WACRM)
 
-In the DRIVEIT architecture, the main booking platform and your WhatsApp CRM operate together through an authenticated webhook bridge (`lib/notifications.ts` and `app/api/webhooks/wacrm/route.ts`).
+In the DRIVEIT architecture, the main booking platform and your WhatsApp CRM can operate together through an authenticated inbound webhook endpoint (`app/api/webhooks/wacrm/route.ts`).
 
 #### A. Deploying & Accessing WACRM
 * **Subdomain Setup:** As configured in Nginx (Step 8) and Cloudflare DNS (Step 13), your WhatsApp CRM runs on its dedicated subdomain:

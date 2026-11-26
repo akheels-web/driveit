@@ -18,16 +18,14 @@ const nextConfig = {
   poweredByHeader: false,
   allowedDevOrigins: ['localhost:3000', 'localhost:3001', '127.0.0.1:3000', '127.0.0.1:3001'],
   images: {
+    dangerouslyAllowSVG: false,
     formats: ['image/avif', 'image/webp'],
+    qualities: [75, 82, 85, 90],
     remotePatterns: [
       {
         // CMS uploads are delivered straight from Cloudinary when configured.
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i.pinimg.com',
       },
       {
         protocol: 'https',
@@ -63,6 +61,10 @@ const nextConfig = {
           {
             key: 'X-DNS-Prefetch-Control',
             value: 'on',
+          },
+          {
+            key: 'X-Permitted-Cross-Domain-Policies',
+            value: 'none',
           },
         ],
       },

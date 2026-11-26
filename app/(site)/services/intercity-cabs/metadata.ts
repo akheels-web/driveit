@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     url: '/services/intercity-cabs',
     type: 'website',
     images: [
-      { url: '/og/intercity-cabs.jpg', width: 1200, height: 630, alt: 'DRIVEIT Intercity Cabs Hyderabad' },
+      { url: '/maybach-s680-night.webp', width: 1920, height: 1072, alt: 'DRIVEIT Intercity Cabs Hyderabad' },
     ],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },

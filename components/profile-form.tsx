@@ -133,13 +133,13 @@ export function ProfileForm({ email, initial }: { email: string; initial: Custom
 
       {/* 1. VIP Document Vault & KYC Status */}
       <div
-        className="rounded-2xl p-6 relative overflow-hidden"
+        className="rounded-2xl p-4 sm:p-6 relative overflow-hidden"
         style={{
           background: 'linear-gradient(145deg, rgba(20,20,22,1), rgba(12,12,14,1))',
           border: '1px solid rgba(212, 175, 55, 0.2)',
         }}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[var(--gold-400)]/10 flex items-center justify-center text-[var(--gold-400)]">
               <ShieldCheck className="w-4 h-4" />

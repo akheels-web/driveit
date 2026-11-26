@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import { z } from 'zod'
 
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
 import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
@@ -28,13 +29,25 @@ export async function POST(request: Request) {
   if (!verdict.ok) return tooManyRequests(verdict.retryAfterSeconds)
 
   try {
-    const rawBody = await request.json()
+    let rawBody: unknown
+    try {
+      rawBody = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid request JSON.' }, { status: 400 })
+    }
     const parsed = ApplySchema.safeParse(rawBody)
 
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message ?? 'Please check all required vehicle fields.' },
         { status: 400 },
+      )
+    }
+
+    if (!(await isPostgresReachable())) {
+      return NextResponse.json(
+        { error: 'Fleet partner desk is temporarily offline. Please reach us directly on +91 63000 41186.' },
+        { status: 503 },
       )
     }
 

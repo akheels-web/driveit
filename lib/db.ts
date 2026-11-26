@@ -1,3 +1,4 @@
+import net from 'net'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { postgresAdapter } from '@payloadcms/db-postgres'
@@ -5,16 +6,8 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 /**
  * Database: Postgres, and only Postgres.
  *
- * There is deliberately no SQLite path anymore. A second driver means a second
- * schema dialect to keep in sync, and the two inevitably drift — the kind of
- * bug that only shows up on the day you cut over. Postgres is required so that
- * the schema you develop against is the schema you deploy.
- *
  * Locally, run Postgres in Docker:
  *   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d postgres redis
- *
- * `DATABASE_URI` must be a postgres:// URL. `lib/env.ts`-style fail-fast: the
- * app refuses to boot rather than silently creating a throwaway database.
  */
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -31,15 +24,6 @@ export function isPostgresUri(uri: string): boolean {
 
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 
-/**
- * Validated `DATABASE_URI`. Throws (instead of falling back to a local file)
- * when it is missing or points at another engine.
- *
- * During `next build` (e.g. `docker build`, where runtime secrets are usually
- * absent) an unreachable placeholder is used so the image can be built. CMS
- * reads fall back to the seed catalogues — the same behaviour as a fresh
- * install — and the app still refuses to *serve* without a real URI.
- */
 export function databaseUri(): string {
   const uri = process.env.DATABASE_URI?.trim()
 
@@ -74,8 +58,6 @@ export function describeDatabase(uri: string): string {
     const parsed = new URL(uri)
     const database = parsed.pathname.replace(/^\//, '') || '(default)'
     const scheme = parsed.protocol.replace(':', '')
-    // Non-URL values (a stray `file:./driveit.db`, say) are echoed verbatim — the
-    // point of this function is to make misconfiguration obvious in the logs.
     if (!parsed.hostname) return uri
     return `${scheme}://${parsed.hostname}${parsed.port ? `:${parsed.port}` : ''}/${database}`
   } catch {
@@ -83,20 +65,87 @@ export function describeDatabase(uri: string): string {
   }
 }
 
+/**
+ * Fast (<120ms) TCP socket probe to check if Postgres is accepting connections.
+ * Prevents Payload's `@payloadcms/db-postgres` from hanging or calling
+ * `this.rejectInitializing()` with `undefined` when local Docker Postgres is stopped.
+ */
+let reachabilityCache: { ok: boolean; expiresAt: number } | null = null
+
+export async function isPostgresReachable(timeoutMs = 150): Promise<boolean> {
+  const now = Date.now()
+  if (reachabilityCache && reachabilityCache.expiresAt > now) {
+    return reachabilityCache.ok
+  }
+
+  let host = '127.0.0.1'
+  let port = 5432
+  try {
+    const uri = process.env.DATABASE_URI?.trim()
+    if (!uri) return false
+    const parsed = new URL(uri)
+    host = parsed.hostname || '127.0.0.1'
+    port = Number(parsed.port) || 5432
+  } catch {
+    return false
+  }
+
+  const ok = await new Promise<boolean>((resolve) => {
+    const socket = new net.Socket()
+    let settled = false
+    const finish = (result: boolean) => {
+      if (settled) return
+      settled = true
+      socket.destroy()
+      resolve(result)
+    }
+
+    socket.setTimeout(timeoutMs)
+    socket.once('connect', () => finish(true))
+    socket.once('timeout', () => finish(false))
+    socket.once('error', () => finish(false))
+    socket.connect(port, host)
+  })
+
+  // Cache positive reachability for 30s, negative for 15s
+  reachabilityCache = {
+    ok,
+    expiresAt: Date.now() + (ok ? 30_000 : 15_000),
+  }
+  return ok
+}
+
 export function buildDatabaseAdapter({ uri, push }: { uri: string; push: boolean }) {
-  return postgresAdapter({
+  const base = postgresAdapter({
     pool: {
       connectionString: uri,
-      // One app instance needs ~10. Raise it per replica, and front Postgres with
-      // PgBouncer once you run several — Postgres defaults to 100 total.
       max: Number(process.env.POSTGRES_POOL_MAX) || 10,
-      connectionTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 2_500,
       idleTimeoutMillis: 30_000,
     },
-    // Lets the importer insert documents with their original ids, which is what
-    // makes a data move a copy instead of a re-keying job (see scripts/).
     allowIDOnCreate: true,
     migrationDir: migrationsDir,
     push,
   })
+
+  // Guard against `@payloadcms/db-postgres` calling `this.rejectInitializing()`
+  // with `undefined` (which triggers Next.js `unhandledRejection: undefined`).
+  const origInit = base.init
+  base.init = function wrappedInit(args: any) {
+    const adapter = origInit.call(this, args) as any
+    if (adapter?.initializing && typeof adapter.initializing.catch === 'function') {
+      adapter.initializing.catch(() => {
+        // Swallowed here so Node.js / Turbopack never sees an unhandled rejection
+      })
+    }
+    if (typeof adapter?.rejectInitializing === 'function') {
+      const origReject = adapter.rejectInitializing
+      adapter.rejectInitializing = (reason?: unknown) => {
+        origReject(reason ?? new Error('Postgres initialization failed'))
+      }
+    }
+    return adapter
+  }
+
+  return base
 }

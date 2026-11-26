@@ -2,20 +2,21 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Syne } from "next/font/google"
+import { Jost } from "next/font/google"
 import { Suspense } from "react"
 import Sidectabtn from "@/components/Sidectabtn"
 import Script from "next/script"
 import "../globals.css"
 
-const syne = Syne({
+// Display face: a light geometric sans with wide tracking (Hype-style editorial caps).
+const displayFace = Jost({
   subsets: ["latin"],
-  variable: "--font-syne",
+  variable: "--font-display-face",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["200", "300", "400", "500", "600", "700"],
 })
 
-// Alias playfair variable to Syne to eliminate all serif fonts site-wide
+// Alias playfair variable to the display face to eliminate all serif fonts site-wide
 const playfair = { variable: "--font-playfair font-luxury" }
 
 import { getSiteSettings, resolveMediaUrl, SITE_DEFAULTS } from "@/lib/cms"
@@ -24,14 +25,58 @@ import { PageProgressBar } from "@/components/page-progress-bar"
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in').replace(/\/$/, '')
   const siteName = settings.siteName || SITE_DEFAULTS.siteName
   const title = settings.metaTitle || "DRIVEIT - Premium Luxury Transportation Services in Hyderabad"
   const description =
     settings.metaDescription ||
     "Experience unparalleled luxury with DRIVEIT. Premium car rental, private jet services, yacht charters, and luxury transportation in Hyderabad, India. VIP chauffeur services, wedding cars, and corporate transportation solutions."
-  const favicon = resolveMediaUrl(settings.favicon, '/favicon.ico')
-  const appleTouchIcon = resolveMediaUrl(settings.appleTouchIcon, '/apple-touch-icon.png')
-  const ogImage = resolveMediaUrl(settings.ogImage, '/og-image.jpg')
+  const favicon = resolveMediaUrl(settings.favicon, '/logo.png')
+  const appleTouchIcon = resolveMediaUrl(settings.appleTouchIcon, '/logo.png')
+  const ogImage = resolveMediaUrl(settings.ogImage, '/rolls-royce-phantom-night.webp')
+
+  const defaultKeywords = [
+    "luxury car rental",
+    "private jet services",
+    "yacht charter",
+    "Hyderabad",
+    "premium transportation",
+    "chauffeur service",
+    "wedding cars",
+    "corporate travel",
+    "luxury buses",
+    "airport transfer",
+    "VIP transportation",
+    "Gachibowli",
+    "Madhapur",
+    "HITEC City",
+    "Jubilee Hills",
+    "Banjara Hills",
+    "Kondapur",
+    "Kokapet",
+    "Financial District",
+    "Nanakramguda",
+    "Begumpet",
+    "Secunderabad",
+    "Shamshabad",
+    "RGIA Airport",
+    "Somajiguda",
+    "Kukatpally",
+    "Manikonda",
+    "LB Nagar",
+    "Uppal",
+    "Miyapur",
+    "Kompally",
+    "Dilsukhnagar",
+  ]
+  const cmsKeywords =
+    typeof settings.seoKeywords === 'string' && settings.seoKeywords.trim()
+      ? settings.seoKeywords.split(',').map((k: string) => k.trim()).filter(Boolean)
+      : []
+  const mergedKeywords = Array.from(new Set([...cmsKeywords, ...defaultKeywords]))
+  const googleVerification =
+    (typeof settings.googleSiteVerification === 'string' && settings.googleSiteVerification.trim()) ||
+    process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
 
   return {
     title,
@@ -41,40 +86,7 @@ export async function generateMetadata(): Promise<Metadata> {
       shortcut: favicon,
       apple: appleTouchIcon,
     },
-    keywords: [
-      "luxury car rental",
-      "private jet services",
-      "yacht charter",
-      "Hyderabad",
-      "premium transportation",
-      "chauffeur service",
-      "wedding cars",
-      "corporate travel",
-      "luxury buses",
-      "airport transfer",
-      "VIP transportation",
-      "Gachibowli",
-      "Madhapur",
-      "HITEC City",
-      "Jubilee Hills",
-      "Banjara Hills",
-      "Kondapur",
-      "Kokapet",
-      "Financial District",
-      "Nanakramguda",
-      "Begumpet",
-      "Secunderabad",
-      "Shamshabad",
-      "RGIA Airport",
-      "Somajiguda",
-      "Kukatpally",
-      "Manikonda",
-      "LB Nagar",
-      "Uppal",
-      "Miyapur",
-      "Kompally",
-      "Dilsukhnagar",
-    ],
+    keywords: mergedKeywords,
     authors: [{ name: siteName }],
     creator: siteName,
     publisher: siteName,
@@ -83,11 +95,11 @@ export async function generateMetadata(): Promise<Metadata> {
       address: false,
       telephone: false,
     },
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in'),
+    metadataBase: new URL(siteUrl),
     openGraph: {
       title,
       description,
-      url: 'https://www.driveitluxury.in',
+      url: siteUrl,
       siteName,
       images: [
         {
@@ -117,9 +129,7 @@ export async function generateMetadata(): Promise<Metadata> {
         'max-snippet': -1,
       },
     },
-    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
-      ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
-      : {}),
+    ...(googleVerification ? { verification: { google: googleVerification } } : {}),
     category: 'Luxury Transportation Services',
     classification: 'Premium Car Rental and Aviation Services',
     other: {
@@ -134,6 +144,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
   themeColor: "#0a0a0a",
 }
 
@@ -143,27 +154,31 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const settings = await getSiteSettings()
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in').replace(/\/$/, '')
   const siteName = settings.siteName || SITE_DEFAULTS.siteName
   const phone = settings.contactPhone || SITE_DEFAULTS.contactPhone
   const email = settings.contactEmail || SITE_DEFAULTS.contactEmail
   const address = settings.address || SITE_DEFAULTS.address
-  const favicon = resolveMediaUrl(settings.favicon, '/favicon.ico')
-  const appleTouchIcon = resolveMediaUrl(settings.appleTouchIcon, '/apple-touch-icon.png')
+  const favicon = resolveMediaUrl(settings.favicon, '/logo.png')
+  const appleTouchIcon = resolveMediaUrl(settings.appleTouchIcon, '/logo.png')
+  const ogImage = resolveMediaUrl(settings.ogImage, '/rolls-royce-phantom-night.webp')
+  const absOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage.startsWith('/') ? ogImage : `/${ogImage}`}`
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <link rel="icon" href={favicon} sizes="any" />
         <link rel="apple-touch-icon" href={appleTouchIcon} />
-        <link rel="alternate" type="application/rss+xml" title={`${siteName} Journal RSS Feed`} href="/feed.xml" />
+        <link rel="alternate" type="application/rss+xml" title={`${siteName} Blog RSS Feed`} href="/feed.xml" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "LocalBusiness",
+              "@type": ["LocalBusiness", "AutoRental"],
               "name": siteName,
-              "url": "https://www.driveitluxury.in",
+              "url": siteUrl,
+              "image": absOgImage,
               "telephone": phone,
               "email": email,
               "address": {
@@ -185,7 +200,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`bg-background text-foreground antialiased font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable} ${syne.variable}`}
+        className={`bg-background text-foreground antialiased font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable} ${displayFace.variable}`}
       >
         <SessionProvider>
           <Suspense fallback={null}>

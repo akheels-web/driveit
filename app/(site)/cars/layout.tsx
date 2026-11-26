@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     description: "Explore our premium luxury car fleet in Hyderabad. Rent Rolls Royce, Mercedes, BMW, and exotic cars.",
     url: "/cars",
     type: "website",
+    images: [
+      {
+        url: "/rolls-royce-phantom-night.webp",
+        width: 1920,
+        height: 1072,
+        alt: "DRIVEIT Luxury Car Fleet in Hyderabad",
+      },
+    ],
   },
 }
 

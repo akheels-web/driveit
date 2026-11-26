@@ -1,17 +1,12 @@
-import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
+import { safeTokenMatches } from '@/lib/env'
+import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
 import { parseGpsPayload, checkHyderabadGeofence, SPEED_LIMIT_KMH } from '@/lib/telematics'
 
 export const dynamic = 'force-dynamic'
-
-function safeTokenMatches(expected: string, provided: string | null | undefined): boolean {
-  if (!provided) return false
-  const a = Buffer.from(expected)
-  const b = Buffer.from(provided)
-  return a.length === b.length && crypto.timingSafeEqual(a, b)
-}
 
 /**
  * Universal Telematics & GPS Ping Receiver
@@ -22,6 +17,17 @@ function safeTokenMatches(expected: string, provided: string | null | undefined)
  */
 
 async function processGpsTelemetry(rawParams: Record<string, any>, req: NextRequest) {
+  const verdict = await limitRequest(req, 'telematics-ping', {
+    limit: 120,
+    windowMs: 60_000,
+    globalLimit: 600,
+  })
+  if (!verdict.ok) return tooManyRequests(verdict.retryAfterSeconds)
+
+  if (!(await isPostgresReachable())) {
+    return NextResponse.json({ error: 'Telemetry database offline.' }, { status: 503 })
+  }
+
   // 1. Verify Secret Token (Fail-Closed: unauthenticated pings are rejected)
   const configuredSecret = process.env.TELEMATICS_SECRET || process.env.CRON_SECRET
   if (configuredSecret) {
@@ -31,10 +37,11 @@ async function processGpsTelemetry(rawParams: Record<string, any>, req: NextRequ
       return NextResponse.json({ error: 'Unauthorized telematics ping.' }, { status: 401 })
     }
   } else {
-    // If no secret configured, require staff auth to prevent unauthorized GPS tampering
+    // If no secret configured, require Payload staff auth to prevent unauthorized GPS tampering
     const payload = await getPayload({ config })
     const { user } = await payload.auth({ headers: req.headers })
-    if (!user) {
+    const isStaffUser = Boolean(user && (user as { collection?: string }).collection === 'users')
+    if (!isStaffUser) {
       return NextResponse.json(
         { error: 'TELEMATICS_SECRET is not configured. Direct unauthenticated telemetry pings are disabled for security.' },
         { status: 401 }

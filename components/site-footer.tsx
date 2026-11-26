@@ -4,9 +4,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { FaLinkedinIn, FaInstagram, FaYoutube, FaTwitter } from 'react-icons/fa'
+import { fetchClientSiteSettings, type ClientSiteSettings } from '@/lib/client-site-settings'
 
 export interface SiteFooterProps {
   logoSrc?: string
+  logoAlt?: string
   description?: string
   phone?: string
   email?: string
@@ -21,54 +23,41 @@ export interface SiteFooterProps {
 
 export function SiteFooter({
   logoSrc: propLogoSrc,
-  description: propDescription,
-  phone: propPhone,
-  email: propEmail,
-  address: propAddress,
-  whatsappNumber: propWhatsappNumber,
+  logoAlt: propLogoAlt,
   instagramUrl: propInstagramUrl,
-  facebookUrl: propFacebookUrl,
   youtubeUrl: propYoutubeUrl,
   linkedinUrl: propLinkedinUrl,
   twitterUrl: propTwitterUrl,
 }: SiteFooterProps = {}) {
-  const [logoSrc, setLogoSrc] = useState(propLogoSrc || '/logo.png')
-  const [instagramUrl, setInstagramUrl] = useState(propInstagramUrl || 'https://instagram.com/driveitluxury')
-  const [youtubeUrl, setYoutubeUrl] = useState(propYoutubeUrl || 'https://youtube.com/@driveitluxury')
-  const [linkedinUrl, setLinkedinUrl] = useState(propLinkedinUrl || 'https://linkedin.com/company/driveitluxury')
-  const [twitterUrl, setTwitterUrl] = useState(propTwitterUrl || 'https://twitter.com/driveitluxury')
+  const [fetched, setFetched] = useState<ClientSiteSettings | null>(null)
+  const needsClientFetch = !propLogoSrc || !propLogoAlt
 
   useEffect(() => {
-    if (propLogoSrc) setLogoSrc(propLogoSrc)
-    if (propInstagramUrl) setInstagramUrl(propInstagramUrl)
-    if (propYoutubeUrl) setYoutubeUrl(propYoutubeUrl)
-    if (propLinkedinUrl) setLinkedinUrl(propLinkedinUrl)
-    if (propTwitterUrl) setTwitterUrl(propTwitterUrl)
-
-    if (!propLogoSrc) {
-      fetch('/api/site-settings')
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data) {
-            if (!propLogoSrc && data.footerLogo) setLogoSrc(data.footerLogo)
-            if (!propInstagramUrl && data.instagramUrl) setInstagramUrl(data.instagramUrl)
-            if (!propYoutubeUrl && data.youtubeUrl) setYoutubeUrl(data.youtubeUrl)
-            if (!propLinkedinUrl && data.linkedinUrl) setLinkedinUrl(data.linkedinUrl)
-            if (!propTwitterUrl && data.twitterUrl) setTwitterUrl(data.twitterUrl)
-          }
-        })
-        .catch(() => {})
+    if (!needsClientFetch) return
+    let active = true
+    fetchClientSiteSettings().then((data) => {
+      if (active && data) setFetched(data)
+    })
+    return () => {
+      active = false
     }
-  }, [propLogoSrc, propInstagramUrl, propYoutubeUrl, propLinkedinUrl, propTwitterUrl])
+  }, [needsClientFetch])
+
+  const logoSrc = propLogoSrc || fetched?.footerLogo || '/logo.png'
+  const logoAlt = propLogoAlt || fetched?.footerLogoAlt || 'DRIVEIT Luxury Mobility Hyderabad Logo'
+  const instagramUrl = propInstagramUrl || fetched?.instagramUrl || 'https://instagram.com/driveitluxury'
+  const youtubeUrl = propYoutubeUrl || fetched?.youtubeUrl || 'https://youtube.com/@driveitluxury'
+  const linkedinUrl = propLinkedinUrl || fetched?.linkedinUrl || 'https://linkedin.com/company/driveitluxury'
+  const twitterUrl = propTwitterUrl || fetched?.twitterUrl || 'https://twitter.com/driveitluxury'
 
   return (
     <footer className="bg-[#030614] text-white border-t border-white/[0.08]">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 py-16 sm:py-20">
-        
+
         {/* Tier 1: Primary Navigation & Social Links (Matching Screenshot 4) */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 pb-12 border-b border-white/[0.08]">
           <div className="flex flex-col items-center lg:items-start gap-4">
-            
+
             {/* Primary Nav Links with Subtle Center Dot Separators */}
             <ul className="flex flex-wrap items-center justify-center lg:justify-start gap-x-3 sm:gap-x-4 gap-y-2">
               {[
@@ -78,7 +67,7 @@ export function SiteFooter({
                 { label: 'Fleet', href: '/cars' },
                 { label: 'Concierge', href: '/contact' },
                 { label: 'Partner', href: '/partner/list-fleet' },
-                { label: 'Journal', href: '/blog' },
+                { label: 'Blog', href: '/blog' },
                 { label: 'Contact', href: '/contact' },
               ].map((item, index, arr) => (
                 <li key={item.label} className="flex items-center gap-3 sm:gap-4 font-luxury">
@@ -173,7 +162,7 @@ export function SiteFooter({
 
         {/* Tier 2: 5-Column Clean Directory Grid (Matching Screenshot 4) */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-6 py-12 border-b border-white/[0.08] text-[11px] tracking-wide text-white/50 leading-relaxed font-sans">
-          
+
           {/* Column 1: Chauffeur Mobility */}
           <div className="flex flex-col gap-2">
             <span className="uppercase text-[10px] tracking-[0.25em] text-white/80 font-luxury font-medium mb-1">
@@ -240,19 +229,19 @@ export function SiteFooter({
           <Link href="/" className="inline-block transition-transform duration-300 hover:scale-105">
             <Image
               src={logoSrc}
-              alt="DRIVEIT Luxury"
+              alt={logoAlt}
               width={160}
               height={60}
               className="h-10 sm:h-12 w-auto object-contain brightness-110"
             />
           </Link>
-          
+
           <p className="mt-4 font-luxury text-xs sm:text-sm tracking-[0.3em] uppercase text-white/80">
             <span className="text-[var(--gold-400)]">#</span>luxurymobility
           </p>
 
           <p className="mt-3 font-sans text-[10px] sm:text-xs text-white/40 tracking-wider">
-            Copyright © 2026 DRIVEIT Luxury Concierge Private Limited. Made in India
+            Copyright © 2026 DRIVEIT Luxury. Made in India
           </p>
         </div>
 

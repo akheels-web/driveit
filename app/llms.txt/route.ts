@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCarsFromCMS, getServicesFromCMS, getSiteSettings, SITE_DEFAULTS } from '@/lib/cms'
+import { extractHomeCmsPayload, getCarsFromCMS, getServicesFromCMS, getSiteSettings, SITE_DEFAULTS } from '@/lib/cms'
 import { getBlogPosts } from '@/lib/blog-seed'
 
 export const dynamic = 'force-dynamic'
@@ -15,18 +15,22 @@ export async function GET() {
       getBlogPosts().catch(() => []),
     ])
     const settings = rawSettings as Record<string, any>
+    const homeCms = extractHomeCmsPayload(settings)
 
     const siteName = settings.siteName || SITE_DEFAULTS.siteName
     const phone = settings.contactPhone || SITE_DEFAULTS.contactPhone
     const email = settings.contactEmail || SITE_DEFAULTS.contactEmail
     const whatsapp = settings.whatsappNumber || SITE_DEFAULTS.whatsappNumber
     const address = settings.address || SITE_DEFAULTS.address
+    const overview =
+      (typeof settings.llmsSummaryIntro === 'string' && settings.llmsSummaryIntro.trim()) ||
+      `${siteName} offers ultra-luxury mobility across Hyderabad, including Jubilee Hills, Banjara Hills, HITEC City, Gachibowli, Kokapet, Financial District, Begumpet VVIP Gate, and Rajiv Gandhi International Airport (RGIA).`
 
     const carList = cars
-      .slice(0, 20)
+      .slice(0, 25)
       .map(
         (c) =>
-          `- [${c.name}](${baseUrl}/cars/${c.slug}): ${c.category.toUpperCase()} • ${c.brand} • ${c.priceDisplay} • ${c.seats} Seats • ${c.transmission} • ${c.fuel}`,
+          `- [${c.name}](${baseUrl}/cars/${c.slug}): ${c.category.toUpperCase()} • ${c.brand} • Chauffeur ${c.priceDisplay}${c.selfDrivePrice ? ` / Self-Drive ₹${c.selfDrivePrice.toLocaleString('en-IN')}/day` : ''} • ${c.seats} Seats • ${c.transmission} • ${c.fuel}`,
       )
       .join('\n')
 
@@ -37,32 +41,52 @@ export async function GET() {
       )
       .join('\n')
 
+    const priveList = homeCms.beyondPanels
+      .map(
+        (panel) =>
+          `- [${panel.title}](${baseUrl}${panel.href}): ${panel.subtitle} • ${panel.capacity}`,
+      )
+      .join('\n')
+
+    const protocolList = homeCms.protocols
+      .map(
+        (p) =>
+          `- **${p.title}** (${p.tag}): ${p.subtitle} • Flagship: ${p.flagshipName} (${p.tariffFormatted}) • Pickup: ${p.pickupHub}${p.flightSyncSupported ? ' • Flight-Sync Supported' : ''}`,
+      )
+      .join('\n')
+
     const blogList = posts
-      .slice(0, 5)
+      .slice(0, 10)
       .map((p) => `- [${p.title}](${baseUrl}/blog/${p.slug}) (${p.date}): ${p.excerpt}`)
       .join('\n')
 
     const content = `# ${siteName}
 
-> Premier luxury car rental, executive chauffeur services, private aviation charters, and VIP airport mobility in Hyderabad, India.
+> Premier luxury car rental, executive chauffeur services, private aviation charters, superyacht experiences, and VIP airport mobility in Hyderabad, India.
 
 ## Overview
-${siteName} offers ultra-luxury mobility across Hyderabad, including Jubilee Hills, Banjara Hills, HITEC City, Gachibowli, Kokapet, Financial District, and Rajiv Gandhi International Airport (RGIA).
+${overview}
 
 ## Primary Services
 ${serviceList || '- Luxury Car Rental\n- Chauffeur Driven Transfers\n- Airport VIP Meet & Greet\n- Wedding Cars\n- Private Jet Charters\n- Luxury Coaches & Buses'}
 
-## Available Fleet Highlights
-${carList || '- Rolls-Royce Phantom\n- Mercedes-Maybach\n- Range Rover Vogue\n- Lamborghini Gallardo\n- Mercedes S-Class\n- Toyota Vellfire'}
+## Privé Beyond-Road Commissions
+${priveList}
 
-## Latest Articles & Travel Guides
-${blogList || '- Top luxury wedding cars in Hyderabad\n- Chauffeur vs self-drive comparison\n- Executive travel guide in HITEC City'}
+## Curated Mobility Protocols & VIP Occasions
+${protocolList}
+
+## Available Fleet Highlights
+${carList || '- Rolls-Royce Phantom\n- Mercedes-Maybach S680\n- Ferrari SF90 Stradale\n- Aston Martin DB12'}
+
+## Latest Blog Articles & Travel Guides
+${blogList || '- Top luxury wedding cars in Hyderabad\n- Chauffeur vs self-drive comparison'}
 
 ## Policies & Customer Guarantees
 - **Fuel Policy**: Full-to-Full (return with full tank, zero fuel charge).
 - **Electronic FASTag**: 100% active FASTag installed for automatic toll lanes.
 - **Security Deposit**: Governed transparently with live bank UTR refund tracking in dashboard within 48h after return inspection.
-- **Airport Delay Guarantee**: Complimentary 60-minute wait policy from flight touchdown at RGIA Hyderabad.
+- **Airport Delay Guarantee**: Complimentary 60-minute wait policy from flight touchdown at RGIA & Begumpet.
 - **Booking Protection**: Guaranteed reservation hold with 10-minute lock prevents double-booking during checkout.
 
 ## Official Concierge & Contact
@@ -73,18 +97,19 @@ ${blogList || '- Top luxury wedding cars in Hyderabad\n- Chauffeur vs self-drive
 - **Website**: ${baseUrl}
 
 ## Machine-Readable Resources
-- [Full LLM Specification & Complete Catalog](${baseUrl}/llms-full.txt): Complete vehicle specifications, pricing table, and policies.
-- [XML Sitemap](${baseUrl}/sitemap.xml): Complete search engine index.
+- [Full LLM Specification & Complete Catalog](${baseUrl}/llms-full.txt): Complete vehicle specifications, telemetry, pricing table, FAQs, and policies.
+- [XML Sitemap](${baseUrl}/sitemap.xml): Live search engine index with images and updated timestamps.
+- [RSS Blog Feed](${baseUrl}/feed.xml): Live editorial feed.
 `
 
     return new NextResponse(content, {
       status: 200,
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
       },
     })
-  } catch (error) {
+  } catch {
     return new NextResponse('# DRIVEIT Luxury\n\nLuxury transportation services in Hyderabad, India.', {
       status: 200,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },

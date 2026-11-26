@@ -3,10 +3,28 @@ import { getPayload } from 'payload'
 
 import { auth } from '@/auth'
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
+import { sanitizeText } from '@/lib/html'
 import { upsertCustomer } from '@/lib/customers'
 import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
+
+function matchesMagicBytes(buf: Buffer, ext: string): boolean {
+  if (buf.length < 12) return false
+  switch (ext) {
+    case 'jpg':
+      return buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff
+    case 'png':
+      return buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47
+    case 'webp':
+      return buf.subarray(0, 4).toString('ascii') === 'RIFF' && buf.subarray(8, 12).toString('ascii') === 'WEBP'
+    case 'pdf':
+      return buf.subarray(0, 5).toString('ascii') === '%PDF-'
+    default:
+      return false
+  }
+}
 
 export async function POST(request: Request) {
   const verdict = await limitRequest(request, 'profile-docs-upload', {
@@ -48,6 +66,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Only JPG, PNG, WEBP or PDF files are accepted.' }, { status: 400 })
     }
 
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    if (!matchesMagicBytes(buffer, safeExt)) {
+      return NextResponse.json(
+        { error: 'File contents do not match the declared document format.' },
+        { status: 400 },
+      )
+    }
+
+    if (!(await isPostgresReachable())) {
+      return NextResponse.json(
+        { error: 'Document vault is temporarily offline. Please try again shortly or share via WhatsApp Concierge.' },
+        { status: 503 },
+      )
+    }
+
     const payload = await getPayload({ config })
     const customer = await upsertCustomer(payload, {
       email: session.user.email,
@@ -57,10 +91,6 @@ export async function POST(request: Request) {
     if (!customer) {
       return NextResponse.json({ error: 'Could not create or find customer profile.' }, { status: 500 })
     }
-
-    // Convert file to buffer for Payload media creation
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
 
     const safeDocType = ['dl_front', 'dl_back', 'id_proof'].includes(docType) ? docType : 'id_proof'
 
@@ -85,8 +115,15 @@ export async function POST(request: Request) {
     if (docType === 'dl_front') updateData.drivingLicenseFront = mediaDoc.id
     if (docType === 'dl_back') updateData.drivingLicenseBack = mediaDoc.id
     if (docType === 'id_proof') updateData.idProofDocument = mediaDoc.id
-    if (dlNumber) updateData.drivingLicenseNumber = dlNumber
-    if (aadhaarLast4) updateData.aadhaarLast4 = aadhaarLast4
+
+    const cleanDl = dlNumber ? sanitizeText(dlNumber, 30) : ''
+    if (cleanDl && /^[A-Za-z0-9\-\s]{4,30}$/.test(cleanDl)) {
+      updateData.drivingLicenseNumber = cleanDl.toUpperCase()
+    }
+    const cleanAadhaar = aadhaarLast4 ? sanitizeText(aadhaarLast4, 4) : ''
+    if (cleanAadhaar && /^\d{4}$/.test(cleanAadhaar)) {
+      updateData.aadhaarLast4 = cleanAadhaar
+    }
 
     await payload.update({
       collection: 'customers',

@@ -4,11 +4,13 @@ import { z } from 'zod'
 
 import config from '@/payload.config'
 import { getCarByIdentifier } from '@/lib/cms'
+import { isPostgresReachable } from '@/lib/db'
 import { BookingConflictError, BookingInputError, createBookingHold } from '@/lib/booking-holds'
+import { createLocalBookingHold, validateLocalCoupon } from '@/lib/local-booking-fallback'
 import { validateCoupon } from '@/lib/coupons'
 import { computeQuote, QuoteError } from '@/lib/pricing'
 import { limitRequest, tooManyRequests } from '@/lib/rate-limit'
-import { findCustomerByEmail, isProfileAndKycComplete } from '@/lib/customers'
+import { upsertCustomer } from '@/lib/customers'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +32,7 @@ const InitSchema = z.object({
   airportTerminal: z.string().trim().max(100).optional().nullable(),
   gstin: z.string().trim().max(30).optional().nullable(),
   companyName: z.string().trim().max(160).optional().nullable(),
+  drivingLicenseNumber: z.string().trim().max(40).optional().nullable(),
 })
 
 export async function POST(request: Request) {
@@ -89,28 +92,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'That vehicle is no longer available.' }, { status: 404 })
   }
 
+  if (car.category === 'bus') {
+    return NextResponse.json(
+      {
+        error:
+          'Luxury coaches and multi-vehicle convoys are arranged exclusively via Private Concierge Commission. Please contact our Charter Desk.',
+        code: 'COMMISSION_ONLY',
+      },
+      { status: 400 },
+    )
+  }
+
   const addons = (input.addons || '')
     .split(',')
     .map((id) => id.trim())
     .filter(Boolean)
 
   try {
-    const payload = await getPayload({ config })
-
-    // Strict Gate: Profile and KYC verification must be complete before creating a booking hold
-    const customer = await findCustomerByEmail(payload, input.customerEmail)
-    const kycCheck = isProfileAndKycComplete(customer)
-    if (!kycCheck.complete) {
-      return NextResponse.json(
-        {
-          error: `Booking blocked: ${kycCheck.reasons.join(' ')} Please complete your profile and KYC in your dashboard before booking.`,
-          code: 'KYC_INCOMPLETE',
-          reasons: kycCheck.reasons,
-        },
-        { status: 403 },
-      )
-    }
-
     const isSelfDrive = input.serviceType === 'selfdrive'
     const dailyRate = isSelfDrive ? (car.selfDrivePrice ?? Math.round(car.price * 0.85)) : car.price
 
@@ -121,6 +119,109 @@ export async function POST(request: Request) {
       endDate: input.endDate,
       addons,
     })
+
+    const dbAvailable = await isPostgresReachable()
+
+    if (!dbAvailable) {
+      let couponCode: string | null = null
+      let discount = 0
+      if (input.couponCode) {
+        const localCoupon = validateLocalCoupon(input.couponCode, priced.base + priced.addonsTotal)
+        if (!localCoupon.valid) {
+          return NextResponse.json(
+            { error: `Promo code error: ${localCoupon.message}` },
+            { status: 400 },
+          )
+        }
+        couponCode = localCoupon.code
+        discount = localCoupon.discount
+      }
+
+      const quote = computeQuote({
+        pricePerDay: dailyRate,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        addons,
+        discount,
+      })
+
+      const securityDepositAmount = isSelfDrive ? (car.securityDepositAmount ?? 25000) : 0
+      const hold = createLocalBookingHold({
+        carSlug: car.slug,
+        carName: car.name,
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+        days: quote.days,
+        totalPrice: quote.total,
+        serviceType: input.serviceType || 'chauffeur',
+        customerName: input.customerName,
+        customerEmail: input.customerEmail.toLowerCase(),
+        customerPhone: input.customerPhone,
+        pickupLocation: input.pickupLocation ?? null,
+        dropoffLocation: input.dropoffLocation ?? null,
+        addons: addons.join(',') || null,
+        couponCode,
+        discountApplied: quote.discount,
+        whatsappNumber: input.whatsappNumber ?? input.customerPhone,
+        securityDepositAmount,
+        securityDepositStatus: isSelfDrive ? 'held' : 'na',
+        flightNumber: input.flightNumber ?? null,
+        airportTerminal: input.airportTerminal ?? null,
+        gstin: input.gstin ?? null,
+        companyName: input.companyName ?? null,
+      })
+
+      return NextResponse.json({
+        success: true,
+        bookingId: hold.bookingId,
+        holdToken: hold.holdToken,
+        holdExpiresAt: hold.holdExpiresAt,
+        days: quote.days,
+        totalPrice: quote.total,
+        basePrice: quote.base,
+        addonsTotal: quote.addonsTotal,
+        addonLines: quote.addonLines,
+        discount: quote.discount,
+        couponCode,
+        securityDepositAmount,
+        car: {
+          id: car.id,
+          slug: car.slug,
+          name: car.name,
+          image: car.src,
+          pricePerDay: dailyRate,
+          chauffeurPrice: car.price,
+          selfDrivePrice: car.selfDrivePrice ?? Math.round(car.price * 0.85),
+          securityDepositAmount,
+          fuelPolicy: car.fuelPolicy,
+          fastTagEquipped: car.fastTagEquipped,
+        },
+      })
+    }
+
+    const payload = await getPayload({ config })
+
+    // Automatically create or update the customer profile so both guests and
+    // signed-in members have a seamless checkout without hitting a pre-checkout wall.
+    const customer = await upsertCustomer(payload, {
+      email: input.customerEmail,
+      name: input.customerName,
+      phone: input.customerPhone,
+      drivingLicenseNumber: input.drivingLicenseNumber ?? null,
+      gstin: input.gstin ?? null,
+      companyName: input.companyName ?? null,
+    })
+
+    if (customer && (customer as Record<string, any>).kycStatus === 'rejected') {
+      return NextResponse.json(
+        {
+          error:
+            'Your previous KYC document submission was declined by our verification desk. Please update your documents in your dashboard or contact our concierge.',
+          code: 'KYC_REJECTED',
+        },
+        { status: 403 },
+      )
+    }
 
     let couponCode: string | null = null
     let discount = 0

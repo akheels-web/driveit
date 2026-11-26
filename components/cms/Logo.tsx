@@ -9,7 +9,7 @@ export const Logo = () => {
       <div className="driveit-nav-logo">
         <img
           src="/logo.png"
-          alt="DRIVEIT Luxury"
+          alt="DRIVEIT Luxury Admin Panel Logo"
           className="driveit-admin-nav-logo-img"
         />
       </div>
@@ -23,7 +23,7 @@ export const Logo = () => {
           <div className="driveit-showcase-crest-wrap">
             <img
               src="/logo.png"
-              alt="DRIVEIT Luxury"
+              alt="DRIVEIT Luxury Admin Panel Logo"
               className="driveit-admin-showcase-logo-img"
             />
             <span className="driveit-showcase-tag">Operations &amp; Fleet Command</span>

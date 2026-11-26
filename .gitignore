@@ -47,3 +47,7 @@ backup/
 
 # local scratch / one-off DB repair scripts
 /scratch
+
+# OS metadata
+.DS_Store
+*/.DS_Store

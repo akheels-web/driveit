@@ -4,6 +4,13 @@ import type { ReactNode } from 'react'
 export const metadata: Metadata = {
   title: "Contact DRIVEIT Luxury | Book Luxury Car Hyderabad",
   description: "Contact DRIVEIT Luxury in Hyderabad. Rent premium luxury cars, book wedding transportation, airport taxi service, or corporate car hire easily.",
+  alternates: {
+    canonical: "/contact",
+  },
+  robots: {
+    index: false,
+    follow: true,
+  },
 }
 
 export default function ContactUsLayout({ children }: { children: ReactNode }) {

@@ -1,115 +1,182 @@
 'use client'
 
-import { motion } from 'motion/react'
+import { useRef, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Users, Settings2, Fuel, Plus, Check } from 'lucide-react'
-import { FaWhatsapp } from 'react-icons/fa'
-import { BrandIcon } from '@/components/brand-icon'
-import type { CarDetails } from '@/lib/cars'
+import { Plus, Check, ArrowRight, Lock } from 'lucide-react'
+import { formatBrandAndModel, type CarDetails } from '@/lib/cars'
+import { buildVehicleAlt } from '@/lib/asset-paths'
 
 interface CarCardProps {
   car: CarDetails
+  pricingMode?: 'chauffeur' | 'selfdrive'
   onBook?: (car: CarDetails) => void
   isCompared?: boolean
   onToggleCompare?: (carId: string) => void
 }
 
-export function CarCard({ car, onBook, isCompared, onToggleCompare }: CarCardProps) {
+export function CarCard({
+  car,
+  pricingMode = 'chauffeur',
+  onBook,
+  isCompared,
+  onToggleCompare,
+}: CarCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const isCharterOnly = car.category === 'bus'
+  const selfDriveRate = car.selfDrivePrice ?? Math.round(car.price * 0.85)
+  const activeRate = pricingMode === 'selfdrive' ? selfDriveRate : car.price
+  const { brandLabel, modelLabel } = formatBrandAndModel(car.brand, car.name)
+
+  // Zero-render GPU 3D micro-tilt on desktop mouse move only
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse') return
+    const el = cardRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const x = (e.clientX - rect.left) / rect.width - 0.5
+    const y = (e.clientY - rect.top) / rect.height - 0.5
+    el.style.transform = `perspective(1000px) rotateX(${(-y * 3).toFixed(2)}deg) rotateY(${(x * 4).toFixed(2)}deg) translateY(-3px)`
+  }, [])
+
+  const handlePointerLeave = useCallback(() => {
+    const el = cardRef.current
+    if (!el) return
+    el.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)'
+  }, [])
+
   return (
     <div
-      className={`group relative rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-[var(--gold-400)]/10 ${isCompared ? 'border border-[var(--gold-400)] shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'border border-white/5 hover:border-white/10'}`}
+      ref={cardRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
       style={{
-        background: 'linear-gradient(145deg, rgba(22,22,22,1), rgba(14,14,14,1))',
+        transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)',
+        transition: 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)',
       }}
+      className={`group relative rounded-[24px] overflow-hidden bg-[#ebebea] will-change-transform ${
+        isCompared ? 'ring-2 ring-[#c9a96e]' : ''
+      }`}
     >
-      {/* Category badge */}
-      <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] uppercase tracking-wider text-white/60">
-        {car.category}
-      </div>
-
-      {/* Compare button */}
-      {onToggleCompare && (
-        <button 
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleCompare(car.id); }}
-          className={`absolute top-3 right-3 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md border text-xs font-semibold transition-colors duration-300 ${isCompared ? 'bg-[var(--gold-400)] text-black border-[var(--gold-400)]' : 'bg-black/60 border-white/20 text-white hover:border-[var(--gold-400)] hover:text-[var(--gold-400)]'}`}
-        >
-          {isCompared ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-          {isCompared ? 'Added' : 'Compare'}
-        </button>
-      )}
-
-      {/* Car Image */}
-      <Link href={`/cars/${car.slug}`} className="block relative w-full h-48 md:h-56 bg-gradient-to-b from-white/[0.02] to-transparent cursor-pointer overflow-hidden">
+      {/* Seamless Studio Stage with Generous Top Headroom (Zero Text Overlap) */}
+      <Link
+        href={`/cars/${car.slug}`}
+        className="block relative w-full aspect-[16/10] bg-[#ebebea] overflow-hidden"
+      >
         <Image
           src={car.src}
-          alt={`${car.name} luxury car rental Hyderabad`}
+          alt={buildVehicleAlt({
+            imageAlt: car.imageAlt,
+            brand: car.brand,
+            name: car.name,
+            category: car.category,
+            context: 'DRIVEIT Luxury Hyderabad',
+          })}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-700"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          unoptimized={car.src.startsWith('http')}
+          unoptimized
+          sizes="(max-width: 768px) 100vw, 50vw"
+          className="object-cover object-bottom group-hover:scale-[1.025] transition-transform duration-500 ease-out"
         />
-        {/* Rating overlay */}
-        <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-md px-2 py-1 rounded-md text-[10px] text-white flex items-center gap-1 border border-white/10">
-           <span className="text-[var(--gold-400)]">★</span> {car.rating} ({car.reviewsCount})
-        </div>
-      </Link>
 
-      {/* Car Info */}
-      <div className="p-4 pt-3">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 rounded-full border border-white/10 bg-white/5 flex items-center justify-center">
-            <BrandIcon brand={car.brand} className="w-4 h-4" />
+        {/* Top-Left Brand + Model & Optional Top-Right Compare Pill */}
+        <div className="absolute top-3.5 left-4 right-4 sm:top-7 sm:left-8 sm:right-8 z-10 flex items-start justify-between gap-2 sm:gap-3 pointer-events-none">
+          <div className="min-w-0">
+            <p className="font-luxury text-[10px] sm:text-xs uppercase tracking-[0.24em] sm:tracking-[0.28em] text-[#7a6440] font-medium truncate">
+              {brandLabel}
+            </p>
+            <h3 className="font-luxury mt-0.5 text-xl sm:text-[32px] font-light tracking-[-0.01em] text-[#111111] leading-tight truncate">
+              {modelLabel}
+            </h3>
           </div>
-          <Link href={`/cars/${car.slug}`} className="hover:text-[var(--gold-400)] transition-colors">
-            <h3 className="text-sm font-semibold leading-tight">{car.name}</h3>
-            <p className="text-[10px] text-white/40">{car.brand}</p>
-          </Link>
-        </div>
 
-        {/* Specs */}
-        <div className="flex justify-center items-center gap-6 text-[11px] text-white/40 mb-4 mt-3 bg-white/[0.02] py-2.5 rounded-xl border border-white/5">
-          <span className="flex flex-col items-center gap-1"><Users className="w-4 h-4 text-white/60" /> {car.seats}</span>
-          <span className="flex flex-col items-center gap-1"><Settings2 className="w-4 h-4 text-white/60" /> {car.transmission}</span>
-          <span className="flex flex-col items-center gap-1"><Fuel className="w-4 h-4 text-white/60" /> {car.fuel}</span>
-        </div>
-        
-        {/* Price & Actions */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-end border-b border-white/5 pb-3">
-             <div className="text-[10px] text-white/40">Starting at</div>
-             <div className="text-sm font-bold text-[var(--gold-400)]">{car.priceDisplay}</div>
-          </div>
-          <div className="flex gap-2 pt-1">
-            {onBook ? (
+          <div className="flex flex-col items-end gap-1.5 shrink-0 pt-0.5 pointer-events-auto">
+            {isCharterOnly && (
+              <div className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-[#66635d] font-medium">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#8c734b]" />
+                <span>PRIVÉ CHARTER</span>
+              </div>
+            )}
+
+            {onToggleCompare && !isCharterOnly && (
               <button
                 type="button"
                 onClick={(e) => {
                   e.preventDefault()
-                  onBook(car)
+                  e.stopPropagation()
+                  onToggleCompare(car.id)
                 }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all bg-[var(--gold-400)] hover:bg-[var(--gold-300)] text-black cursor-pointer shadow-[0_2px_10px_rgba(212,175,55,0.2)]"
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-luxury uppercase tracking-[0.18em] transition cursor-pointer ${
+                  isCompared
+                    ? 'bg-[#111111] text-[#ebebea]'
+                    : 'bg-black/8 text-[#44423e] hover:bg-black/15'
+                }`}
               >
-                Book Now
+                {isCompared ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                <span>{isCompared ? 'Saved' : 'Compare'}</span>
               </button>
-            ) : (
-              <Link
-                href={`/cars/${car.slug}`}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/10"
-              >
-                View Details
-              </Link>
             )}
-            <a
-              href={`https://wa.me/916300041186?text=${encodeURIComponent(`Hi, I'm interested in the ${car.name} (${car.priceDisplay}). Can you check availability?`)}`}
-              target="_blank"
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 text-white hover:border-[#25D366]/50 hover:bg-[#25D366]/10 hover:text-[#25D366] transition-all text-sm"
-              aria-label="WhatsApp"
-            >
-              <FaWhatsapp className="w-4 h-4" />
-            </a>
           </div>
         </div>
+      </Link>
+
+      {/* Ultra-Clean Bottom Action Strip — Unified Luxury Geometric Sans */}
+      <div className="px-4 py-3.5 sm:px-8 sm:py-4 flex flex-wrap items-center justify-between gap-2.5 bg-[#111114] text-white border-t border-white/8">
+        {isCharterOnly ? (
+          <>
+            <span className="font-luxury text-[11px] sm:text-xs uppercase tracking-[0.18em] sm:tracking-[0.2em] text-white/60">
+              {car.seats} Seats · Contact Only
+            </span>
+            <Link
+              href={`/contact?service=${encodeURIComponent(`Luxury Coach Charter: ${car.name}`)}`}
+              className="min-h-[38px] px-4 sm:px-5 py-2 rounded-full bg-[#c9a96e] hover:bg-[#dfc288] text-black font-luxury font-medium text-[11px] uppercase tracking-[0.2em] flex items-center gap-1.5 transition shrink-0"
+            >
+              <Lock className="w-3 h-3" />
+              <span>Inquire</span>
+            </Link>
+          </>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-1.5 min-w-0">
+              <span className="font-luxury text-base sm:text-xl font-normal tracking-[0.02em] text-[#f4efe6] tabular-nums">
+                ₹{activeRate.toLocaleString('en-IN')}
+              </span>
+              <span className="font-luxury text-[11px] sm:text-xs font-light tracking-[0.06em] sm:tracking-[0.08em] text-white/50 whitespace-nowrap">
+                / day · {car.seats} Seats
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 ml-auto">
+              <Link
+                href={`/cars/${car.slug}`}
+                className="min-h-[38px] inline-flex items-center px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/15 font-luxury text-[10px] sm:text-[11px] uppercase tracking-[0.16em] sm:tracking-[0.18em] text-white/75 hover:text-white hover:border-white/35 transition"
+              >
+                Specs
+              </Link>
+
+              {onBook ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    onBook(car)
+                  }}
+                  className="min-h-[38px] px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-[#c9a96e] hover:bg-[#dfc288] text-black font-luxury font-medium text-[10px] sm:text-[11px] uppercase tracking-[0.18em] sm:tracking-[0.2em] flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <span>Book</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <Link
+                  href={`/checkout?carId=${car.slug}&service=${pricingMode}`}
+                  className="px-5 py-2 rounded-full bg-[#c9a96e] hover:bg-[#dfc288] text-black font-luxury font-medium text-[11px] uppercase tracking-[0.2em] flex items-center gap-1.5 transition"
+                >
+                  <span>Book</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

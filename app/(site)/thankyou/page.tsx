@@ -95,7 +95,7 @@ export default function ThankYouPage() {
         <div className="mt-12 relative">
           <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-zinc-800">
             <Image
-              src="/luxury-flagship-cars-in-black-studio.png"
+              src="/luxury-flagship-cars-in-black-studio.webp"
               alt="DRIVEIT Luxury"
               width={128}
               height={128}

@@ -1,133 +1,96 @@
 import type { Metadata } from 'next'
 import {
+  extractHomeCmsPayload,
   getCarsFromCMS,
-  getFaqs,
-  getServicesFromCMS,
   getSiteSettings,
   getStats,
   getTestimonials,
   resolveMediaUrl,
 } from '@/lib/cms'
 import { SITE_DEFAULTS } from '@/lib/content-seed'
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import Hero from "@/components/hero"
-import { MarqueeStrip } from "@/components/marquee-strip"
-import { Stats } from "@/components/stats"
-import { ScrollStoryShowcase } from "@/components/scroll-story-showcase"
-import { TrendingGrid } from "@/components/trending-grid"
-import { BookingSection } from "@/components/booking-section"
-import { FleetCarousel } from "@/components/fleet-carousel"
-import Testomonials from "@/components/Testomonials"
-import { FAQ } from "@/components/faq"
-import { About } from "@/components/about"
+import { SiteHeader } from '@/components/site-header'
+import { HypeHomeClient } from '@/components/home/hype-home-client'
+import { SiteFooter } from '@/components/site-footer'
 
 /** ISR: the homepage is rebuilt at most every 5 minutes, or instantly on a CMS save. */
 export const revalidate = 300
 
-export const metadata: Metadata = {
-  alternates: { canonical: '/' },
-  title: "DRIVEIT Luxury | Premium Luxury Car Rental Hyderabad | Book Online",
-  description: "Book premium luxury cars in Hyderabad online. Choose from our elite fleet of Rolls Royce, Mercedes, BMW, Range Rover and more for weddings, corporate travel, airport transfers. Serving Jubilee Hills, Banjara Hills, HITEC City, Gachibowli, and all Hyderabad areas.",
-  keywords: [
-    "luxury car rental Hyderabad",
-    "premium car booking online",
-    "wedding car rental Hyderabad",
-    "chauffeur service Hyderabad",
-    "airport transfer Hyderabad",
-    "Rolls Royce rental Hyderabad",
-    "Mercedes rental Hyderabad",
-    "BMW rental Hyderabad",
-    "Range Rover rental Hyderabad",
-    "luxury bus hire Hyderabad",
-    "corporate car rental Hyderabad",
-    "private jet Hyderabad",
-    "self drive cars Hyderabad",
-    "luxury car Jubilee Hills",
-    "car rental Banjara Hills",
-    "car rental HITEC City",
-    "car rental Gachibowli",
-    "car rental Madhapur",
-    "car rental Kondapur",
-    "wedding car Shamshabad",
-    "airport taxi Hyderabad",
-    "luxury cab Hyderabad",
-  ],
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings().catch(() => ({} as Record<string, any>))
+  const title =
+    settings.metaTitle || 'DRIVEIT Luxury | Cars, Private Jets & Superyachts — Hyderabad'
+  const description =
+    settings.metaDescription ||
+    'Chauffeured flagship automobiles, exotic self-drive supercars, private jets, and superyachts in Hyderabad.'
+  const ogImage = resolveMediaUrl(settings.ogImage, '/rolls-royce-phantom-night.webp')
+
+  return {
+    alternates: { canonical: '/' },
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: '/',
+      type: 'website',
+      images: [
+        {
+          url: ogImage,
+          width: 1920,
+          height: 1080,
+          alt: settings.heroImageAlt || 'DRIVEIT Luxury Flagship Fleet Hyderabad',
+        },
+      ],
+    },
+  }
 }
 
 export default async function HomePage() {
-  // One round-trip for all homepage content instead of serial CMS calls.
-  const [siteSettings, testimonials, stats, faqs, cars, services] = await Promise.all([
+  const [siteSettings, cars, testimonials, stats] = await Promise.all([
     getSiteSettings(),
+    getCarsFromCMS(),
     getTestimonials(),
     getStats(),
-    getFaqs(),
-    getCarsFromCMS(),
-    getServicesFromCMS(),
   ])
 
   const headerLogo = resolveMediaUrl(siteSettings.headerLogo, '/logo.png')
   const footerLogo = resolveMediaUrl(siteSettings.footerLogo, headerLogo)
-  const heroImage = resolveMediaUrl(siteSettings.heroImage, '/rolls-royce-phantom-night.png')
-  const missionImage = resolveMediaUrl(siteSettings.missionImage, '/luxury-flagship-cars-in-black-studio.png')
+  const headerLogoAlt =
+    siteSettings.headerLogoAlt || 'DRIVEIT Luxury Chauffeur & Supercar Rental Logo'
+  const footerLogoAlt = siteSettings.footerLogoAlt || 'DRIVEIT Luxury Mobility Hyderabad Logo'
+  const phone = siteSettings.contactPhone || SITE_DEFAULTS.contactPhone
+  const whatsappNumber = siteSettings.whatsappNumber || SITE_DEFAULTS.whatsappNumber
+  const homeCms = extractHomeCmsPayload(siteSettings)
 
   return (
     <>
-      <SiteHeader logoSrc={headerLogo} siteName={siteSettings.siteName} />
-      <main className="bg-[var(--luxury-bg)] text-zinc-100">
-        {/* Hero — Full viewport cinematic */}
-        <section id="home">
-          <Hero
-            videoUrl={siteSettings.headerVideoUrl as string | undefined}
-            heroImageSrc={heroImage}
-            subtitle={siteSettings.heroSubtitle}
-            headingLine1={siteSettings.heroHeadingLine1}
-            headingLine2={siteSettings.heroHeadingLine2}
-          />
-          <MarqueeStrip />
-          <Stats items={stats} />
-        </section>
-
-        {/* Cinematic Scroll Story Showcase — Full-viewport transitions */}
-        <ScrollStoryShowcase />
-
-        {/* Booking — Primary CTA */}
-        <BookingSection />
-        
-        {/* Trending Fleets & Experiences */}
-        <section id="services" className="content-auto">
-          <TrendingGrid services={services} />
-        </section>
-
-        {/* Fleet */}
-        <div className="content-auto">
-          <FleetCarousel cars={cars} />
-        </div>
-
-        {/* Social Proof & Info */}
-        <section id="about" className="content-auto">
-          <Testomonials testimonials={testimonials} />
-          <FAQ faqs={faqs} />
-          <About
-            phone={siteSettings.contactPhone || SITE_DEFAULTS.contactPhone}
-            mapEmbedUrl={siteSettings.mapEmbedUrl || SITE_DEFAULTS.mapEmbedUrl}
-            mapLink={siteSettings.mapLink || SITE_DEFAULTS.mapLink}
-          />
-        </section>
-
-        {/* Footer */}
-        <SiteFooter
-          logoSrc={footerLogo}
-          description={siteSettings.footerDescription}
-          phone={siteSettings.contactPhone || SITE_DEFAULTS.contactPhone}
-          email={siteSettings.contactEmail || SITE_DEFAULTS.contactEmail}
-          address={siteSettings.address || SITE_DEFAULTS.address}
-          instagramUrl={siteSettings.instagramUrl}
-          facebookUrl={siteSettings.facebookUrl}
-          linkedinUrl={siteSettings.linkedinUrl}
-          twitterUrl={siteSettings.twitterUrl}
-        />
-      </main>
+      <SiteHeader
+        logoSrc={headerLogo}
+        logoAlt={headerLogoAlt}
+        siteName={siteSettings.siteName || SITE_DEFAULTS.siteName}
+        promoEnabled={siteSettings.promoBannerEnabled !== false}
+        promoText={siteSettings.promoBannerText}
+        promoCode={siteSettings.promoBannerCode}
+      />
+      <HypeHomeClient
+        cars={cars}
+        whatsappNumber={whatsappNumber}
+        phone={phone}
+        homeCms={homeCms}
+        testimonials={testimonials}
+        stats={stats}
+      />
+      <SiteFooter
+        logoSrc={footerLogo}
+        logoAlt={footerLogoAlt}
+        phone={phone}
+        whatsappNumber={whatsappNumber}
+        address={siteSettings.address || SITE_DEFAULTS.address}
+        instagramUrl={siteSettings.instagramUrl}
+        youtubeUrl={siteSettings.youtubeUrl}
+        linkedinUrl={siteSettings.linkedinUrl}
+        twitterUrl={siteSettings.twitterUrl}
+      />
     </>
   )
 }

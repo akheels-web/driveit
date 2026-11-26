@@ -48,9 +48,9 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og/private-jet-services.jpg',
-        width: 1200,
-        height: 630,
+        url: '/gulfstream-g650-private-jet-on-tarmac-night.webp',
+        width: 1920,
+        height: 1072,
         alt: 'DRIVEIT Private Jet Services Hyderabad',
       },
     ],

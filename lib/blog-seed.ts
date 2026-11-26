@@ -1,10 +1,12 @@
 /**
- * Bootstrap journal entries.
+ * Bootstrap blog entries.
  *
  * These are only shown while the `blogs` collection is empty so a fresh install
  * does not render an empty page. Real articles created in /admin always win.
  */
 import { cache } from 'react'
+import { isPostgresReachable } from './db'
+import { normalizeAssetPath } from './asset-paths'
 
 export type BlogSeedPost = {
   slug: string
@@ -13,8 +15,13 @@ export type BlogSeedPost = {
   category: string
   author: string
   date: string
+  updatedAt?: string
   image: string
+  imageAlt?: string
+  seoTitle?: string
+  seoDescription?: string
   readTimeMinutes: number
+  fromCms?: boolean
 }
 
 export const blogSeedPosts: BlogSeedPost[] = [
@@ -26,7 +33,7 @@ export const blogSeedPosts: BlogSeedPost[] = [
     category: 'Wedding',
     author: 'DriveIt Editorial',
     date: 'Oct 15, 2023',
-    image: '/sadan/8.jpg',
+    image: '/sadan/audi-a6.webp',
     readTimeMinutes: 5,
   },
   {
@@ -37,7 +44,7 @@ export const blogSeedPosts: BlogSeedPost[] = [
     category: 'Guides',
     author: 'Michael T.',
     date: 'Nov 02, 2023',
-    image: '/trending/4.jpg',
+    image: '/trending/range-rover-vogue.webp',
     readTimeMinutes: 4,
   },
   {
@@ -48,7 +55,7 @@ export const blogSeedPosts: BlogSeedPost[] = [
     category: 'Corporate',
     author: 'Sarah L.',
     date: 'Dec 12, 2023',
-    image: '/suv/2.jpg',
+    image: '/suv/mercedes-gls-350d.webp',
     readTimeMinutes: 6,
   },
   {
@@ -59,7 +66,7 @@ export const blogSeedPosts: BlogSeedPost[] = [
     category: 'Travel',
     author: 'DriveIt Editorial',
     date: 'Jan 08, 2024',
-    image: '/trending/6.jpg',
+    image: '/trending/volvo-xc90.webp',
     readTimeMinutes: 7,
   },
 ]
@@ -68,6 +75,11 @@ export type BlogPostView = BlogSeedPost & { fromCms: boolean }
 
 export const getBlogPosts = cache(async (): Promise<BlogPostView[]> => {
   try {
+    const reachable = await isPostgresReachable()
+    if (!reachable) {
+      return blogSeedPosts.map((post) => ({ ...post, fromCms: false }))
+    }
+
     const { getPayload } = await import('payload')
     const config = (await import('@/payload.config')).default
     const payload = await getPayload({ config })
@@ -85,7 +97,7 @@ export const getBlogPosts = cache(async (): Promise<BlogPostView[]> => {
         slug: String(doc.slug),
         title: String(doc.title),
         excerpt: String(doc.excerpt),
-        category: String(doc.category || 'Journal'),
+        category: String(doc.category || 'Blog'),
         author: String(doc.author || 'DriveIt Editorial'),
         date: doc.publishedDate
           ? new Date(doc.publishedDate).toLocaleDateString('en-IN', {
@@ -94,24 +106,46 @@ export const getBlogPosts = cache(async (): Promise<BlogPostView[]> => {
               year: 'numeric',
             })
           : '—',
-        image:
+        updatedAt: typeof doc.updatedAt === 'string' ? doc.updatedAt : undefined,
+        image: normalizeAssetPath(
           typeof doc.coverImage === 'object' && doc.coverImage?.url
             ? doc.coverImage.url
-            : doc.coverImageSrc || '/sadan/4.jpg',
+            : doc.coverImageSrc || '/sadan/mercedes-s-350.webp',
+        ),
+        imageAlt:
+          typeof doc.coverImageAlt === 'string' && doc.coverImageAlt.trim()
+            ? doc.coverImageAlt.trim()
+            : typeof doc.coverImage === 'object' && doc.coverImage?.alt
+              ? String(doc.coverImage.alt)
+              : String(doc.title),
+        seoTitle: typeof doc.seoTitle === 'string' && doc.seoTitle.trim() ? doc.seoTitle.trim() : undefined,
+        seoDescription:
+          typeof doc.seoDescription === 'string' && doc.seoDescription.trim()
+            ? doc.seoDescription.trim()
+            : undefined,
         readTimeMinutes: Number(doc.readTimeMinutes) || 5,
         fromCms: true,
       }))
     }
-  } catch (error) {
-    console.error('[blog] CMS lookup failed:', error instanceof Error ? error.message : error)
+  } catch (_error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[blog] CMS lookup bypassed (Postgres offline), falling back to seed posts.')
+    }
   }
 
   return blogSeedPosts.map((post) => ({ ...post, fromCms: false }))
 })
 
-/** Single article by slug — `null` when it is neither published in the CMS nor a seed entry. */
+/** Single article by slug — fallback to seed post when offline. */
 export const getBlogPost = cache(async (slug: string) => {
+  const seed = blogSeedPosts.find((p) => p.slug === slug)
+
   try {
+    const reachable = await isPostgresReachable()
+    if (!reachable) {
+      return seed ? { ...seed, isPublished: true, content: seed.excerpt } : null
+    }
+
     const { getPayload } = await import('payload')
     const config = (await import('@/payload.config')).default
     const payload = await getPayload({ config })
@@ -124,9 +158,11 @@ export const getBlogPost = cache(async (slug: string) => {
     })
 
     if (docs[0]) return docs[0] as Record<string, any>
-  } catch (error) {
-    console.error('[blog] CMS lookup failed:', error instanceof Error ? error.message : error)
+  } catch (_error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[blog] Single post CMS lookup bypassed, falling back to seed.')
+    }
   }
 
-  return null
+  return seed ? { ...seed, isPublished: true, content: seed.excerpt } : null
 })

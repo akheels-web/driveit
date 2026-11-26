@@ -1,28 +1,48 @@
 import type { MetadataRoute } from 'next'
-import { getCarsFromCMS, getServicesFromCMS } from '@/lib/cms'
+import { getCarsFromCMS, getServicesFromCMS, getSiteSettings, resolveMediaUrl } from '@/lib/cms'
 import { getBlogPosts } from '@/lib/blog-seed'
 
-/** Regenerated at least every 30 minutes; CMS saves also invalidate it instantly via hooks. */
-export const revalidate = 1800
+/** Always reflects the latest CMS fleet, services, blog articles, and site assets. */
+export const dynamic = 'force-dynamic'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.driveitluxury.in').replace(/\/$/, '')
-  const now = new Date().toISOString()
+  const fallbackNow = new Date().toISOString()
 
-  // High-priority core landing pages
+  const toAbsUrl = (asset?: string) => {
+    if (!asset) return undefined
+    if (/^https?:\/\//i.test(asset)) return asset
+    return `${baseUrl}${asset.startsWith('/') ? asset : `/${asset}`}`
+  }
+
+  const [settings, cars, services, posts] = await Promise.all([
+    getSiteSettings().catch(() => ({} as Record<string, any>)),
+    getCarsFromCMS().catch(() => []),
+    getServicesFromCMS().catch(() => []),
+    getBlogPosts().catch(() => []),
+  ])
+
+  const siteUpdated = typeof settings?.updatedAt === 'string' ? settings.updatedAt : fallbackNow
+  const homeOgImage = toAbsUrl(resolveMediaUrl(settings?.ogImage, '/rolls-royce-phantom-night.webp'))
+
   const staticCoreRoutes: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${baseUrl}/cars`, lastModified: now, changeFrequency: 'daily', priority: 0.95 },
-    { url: `${baseUrl}/services`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${baseUrl}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.85 },
-    { url: `${baseUrl}/partner/list-fleet`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/blog`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
-    { url: `${baseUrl}/privacy-policy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${baseUrl}/terms-conditions`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    {
+      url: `${baseUrl}`,
+      lastModified: siteUpdated,
+      changeFrequency: 'daily',
+      priority: 1.0,
+      ...(homeOgImage ? { images: [homeOgImage] } : {}),
+    },
+    { url: `${baseUrl}/cars`, lastModified: siteUpdated, changeFrequency: 'daily', priority: 0.95 },
+    { url: `${baseUrl}/services`, lastModified: siteUpdated, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${baseUrl}/about`, lastModified: siteUpdated, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/contact`, lastModified: siteUpdated, changeFrequency: 'monthly', priority: 0.85 },
+    { url: `${baseUrl}/partner/list-fleet`, lastModified: siteUpdated, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/blog`, lastModified: siteUpdated, changeFrequency: 'daily', priority: 0.85 },
+    { url: `${baseUrl}/privacy-policy`, lastModified: siteUpdated, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${baseUrl}/terms-conditions`, lastModified: siteUpdated, changeFrequency: 'yearly', priority: 0.3 },
   ]
 
-  // Dedicated specialized luxury service landing pages
   const dedicatedServiceRoutes: MetadataRoute.Sitemap = [
     '/services/luxury-car-rental',
     '/services/airport-taxi',
@@ -35,42 +55,51 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/services/intercity-cabs',
   ].map((path) => ({
     url: `${baseUrl}${path}`,
-    lastModified: now,
+    lastModified: siteUpdated,
     changeFrequency: 'weekly' as const,
     priority: 0.88,
   }))
 
-  // Dynamic content queries: Fleet, Services and Blog
-  const [cars, services, posts] = await Promise.all([
-    getCarsFromCMS().catch(() => []),
-    getServicesFromCMS().catch(() => []),
-    getBlogPosts().catch(() => []),
-  ])
+  const carRoutes: MetadataRoute.Sitemap = cars.map((car) => {
+    const imgs = Array.from(
+      new Set(
+        [car.src, ...(car.gallery || [])]
+          .map((img) => toAbsUrl(img))
+          .filter((img): img is string => Boolean(img)),
+      ),
+    )
+    return {
+      url: `${baseUrl}/cars/${car.slug}`,
+      lastModified: car.updatedAt || car.addedDate || fallbackNow,
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
+      ...(imgs.length > 0 ? { images: imgs } : {}),
+    }
+  })
 
-  const carRoutes: MetadataRoute.Sitemap = cars.map((car) => ({
-    url: `${baseUrl}/cars/${car.slug}`,
-    lastModified: car.addedDate || now,
-    changeFrequency: 'daily' as const,
-    priority: 0.9,
-  }))
+  const cmsServiceRoutes: MetadataRoute.Sitemap = services.map((service) => {
+    const absImage = toAbsUrl(service.image)
+    return {
+      url: `${baseUrl}${service.href.startsWith('/') ? service.href : `/${service.href}`}`,
+      lastModified: service.updatedAt || siteUpdated,
+      changeFrequency: 'weekly' as const,
+      priority: 0.88,
+      ...(absImage ? { images: [absImage] } : {}),
+    }
+  })
 
-  const cmsServiceRoutes: MetadataRoute.Sitemap = services.map((service) => ({
-    url: `${baseUrl}${service.href.startsWith('/') ? service.href : `/${service.href}`}`,
-    lastModified: now,
-    changeFrequency: 'weekly' as const,
-    priority: 0.85,
-  }))
+  const blogRoutes: MetadataRoute.Sitemap = posts.map((post) => {
+    const absImage = toAbsUrl(post.image)
+    return {
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.updatedAt || post.date || fallbackNow,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+      ...(absImage ? { images: [absImage] } : {}),
+    }
+  })
 
-  const blogRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: post.date || now,
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }))
-
-  // Deduplicate all entries by URL (CMS services matching dedicated pages won't duplicate)
   const sitemapMap = new Map<string, MetadataRoute.Sitemap[number]>()
-
   for (const entry of [
     ...staticCoreRoutes,
     ...dedicatedServiceRoutes,

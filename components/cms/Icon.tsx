@@ -4,7 +4,7 @@ export const Icon = () => {
   return (
     <img 
       src="/logo.png" 
-      alt="DRIVEIT" 
+      alt="DRIVEIT Luxury Monogram" 
       style={{
         height: '28px',
         width: 'auto',

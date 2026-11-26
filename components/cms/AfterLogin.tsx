@@ -1,4 +1,5 @@
 import React from 'react'
+import Link from 'next/link'
 
 export const AfterLogin = () => {
   return (
@@ -18,13 +19,13 @@ export const AfterLogin = () => {
 
       {/* Navigation & Help Links */}
       <div className="driveit-admin-nav-links">
-        <a href="/" className="driveit-admin-back-link">
+        <Link href="/" className="driveit-admin-back-link">
           ← Return to Main Website
-        </a>
+        </Link>
         <span className="driveit-dot-divider">•</span>
-        <a href="/login" className="driveit-admin-customer-link">
+        <Link href="/login" className="driveit-admin-customer-link">
           Customer Portal
-        </a>
+        </Link>
       </div>
 
       {/* Staff Concierge Support */}

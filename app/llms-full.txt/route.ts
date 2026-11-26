@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCarsFromCMS, getFaqs, getServicesFromCMS, getSiteSettings, SITE_DEFAULTS } from '@/lib/cms'
+import { extractHomeCmsPayload, getCarsFromCMS, getFaqs, getServicesFromCMS, getSiteSettings, SITE_DEFAULTS } from '@/lib/cms'
 import { getBlogPosts } from '@/lib/blog-seed'
 
 export const dynamic = 'force-dynamic'
@@ -16,12 +16,16 @@ export async function GET() {
       getFaqs().catch(() => []),
     ])
     const settings = rawSettings as Record<string, any>
+    const homeCms = extractHomeCmsPayload(settings)
 
     const siteName = settings.siteName || SITE_DEFAULTS.siteName
     const phone = settings.contactPhone || SITE_DEFAULTS.contactPhone
     const email = settings.contactEmail || SITE_DEFAULTS.contactEmail
     const whatsapp = settings.whatsappNumber || SITE_DEFAULTS.whatsappNumber
     const address = settings.address || SITE_DEFAULTS.address
+    const overview =
+      (typeof settings.llmsSummaryIntro === 'string' && settings.llmsSummaryIntro.trim()) ||
+      'Complete machine-readable catalog of luxury vehicles, private aviation, yacht charters, chauffeur services, terms, and FAQs.'
 
     const carDetails = cars
       .map(
@@ -29,7 +33,7 @@ export async function GET() {
 - **URL**: ${baseUrl}/cars/${c.slug}
 - **Brand**: ${c.brand}
 - **Category**: ${c.category.toUpperCase()}
-- **Rental Rate**: ${c.priceDisplay}
+- **Chauffeur Rate**: ${c.priceDisplay}${c.selfDrivePrice ? `\n- **Self-Drive Rate**: ₹${c.selfDrivePrice.toLocaleString('en-IN')}/day` : ''}${c.powerHp ? `\n- **Performance**: ${c.powerHp} HP${c.zeroToHundred ? ` · 0–100 km/h ${c.zeroToHundred}` : ''}${c.topSpeed ? ` · Top Speed ${c.topSpeed}` : ''}` : ''}
 - **Seating Capacity**: ${c.seats} passengers
 - **Transmission**: ${c.transmission}
 - **Fuel Type**: ${c.fuel}
@@ -39,7 +43,7 @@ export async function GET() {
 - **Fuel Policy**: ${c.fuelPolicy || 'Full-to-Full'}
 - **FASTag**: ${c.fastTagEquipped ? 'Equipped with electronic FASTag' : 'Not equipped'}
 - **Cancellation**: ${c.cancellationPolicy || 'Free cancellation up to 48 hours before pickup'}
-- **Description**: ${c.description || 'Premium flagship vehicle for executive and ceremonial travel.'}
+- **Description**: ${c.description || c.tagline || 'Premium flagship vehicle for executive and ceremonial travel.'}
 `,
       )
       .join('\n')
@@ -51,6 +55,24 @@ export async function GET() {
 - **Summary**: ${s.summary}
 - **Starting Price**: ${s.price || 'Bespoke Quote'}
 `,
+      )
+      .join('\n')
+
+    const priveDetails = homeCms.beyondPanels
+      .map(
+        (panel) => `### ${panel.title}
+- **URL**: ${baseUrl}${panel.href}
+- **Category**: ${panel.eyebrow}
+- **Fleet / Vessels**: ${panel.subtitle}
+- **Capacity**: ${panel.capacity}
+- **Highlights**: ${panel.highlights.join(' | ')}
+`,
+      )
+      .join('\n')
+
+    const protocolDetails = homeCms.protocols
+      .map(
+        (p) => `- **${p.tag} — ${p.title}**: ${p.subtitle} · Assigned Flagship: ${p.flagshipName} (${p.tariffFormatted}) · Pickup: ${p.pickupHub}${p.flightSyncSupported ? ' · Flight-Sync Enabled' : ''} · Highlights: ${p.highlights.join(' | ')}`,
       )
       .join('\n')
 
@@ -70,7 +92,7 @@ A: ${f.a}
 
     const content = `# ${siteName} — Full LLM Specification & Fleet Directory
 
-> Complete machine-readable catalog of luxury vehicles, private aviation, yacht charters, chauffeur services, terms, and FAQs for AI retrieval engines.
+> ${overview}
 
 ## 1. Company Profile
 - **Company**: ${siteName}
@@ -88,13 +110,19 @@ ${carDetails || 'No vehicles currently listed in the fleet directory.'}
 ## 3. Comprehensive Service Directory
 ${serviceDetails || 'No services currently listed in the directory.'}
 
-## 4. Frequently Asked Questions
+## 4. Privé Beyond-Road Aviation, Marine & Coach Charters
+${priveDetails}
+
+## 5. Curated Mobility Protocols & VIP Occasions
+${protocolDetails}
+
+## 6. Frequently Asked Questions
 ${faqDetails || 'No FAQs currently listed.'}
 
-## 5. Journal & Guides
-${blogDetails || 'No journal entries listed.'}
+## 7. Blog & Editorial Guides
+${blogDetails || 'No blog entries listed.'}
 
-## 6. Verification, KYC & Booking Safety
+## 8. Verification, KYC & Booking Safety
 - **KYC Vault**: Self-drive customers must upload a valid Driving License and Govt ID (Aadhaar/Passport).
 - **Concurrency Hold**: The booking engine secures a 10-minute guaranteed reservation hold so vehicles cannot be double-booked.
 - **Deposit Refund Policy**: Admin verifies return inspection; security deposits are refunded within 48 hours with verifiable bank UTR reference numbers.
@@ -105,10 +133,10 @@ ${blogDetails || 'No journal entries listed.'}
       status: 200,
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
       },
     })
-  } catch (error) {
+  } catch {
     return new NextResponse('# DRIVEIT Luxury — Full Catalog\n\nFull vehicle specifications and services directory.', {
       status: 200,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },

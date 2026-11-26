@@ -2,7 +2,8 @@ import * as migration_20260924_045048_initial from './20260924_045048_initial';
 import * as migration_20260924_071135 from './20260924_071135';
 import * as migration_20260924_073813 from './20260924_073813';
 import * as migration_20260925_072756 from './20260925_072756';
-import * as migration_20260925_092926_add_self_drive_price from './20260925_092926_add_self_drive_price';
+import * as migration_20260925_092926_add_self_drive_price from './20260925_092926_add_self_drive_price'
+import * as migration_20261111_120000_cms_full_editability_and_seo from './20261111_120000_cms_full_editability_and_seo';
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20260925_092926_add_self_drive_price.up,
     down: migration_20260925_092926_add_self_drive_price.down,
     name: '20260925_092926_add_self_drive_price'
+  },
+  {
+    up: migration_20261111_120000_cms_full_editability_and_seo.up,
+    down: migration_20261111_120000_cms_full_editability_and_seo.down,
+    name: '20261111_120000_cms_full_editability_and_seo',
   },
 ];

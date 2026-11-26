@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 import config from '@/payload.config'
+import { isPostgresReachable } from '@/lib/db'
+import { confirmLocalBooking } from '@/lib/local-booking-fallback'
 import { generateInvoicePDFBuffer } from '@/lib/invoice'
 import { sendWhatsAppConfirmation } from '@/lib/whatsapp'
 import { holdTokenMatches, isHoldExpired } from '@/lib/booking-holds'
@@ -22,6 +24,7 @@ const ConfirmSchema = z.object({
   bookingId: z.union([z.string().trim().min(1).max(50), z.number()]),
   holdToken: z.string().trim().min(16).max(200),
   upiTransactionId: z.string().trim().max(120).optional().nullable(),
+  paymentMethod: z.enum(['upi', 'pay_at_pickup']).optional(),
 })
 
 export async function POST(request: Request) {
@@ -44,7 +47,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing booking id or security token.' }, { status: 400 })
   }
 
-  const { bookingId, holdToken, upiTransactionId } = parsed.data
+  const { bookingId, holdToken, upiTransactionId, paymentMethod } = parsed.data
+  const resolvedPaymentRef =
+    upiTransactionId?.trim() || (paymentMethod === 'pay_at_pickup' ? 'pay_at_pickup' : null)
+
+  if (!(await isPostgresReachable())) {
+    const result = confirmLocalBooking(bookingId, holdToken, resolvedPaymentRef)
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: result.status })
+    }
+    const reference = bookingReference(result.record.id)
+    return NextResponse.json({
+      success: true,
+      alreadyConfirmed: result.alreadyConfirmed ?? false,
+      bookingId: result.record.id,
+      reference,
+      totalPrice: result.record.totalPrice,
+      status: result.record.status,
+      paymentStatus: result.record.paymentStatus ?? AWAITING_VERIFICATION,
+    })
+  }
+
   const payload = await getPayload({ config })
 
   try {
@@ -98,7 +121,7 @@ export async function POST(request: Request) {
         // it, so the booking starts life awaiting a human check. See
         // lib/payments.ts for why 'paid' does not exist as a state.
         paymentStatus: existing.paymentStatus ?? AWAITING_VERIFICATION,
-        ...(upiTransactionId ? { upiTransactionId } : {}),
+        ...(resolvedPaymentRef ? { upiTransactionId: resolvedPaymentRef } : {}),
       },
       overrideAccess: true,
       depth: 0,
@@ -219,13 +242,18 @@ async function sendConfirmationEmail(payload: Awaited<ReturnType<typeof getPaylo
   }
 
   // 2. Fallback to Payload sendEmail (Resend/local)
-  const paymentNotice = paymentNeedsReview(booking)
+  const isPayAtPickup = booking.upiTransactionId === 'pay_at_pickup'
+  const paymentNotice = isPayAtPickup
     ? `<p style="padding:12px 16px;background:#fff8e1;border-left:3px solid #d4af37;">
-         <strong>Payment under review.</strong> We have your UPI reference
-         (<code>${escapeHtml(booking.upiTransactionId || 'not provided')}</code>) and will verify it against
-         our account within one business day. Your reservation is held meanwhile.
+         <strong>Concierge Settlement at Handover.</strong> Your vehicle is reserved and our dispatch desk will coordinate settlement prior to handover.
        </p>`
-    : `<p><strong>Payment:</strong> verified — thank you.</p>`
+    : paymentNeedsReview(booking)
+      ? `<p style="padding:12px 16px;background:#fff8e1;border-left:3px solid #d4af37;">
+           <strong>Payment under review.</strong> We have your UPI reference
+           (<code>${escapeHtml(booking.upiTransactionId || 'not provided')}</code>) and will verify it against
+           our account within one business day. Your reservation is held meanwhile.
+         </p>`
+      : `<p><strong>Payment:</strong> verified — thank you.</p>`
 
   try {
     await payload.sendEmail({
