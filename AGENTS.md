@@ -796,6 +796,16 @@
     - Updated [`app/llms.txt/route.ts`](file:///e:/Github/driveit/app/llms.txt/route.ts) and [`app/llms-full.txt/route.ts`](file:///e:/Github/driveit/app/llms-full.txt/route.ts) to list Curated Mobility Protocols & VIP Occasions.
   - **Verification**: `npx tsc --noEmit` passed with 0 errors; `npm run lint` passed with 0 errors; `npm run build` compiled all 64 static/dynamic routes in 6.9s.
 
+## 44. Production VPS Ops Suite (`infra/ops/`) & `makheel` Admin Access (November 2026)
+- **Production Ops Scripts (`infra/ops/`)**:
+  - Added [`infra/ops/lib.sh`](file:///e:/Github/driveit/infra/ops/lib.sh), [`infra/ops/healthcheck.sh`](file:///e:/Github/driveit/infra/ops/healthcheck.sh), [`infra/ops/weekly-maintenance.sh`](file:///e:/Github/driveit/infra/ops/weekly-maintenance.sh), [`infra/ops/boot-alert.sh`](file:///e:/Github/driveit/infra/ops/boot-alert.sh), [`infra/ops/security-watch.sh`](file:///e:/Github/driveit/infra/ops/security-watch.sh), [`infra/ops/install-ops.sh`](file:///e:/Github/driveit/infra/ops/install-ops.sh), and [`infra/ops/README.md`](file:///e:/Github/driveit/infra/ops/README.md).
+  - Installed to `/opt/driveit-ops/` on VPS `13.140.56.180` with `/etc/cron.d/driveit-ops` (`*/5` healthcheck + security-watch, weekly Sunday 04:00 IST maintenance, `@reboot` boot-alert), `/etc/logrotate.d/driveit-ops`, and `fail2ban` SSH jail (`/etc/fail2ban/jail.d/driveit.local`).
+  - Retired legacy 12h `/etc/cron.d/driveit-vps-cleaner` (which ran `drop_caches`) in favor of `weekly-maintenance.sh` (keeps newest 3 GB Docker build cache and preserves kernel page cache & Redis).
+  - Telegram credentials are intentionally left unconfigured in `/etc/driveit-ops.env.example` (never copied from other projects); scripts log cleanly to `/var/log/driveit-ops/` until a dedicated DriveIt bot token + chat ID are added to `/etc/driveit-ops.env`.
+- **VPS Admin Account (`makheel`)**:
+  - Created user `makheel` on `13.140.56.180` in groups `sudo`, `docker`, `adm`, `systemd-journal` with passwordless sudo (`/etc/sudoers.d/makheel`) and the same SSH authorized key as `driveit`.
+
+
 
 
 
